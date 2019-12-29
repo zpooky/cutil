@@ -1,7 +1,7 @@
-# project('cutil', 'c',
-#         version: '1.0.0',
-#         license: 'GPL')
-#
+project('cutil', 'c',
+        version: '1.0.0',
+        license: 'GPL')
+
 cutil_src = [
   'sp_svec.c',
   'sp_vec.c',
@@ -18,8 +18,8 @@ cutil_src = [
   'sp_buf.c',
   'sp_str.c',
 
-  'sp_test_bst.c',
-  'sp_test_heap.c',
+  'sp_huffman.c',
+
 ]
 
 cutil_include = include_directories('.')
@@ -36,3 +36,22 @@ cutil_dep = declare_dependency(
               link_with: cutil_lib,
               # dependencies: cutil_deps
               )
+
+
+cutil_test_src = files([
+  'sp_test_bst.c',
+  'sp_test_heap.c',
+  'sp_test_huffman.c',
+
+  'test.c',
+])
+
+cutil_test = executable('thetest',
+                      cutil_test_src,
+                      include_directories: cutil_include,
+                      # link_args: cutil_link_options,
+                      # cpp_args: cutil_compile_options,
+                      dependencies: [cutil_dep]
+                     )
+
+test('spdht test', cutil_test)
