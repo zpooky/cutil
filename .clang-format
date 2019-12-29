@@ -1,0 +1,81 @@
+Language: Cpp
+Standard: 'Cpp11'
+
+ColumnLimit: 80
+IndentWidth: 2
+ObjCBlockIndentWidth: 2
+ContinuationIndentWidth: 2
+UseTab: 'Never'
+TabWidth: 2
+
+# Reflow long parameter list {
+BinPackArguments: true
+BinPackParameters: false
+
+AlignAfterOpenBracket: 'Align'
+AllowAllParametersOfDeclarationOnNextLine: false
+# }
+
+# c {
+SortIncludes: 'false'
+PointerAlignment: 'Right'
+IndentCaseLabels: true
+# AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+
+MaxEmptyLinesToKeep: 1
+
+
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+# }
+
+# cpp {
+NamespaceIndentation: None
+# }
+
+# comment {
+# format
+ReflowComments: 'false'
+AlignTrailingComments: 'false'
+# }
+
+
+# where to put {} {{{
+BraceWrapping:
+  AfterClass:      false
+  AfterControlStatement: false # if
+  AfterEnum:       false
+  AfterFunction:   true
+  AfterNamespace:  false
+  AfterObjCDeclaration: false
+  AfterStruct:     false
+  AfterUnion:      false
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+
+BreakBeforeBraces: Custom
+AlwaysBreakAfterReturnType: All
+# }}}
+
+
+SpaceAfterCStyleCast: 'false'
+## SpaceAfterTemplateKeyword: 'true'
+SpaceBeforeAssignmentOperators: 'true'
+#SpaceBeforeCtorInitializerColon: true # Unknown to clang-format-5.0
+#SpaceBeforeInheritanceColon: true # Unknown to clang-format-5.0
+SpaceBeforeParens: 'ControlStatements'
+#SpaceBeforeRangeBasedForLoopColon: true # Unknown to clang-format-5.0
+SpaceInEmptyParentheses: 'false'
+SpacesBeforeTrailingComments: '1'
+SpacesInAngles: 'false'
+SpacesInContainerLiterals: 'false'
+SpacesInCStyleCastParentheses: 'false'
+SpacesInParentheses: 'false'
+SpacesInSquareBrackets: 'false'
+
+ForEachMacros:
+  - 'apei_estatus_for_each_section'
+  - 'sp_vec_for_each2'
+  - 'sp_bst_for_each'
