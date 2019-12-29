@@ -18,11 +18,12 @@ typedef int (*sp_bst_node_cmp_cb)(sp_bst_T *, sp_bst_T *);
 typedef struct sp_bst_Node *(*sp_bst_node_new_cb)(sp_bst_T *);
 typedef int (*sp_bst_node_free_cb)(sp_bst_T *);
 
+//==============================
 typedef int (*sp_bst_node_it_cb)(sp_bst_T *, void *);
 
 //==============================
-struct sp_bst *sp_bst_init(sp_bst_node_cmp_cb, sp_bst_node_new_cb,
-                           sp_bst_node_free_cb);
+struct sp_bst *
+  sp_bst_init(sp_bst_node_cmp_cb, sp_bst_node_new_cb, sp_bst_node_free_cb);
 
 //==============================
 typedef struct sp_bst_voidp_Node {

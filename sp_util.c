@@ -1,13 +1,13 @@
 #include "sp_util.h"
 
 #include <arpa/inet.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 //==============================
 void
-to_hex(const unsigned char *raw, size_t len)
+to_hex(const uint8_t *raw, size_t len)
 {
   size_t i;
 
@@ -30,7 +30,7 @@ to_hex(const unsigned char *raw, size_t len)
   lookup[0xF] = 'F';
 
   for (i = 0; i < len; ++i) {
-    int first = (raw[i] >> 4) & 0xf;
+    int first  = (raw[i] >> 4) & 0xf;
     int second = raw[i] & 0xf;
     printf("%c%c", lookup[first], lookup[second]);
   }
@@ -39,41 +39,35 @@ to_hex(const unsigned char *raw, size_t len)
 
 //==============================
 void
-sp_util_swap_voidp(void **f, void **s)
+sp_util_swap_voidp_impl(void **f, void **s)
 {
   void *tmp = *f;
-  *f = *s;
-  *s = tmp;
+  *f        = *s;
+  *s        = tmp;
 }
 
 void
 sp_util_swap_voidpp(void ***f, void ***s)
 {
   void **tmp = *f;
-  *f = *s;
-  *s = tmp;
-}
-
-void
-sp_util_swap_charp(char **f, char **s)
-{
-  sp_util_swap_voidp((void **)f, (void **)s);
+  *f         = *s;
+  *s         = tmp;
 }
 
 void
 sp_util_swap_size_t(size_t *f, size_t *s)
 {
   size_t tmp = *f;
-  *f = *s;
-  *s = tmp;
+  *f         = *s;
+  *s         = tmp;
 }
 
 void
 sp_util_swap_char(char *f, char *s)
 {
   char tmp = *f;
-  *f = *s;
-  *s = tmp;
+  *f       = *s;
+  *s       = tmp;
 }
 
 void
@@ -93,7 +87,7 @@ sp_util_htonll(uint64_t n)
 #if __BYTE_ORDER == __BIG_ENDIAN
   return n;
 #else
-  uint32_t low = (uint32_t)n;
+  uint32_t low  = (uint32_t)n;
   uint32_t high = (uint32_t)(n >> 32);
 
   return (((uint64_t)htonl(high)) << 32) + htonl(low);
@@ -114,14 +108,27 @@ sp_util_size_t_cmp(size_t f, size_t s)
   return 0;
 }
 
+int
+sp_util_uint32_cmp(uint32_t f, uint32_t s)
+{
+  if (f > s) {
+    return 1;
+  }
+  if (f < s) {
+    return -1;
+  }
+
+  return 0;
+}
+
 //==============================
 struct sp_pair *
 sp_pair_init(void *first, void *second)
 {
   struct sp_pair *result;
 
-  result = calloc(1, sizeof(*result));
-  result->first = first;
+  result         = calloc(1, sizeof(*result));
+  result->first  = first;
   result->second = second;
 
   return result;

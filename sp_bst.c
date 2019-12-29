@@ -420,12 +420,13 @@ static struct sp_bst_Node *
 sp_bst_make_balance(struct sp_bst_Node **arr, size_t length)
 {
   size_t mid_idx = length / 2;
+  struct sp_bst_Node *mid;
 
   if (length == 0) {
     return NULL;
   }
-  struct sp_bst_Node *mid = arr[mid_idx];
-  mid->left               = sp_bst_make_balance(arr, mid_idx);
+  mid       = arr[mid_idx];
+  mid->left = sp_bst_make_balance(arr, mid_idx);
 
   size_t tail = mid_idx + 1;
   assert(length >= tail);

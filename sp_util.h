@@ -11,17 +11,17 @@
 
 //==============================
 void
-to_hex(const unsigned char *raw, size_t len);
+to_hex(const uint8_t *raw, size_t len);
 
 //==============================
 void
-sp_util_swap_voidp(void **, void **);
+sp_util_swap_voidp_impl(void **, void **);
+
+//TODO can we assert $f and $s is a ptr** ?
+#define sp_util_swap_voidp(f, s) sp_util_swap_voidp_impl((void **)f, (void **)s)
 
 void
 sp_util_swap_voidpp(void ***, void ***);
-
-void
-sp_util_swap_charp(char **, char **);
 
 void
 sp_util_swap_size_t(size_t *, size_t *);
@@ -37,6 +37,8 @@ uint64_t sp_util_htonll(uint64_t);
 
 //==============================
 int sp_util_size_t_cmp(size_t, size_t);
+
+int sp_util_uint32_cmp(uint32_t, uint32_t);
 
 //==============================
 typedef struct sp_pair {
