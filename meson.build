@@ -22,6 +22,11 @@ cutil_src = [
 
 ]
 
+cutil_link_options = [
+  '-fsanitize=address',
+  '-fno-omit-frame-pointer',
+]
+
 cutil_include = include_directories('.')
 
 cutil_lib = static_library('cutil',
@@ -49,7 +54,7 @@ cutil_test_src = files([
 cutil_test = executable('thetest',
                       cutil_test_src,
                       include_directories: cutil_include,
-                      # link_args: cutil_link_options,
+                      link_args: cutil_link_options,
                       # cpp_args: cutil_compile_options,
                       dependencies: [cutil_dep]
                      )

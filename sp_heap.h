@@ -7,7 +7,9 @@
 //==============================
 struct sp_heap;
 
-typedef void sp_heap_T;
+typedef struct {
+  size_t idx;
+} sp_heap_T;
 
 typedef int (*sp_heap_cmp_cb)(sp_heap_T *, sp_heap_T *);
 
@@ -15,11 +17,11 @@ typedef int (*sp_heap_cmp_cb)(sp_heap_T *, sp_heap_T *);
 struct sp_heap *sp_heap_init(sp_heap_cmp_cb);
 
 //==============================
-sp_heap_T **
+sp_heap_T *
 sp_heap_enqueue_impl(struct sp_heap *, sp_heap_T *);
 
 #define sp_heap_enqueue(self, in)                                              \
-  ((typeof(in) *)sp_heap_enqueue_impl((self), (in)))
+  ((typeof(in))sp_heap_enqueue_impl((self), (sp_heap_T *)(in)))
 
 //==============================
 bool
@@ -29,11 +31,11 @@ sp_heap_dequeue_impl(struct sp_heap *, sp_heap_T **);
   sp_heap_dequeue_impl((self), (sp_heap_T **)(out))
 
 //==============================
-sp_heap_T **
-sp_heap_update_key_impl(struct sp_heap *, sp_heap_T **subject);
+void
+sp_heap_update_key_impl(struct sp_heap *, sp_heap_T *subject);
 
-#define sp_heap_update_key(self, subject)                                      \
-  ((typeof(subject))sp_heap_update_key_impl((self), (sp_heap_T **)(subject)))
+#define sp_heap_update_key(self, subject)                                 \
+  sp_heap_update_key_impl((self), (sp_heap_T *)(subject))
 
 //==============================
 size_t

@@ -249,7 +249,7 @@ sp_for_each_test_bst(void)
   for (i = 0; i < MAX; ++i) {
     int cnt = 0;
     struct sp_bst_It it;
-    printf(".%d\n",i);
+    /* printf(".%d\n",i); */
     sp_bst_for_each(&it, bst)
     {
       ++cnt;
