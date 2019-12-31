@@ -8,7 +8,7 @@
 #include "sp_bst.h"
 
 struct sp_test {
-  struct sp_bst_Node tree;
+  struct sp_bst_Node base;
   int data;
 };
 
@@ -26,13 +26,12 @@ test_cmp(struct sp_test *first, struct sp_test *second)
 }
 
 static struct sp_bst_Node *
-test_new(sp_bst_T *tmp)
+test_new(struct sp_test *in)
 {
-  assert(tmp);
-  struct sp_test *in = tmp;
+  assert(in);
   struct sp_test *out = calloc(1, sizeof(struct sp_test));
-  out->data = in->data;
-  return &out->tree;
+  out->data           = in->data;
+  return &out->base;
 }
 
 static int
@@ -44,11 +43,10 @@ test_free(sp_bst_T *reclaim)
 }
 
 static int
-test_it_cb(sp_bst_T *current, int *arg)
+test_it_cb(struct sp_test *c, int *arg)
 {
   assert(arg);
 
-  struct sp_test *c = current;
   assert(c->data == *arg);
   ++*arg;
 
@@ -60,8 +58,8 @@ static void
 swap_int(int *f, int *s)
 {
   int tmp = *f;
-  *f = *s;
-  *s = tmp;
+  *f      = *s;
+  *s      = tmp;
 }
 
 static void
@@ -83,7 +81,8 @@ sp_do_test_bst(void)
   int cmp;
   {
     struct sp_bst *bst =
-            sp_bst_init((sp_bst_node_cmp_cb)test_cmp, test_new, test_free);
+      sp_bst_init((sp_bst_node_cmp_cb)test_cmp, (sp_bst_node_new_cb)test_new,
+                  (sp_bst_node_free_cb)test_free);
     bool retry = true;
 
     srand((unsigned)time(NULL));
@@ -97,8 +96,8 @@ sp_do_test_bst(void)
       data[i] = i;
       {
         struct sp_test *out = NULL;
-        struct sp_test tmp = { .data = data[i] };
-        out = sp_bst_find(bst, &tmp);
+        struct sp_test tmp  = {.data = data[i]};
+        out                 = sp_bst_find(bst, &tmp);
         assert(!out);
         out = sp_bst_remove(bst, &tmp);
         assert(!out);
@@ -111,21 +110,21 @@ sp_do_test_bst(void)
     for (i = 0; i < MAX; ++i) {
       for (a = 0; a < i; ++a) {
         struct sp_test *out = NULL;
-        struct sp_test tmp = { .data = data[a] };
-        out = sp_bst_find(bst, &tmp);
+        struct sp_test tmp  = {.data = data[a]};
+        out                 = sp_bst_find(bst, &tmp);
         assert(out);
         assert(out->data == data[a]);
       }
       for (a = i; a < MAX; ++a) {
         struct sp_test *out = NULL;
-        struct sp_test tmp = { .data = data[a] };
-        out = sp_bst_find(bst, &tmp);
+        struct sp_test tmp  = {.data = data[a]};
+        out                 = sp_bst_find(bst, &tmp);
         assert(!out);
       }
 
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = data[i] };
-      out = sp_bst_insert(bst, &tmp);
+      struct sp_test tmp  = {.data = data[i]};
+      out                 = sp_bst_insert(bst, &tmp);
       assert(out);
       assert(out->data == data[i]);
       /*duplicate*/
@@ -147,21 +146,21 @@ sp_do_test_bst(void)
     for (i = 0; i < MAX; ++i) {
       for (a = 0; a < i; ++a) {
         struct sp_test *out = NULL;
-        struct sp_test tmp = { .data = data[a] };
-        out = sp_bst_find(bst, &tmp);
+        struct sp_test tmp  = {.data = data[a]};
+        out                 = sp_bst_find(bst, &tmp);
         assert(!out);
       }
       for (a = i; a < MAX; ++a) {
         struct sp_test *out = NULL;
-        struct sp_test tmp = { .data = data[a] };
-        out = sp_bst_find(bst, &tmp);
+        struct sp_test tmp  = {.data = data[a]};
+        out                 = sp_bst_find(bst, &tmp);
         assert(out);
         assert(out->data == data[a]);
       }
 
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = data[i] };
-      out = sp_bst_remove(bst, &tmp);
+      struct sp_test tmp  = {.data = data[i]};
+      out                 = sp_bst_remove(bst, &tmp);
       assert(out);
       assert(out->data == data[i]);
       free(out);
@@ -181,19 +180,21 @@ sp_do_test_bst(void)
   }
   {
     struct sp_bst *bst;
-    bst = sp_bst_init((sp_bst_node_cmp_cb)test_cmp, test_new, test_free);
+    bst =
+      sp_bst_init((sp_bst_node_cmp_cb)test_cmp, (sp_bst_node_new_cb)test_new,
+                  (sp_bst_node_free_cb)test_free);
 
     for (i = 0; i < MAX; ++i) {
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = i };
-      out = sp_bst_insert(bst, &tmp);
+      struct sp_test tmp  = {.data = i};
+      out                 = sp_bst_insert(bst, &tmp);
       assert(out);
       assert(out->data == i);
     }
     for (i = 0; i < MAX; ++i) {
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = i };
-      out = sp_bst_find(bst, &tmp);
+      struct sp_test tmp  = {.data = i};
+      out                 = sp_bst_find(bst, &tmp);
       assert(out);
       assert(out->data == i);
     }
@@ -214,8 +215,8 @@ sp_do_test_bst(void)
       assert(cmp == MAX);
 
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = i };
-      out = sp_bst_find(bst, &tmp);
+      struct sp_test tmp  = {.data = i};
+      out                 = sp_bst_find(bst, &tmp);
       assert(out);
       assert(out->data == i);
       assert(sp_bst_remove_free(bst, &tmp));
@@ -227,8 +228,8 @@ sp_do_test_bst(void)
       assert(cmp == 0);
 
       struct sp_test *out = NULL;
-      struct sp_test tmp = { .data = i };
-      out = sp_bst_find(bst, &tmp);
+      struct sp_test tmp  = {.data = i};
+      out                 = sp_bst_find(bst, &tmp);
       assert(!out);
     }
 
@@ -244,20 +245,20 @@ sp_for_each_test_bst(void)
   const int MAX = 1024 * 1;
   int i;
   struct sp_bst *bst;
-  bst = sp_bst_init((sp_bst_node_cmp_cb)test_cmp, test_new, test_free);
+  bst = sp_bst_init((sp_bst_node_cmp_cb)test_cmp, (sp_bst_node_new_cb)test_new,
+                    (sp_bst_node_free_cb)test_free);
 
   for (i = 0; i < MAX; ++i) {
     int cnt = 0;
     struct sp_bst_It it;
     /* printf(".%d\n",i); */
-    sp_bst_for_each(&it, bst)
-    {
+    sp_bst_for_each (&it, bst) {
       ++cnt;
     }
     assert(i == cnt);
     struct sp_test *out = NULL;
-    struct sp_test tmp = { .data = i };
-    out = sp_bst_insert(bst, &tmp);
+    struct sp_test tmp  = {.data = i};
+    out                 = sp_bst_insert(bst, &tmp);
     assert(out);
     assert(out->data == i);
     sp_bst_rebalance(bst);
