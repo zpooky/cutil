@@ -51,7 +51,7 @@ sp_heap_internal_swap(struct sp_heap *self, size_t idx0, size_t idx1)
   sp_heap_T *first;
   sp_heap_T *second;
 
-  first  = sp_vec_get(self->vec, idx0);
+  first = sp_vec_get(self->vec, idx0);
   assert(first);
   assert(first->idx == idx0);
 
@@ -170,7 +170,7 @@ Lit:
 }
 
 bool
-sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out)
+sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, ...)
 {
   assert(out);
 
