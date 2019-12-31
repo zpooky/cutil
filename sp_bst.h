@@ -12,7 +12,7 @@ typedef struct sp_bst_Node {
   struct sp_bst_Node *right;
 } sp_bst_Node;
 
-typedef void sp_bst_T;
+typedef sp_bst_Node sp_bst_T;
 
 typedef int (*sp_bst_node_cmp_cb)(sp_bst_T *, sp_bst_T *);
 typedef struct sp_bst_Node *(*sp_bst_node_new_cb)(sp_bst_T *);
@@ -48,21 +48,36 @@ sp_bst_length(const struct sp_bst *);
 
 //==============================
 sp_bst_T *
-sp_bst_insert(struct sp_bst *, sp_bst_T *);
+sp_bst_insert_impl(struct sp_bst *, sp_bst_T *);
+
+#define sp_bst_insert(self, in)                                                \
+  ((typeof(in))sp_bst_insert_impl((self), &(in)->base))
 
 sp_bst_T *
-sp_bst_insert2(struct sp_bst *, sp_bst_T *, sp_bst_node_new_cb);
+sp_bst_insert2_impl(struct sp_bst *, sp_bst_T *, sp_bst_node_new_cb);
+
+#define sp_bst_insert2(self, in, new_cb)                                       \
+  ((typeof(in))sp_bst_insert2_impl((self), &(in)->base), new_cb)
 
 //==============================
 sp_bst_T *
-sp_bst_find(struct sp_bst *, sp_bst_T *needle);
+sp_bst_find_impl(struct sp_bst *, sp_bst_T *needle);
+
+#define sp_bst_find(self, needle)                                              \
+  ((typeof(needle))sp_bst_find_impl((self), &(needle)->base))
 
 //==============================
 sp_bst_T *
-sp_bst_remove(struct sp_bst *, sp_bst_T *needle);
+sp_bst_remove_impl(struct sp_bst *, sp_bst_T *needle);
+
+#define sp_bst_remove(self, needle)                                            \
+  ((typeof(needle))sp_bst_remove_impl((self), &(needle)->base))
 
 bool
-sp_bst_remove_free(struct sp_bst *, sp_bst_T *needle);
+sp_bst_remove_free_impl(struct sp_bst *, sp_bst_T *needle);
+
+#define sp_bst_remove_free(self, needle)                                       \
+  sp_bst_remove_free_impl((self), &(needle)->base)
 
 //==============================
 int
@@ -92,7 +107,7 @@ sp_bst_rebalance(struct sp_bst *);
 //==============================
 typedef struct sp_bst_It {
   void *queue;
-  sp_bst_T *head;
+  void *head;
 } sp_bst_It;
 
 void

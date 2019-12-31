@@ -117,13 +117,13 @@ sp_bst_length(const struct sp_bst *self)
 
 //==============================
 sp_bst_T *
-sp_bst_insert(struct sp_bst *self, sp_bst_T *in)
+sp_bst_insert_impl(struct sp_bst *self, sp_bst_T *in)
 {
-  return sp_bst_insert2(self, in, self->node_new);
+  return sp_bst_insert2_impl(self, in, self->node_new);
 }
 
 sp_bst_T *
-sp_bst_insert2(struct sp_bst *self, sp_bst_T *in, sp_bst_node_new_cb node_new)
+sp_bst_insert2_impl(struct sp_bst *self, sp_bst_T *in, sp_bst_node_new_cb node_new)
 {
   struct sp_bst_Node *res = NULL;
 
@@ -168,7 +168,7 @@ sp_bst_insert2(struct sp_bst *self, sp_bst_T *in, sp_bst_node_new_cb node_new)
 
 //==============================
 sp_bst_T *
-sp_bst_find(struct sp_bst *self, sp_bst_T *needle)
+sp_bst_find_impl(struct sp_bst *self, sp_bst_T *needle)
 {
   struct sp_bst_Node *it;
   struct sp_bst_Node *res = NULL;
@@ -203,11 +203,11 @@ remove_min(struct sp_bst *self, struct sp_bst_Node *in)
     in = in->left;
   }
 
-  return sp_bst_remove(self, in);
+  return sp_bst_remove_impl(self, in);
 }
 
 sp_bst_T *
-sp_bst_remove(struct sp_bst *self, sp_bst_T *needle)
+sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
 {
   struct sp_bst_Node *res    = NULL;
   struct sp_bst_Node *parent = NULL;
@@ -265,14 +265,14 @@ sp_bst_remove(struct sp_bst *self, sp_bst_T *needle)
 }
 
 bool
-sp_bst_remove_free(struct sp_bst *self, sp_bst_T *needle)
+sp_bst_remove_free_impl(struct sp_bst *self, sp_bst_T *needle)
 {
   struct sp_bst_Node *subject;
 
   assert(self);
   assert(needle);
 
-  if ((subject = sp_bst_remove(self, needle))) {
+  if ((subject = sp_bst_remove_impl(self, needle))) {
     self->node_free(subject);
 
     return true;
