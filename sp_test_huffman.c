@@ -8,11 +8,14 @@ int
 sp_test_huffman(void)
 {
   struct Huffman *tree;
-  tree = huffman_init("");
+  const char *plaintext = "test";
+  tree                  = huffman_init("");
   assert(!tree);
 
-  tree = huffman_init("test");
+  tree = huffman_init(plaintext);
   assert(tree);
+
+  huffman_encode(tree, plaintext);
 
   huffman_free(&tree);
 
