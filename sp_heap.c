@@ -170,8 +170,9 @@ Lit:
 }
 
 bool
-sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, ...)
+sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, sp_heap_T *dummy)
 {
+  (void)dummy;
   assert(out);
 
   if (!sp_heap_is_empty(self)) {

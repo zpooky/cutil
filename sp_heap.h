@@ -25,7 +25,7 @@ sp_heap_enqueue_impl(struct sp_heap *, sp_heap_T *);
 
 //==============================
 bool
-sp_heap_dequeue_impl(struct sp_heap *, sp_heap_T **, ...);
+sp_heap_dequeue_impl(struct sp_heap *, sp_heap_T **, sp_heap_T *);
 
 #define sp_heap_dequeue(self, out)                                             \
   sp_heap_dequeue_impl((self), (sp_heap_T **)(out), (typeof((*out)->base) *)0)
