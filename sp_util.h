@@ -53,4 +53,12 @@ int
 sp_pair_free(struct sp_pair **);
 
 //==============================
+#define assertx assert
+#ifdef	NDEBUG
+#define assertx_n(n)(n)
+#else
+#define assertx_n(n) assert(n)
+#endif
+
+//==============================
 #endif
