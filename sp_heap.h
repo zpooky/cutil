@@ -21,21 +21,21 @@ sp_heap_T *
 sp_heap_enqueue_impl(struct sp_heap *, sp_heap_T *);
 
 #define sp_heap_enqueue(self, in)                                              \
-  ((typeof(in))sp_heap_enqueue_impl((self), /*(sp_heap_T *)*/ &(in)->base))
+  ((typeof(in))sp_heap_enqueue_impl((self), &(in)->base))
 
 //==============================
 bool
 sp_heap_dequeue_impl(struct sp_heap *, sp_heap_T **, sp_heap_T *);
 
 #define sp_heap_dequeue(self, out)                                             \
-  sp_heap_dequeue_impl((self), (sp_heap_T **)(out), (typeof((*out)->base) *)0)
+  sp_heap_dequeue_impl((self), (sp_heap_T **)(out), (typeof((*(out))->base) *)0)
 
 //==============================
 void
 sp_heap_update_key_impl(struct sp_heap *, sp_heap_T *subject);
 
 #define sp_heap_update_key(self, subject)                                      \
-  sp_heap_update_key_impl((self), /*(sp_heap_T *)*/ &(subject)->base)
+  sp_heap_update_key_impl((self), &(subject)->base)
 
 //==============================
 size_t

@@ -24,7 +24,7 @@ sp_cbb_init(size_t capacity)
   assert(capacity > 0);
 
   //XXX allocate $buffer together with calloc(cbyte_buffer)
-  if ((result = calloc(1, sizeof(struct sp_cbb)))) {
+  if ((result = calloc(1, sizeof(*result)))) {
     result->buffer   = calloc(capacity, sizeof(uint8_t));
     result->read     = 0;
     result->write    = 0;
