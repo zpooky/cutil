@@ -77,9 +77,9 @@ hufBST_new(struct HufBST *in)
 {
   struct HufBST *result;
 
-  if ((result = calloc(1, sizeof(*in)))) {
+  if ((result = calloc(1, sizeof(*result)))) {
     if (in) {
-      memcpy(result, in, sizeof(*in));
+      memcpy(result, in, sizeof(*result));
     }
   }
 
@@ -113,7 +113,7 @@ struct HufDecodeInfo {
   struct HufDecodeInfo *left;
   struct HufDecodeInfo *right;
   uint32_t weight;
-  char raw; // Only present when $left, $right is NULL (leaf)
+  char raw;
   enum HufDecodeKind kind;
 };
 
@@ -129,7 +129,7 @@ hufDecodeInfo_new(struct HufBST *in)
 {
   struct HufDecodeInfo *result;
 
-  if ((result = calloc(1, sizeof(*in)))) {
+  if ((result = calloc(1, sizeof(*result)))) {
     if (in) {
       result->kind   = HufDecodeKind_LEAF;
       result->raw    = in->raw;
