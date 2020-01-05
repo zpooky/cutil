@@ -13,7 +13,7 @@ LDFLAGS = -fno-omit-frame-pointer -fstack-protector -fsanitize=address
 LDLIBS =
 
 CC = clang
-PROG = test
+PROG = $(BUILD_DIR)/test
 
 CFLAGS += -std=gnu11
 CFLAGS += -Wall -Wextra -Wpointer-arith -Wconversion -Wshadow

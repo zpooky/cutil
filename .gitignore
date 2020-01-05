@@ -54,3 +54,4 @@ build
 .ccls-cache
 .gdb_breakpoints
 test
+compile_commands.json

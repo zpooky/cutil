@@ -27,6 +27,15 @@
 #define BITS_MAX 16
 
 /* ======================================== */
+#define huf_log(...) printf(__VA_ARGS__)
+
+static void
+huf_log_encode(struct Huffman *self);
+
+static void
+huf_log_byte(const char *ctx, uint8_t, size_t);
+
+/* ======================================== */
 struct HufEncodeInfo {
   sp_bst_Node base;
   char raw;
@@ -214,14 +223,12 @@ huf_build_encode(struct Huffman *self,
 
     if (cur->kind == HufDecodeKind_EOS) {
       tmp = &self->encode_eos;
-      printf("HufDecodeKind_EOS: ");
     }
 
     tmp->raw      = cur->raw;
     tmp->bits_len = idx;
     memcpy(&tmp->bits, bits, sizeof(tmp->bits));
 
-    printf("cur->raw[%c, %p]\n", cur->raw, (void *)cur);
     if (cur->kind != HufDecodeKind_EOS) {
       assertx_n(sp_bst_insert(self->encode, tmp));
     }
@@ -253,7 +260,7 @@ huffman_init(const char *plaintext, size_t plen)
 
     assertx_n(sp_heap_dequeue(heap, &first));
     assertx_n(sp_heap_dequeue(heap, &second));
-    printf("[%u, %u]\n", first->weight, second->weight);
+    /* printf("[%u, %u]\n", first->weight, second->weight); */
 
     root         = hufDecodeInfo_new(NULL);
     root->left   = first;
@@ -276,6 +283,8 @@ huffman_init(const char *plaintext, size_t plen)
 
     huf_build_encode(self, root, bits, 0);
   }
+
+  huf_log_encode(self);
 
 Lout:
   assert(sp_heap_is_empty(heap));
@@ -327,23 +336,34 @@ struct HufBuf {
 };
 
 static void
-huf_write_bits(uint8_t b, size_t bits, struct HufBuf *dest)
+huf_write_bits(uint8_t in, size_t bits, struct HufBuf *dest)
 {
   while (bits) {
-    const uint8_t c  = dest->bit_length ? dest->raw : 0;
+    dest->raw        = dest->bit_length ? dest->raw : 0;
     size_t remaining = sp_util_min(8 - dest->bit_length, bits);
 
-    uint8_t tmp = b >> dest->bit_length;
-    tmp |= c;
+    uint8_t tmp = in >> dest->bit_length;
+    dest->raw   = tmp | dest->raw;
 
     dest->bit_length += remaining;
     bits -= remaining;
-    b <<= remaining;
+    in <<= remaining;
+
+    huf_log_byte("Buf", dest->raw, dest->bit_length);
 
     if (dest->bit_length == 8) {
-      assertx_n(sp_cbb_write(dest->dest, &tmp, sizeof(tmp)));
+      assertx_n(sp_cbb_write(dest->dest, &dest->raw, sizeof(dest->raw)));
       dest->bit_length = 0;
     }
+  }
+}
+
+static void
+huf_encode_flush(struct HufBuf *dest)
+{
+  if (dest->bit_length) {
+    assertx_n(sp_cbb_write(dest->dest, &dest->raw, sizeof(dest->raw)));
+    dest->bit_length = 0;
   }
 }
 
@@ -372,9 +392,12 @@ huf_encode_char(const struct HufEncodeInfo *src, struct HufBuf *dest)
       }
       bits++;
     }
+
+    huf_log_byte("Char", b, bits);
     huf_write_bits(b, bits, dest);
     remaining -= bits;
   }
+  huf_log("\n");
 }
 
 const char *
@@ -396,15 +419,17 @@ huffman_encode(const struct Huffman *self,
       huf_encode_char(info, &compressed);
     } else {
       //TODO fail
+      assert(false);
     }
 
     ++it;
   }
 
-  if (*it == '\0') {
+  if (it == end) {
     // TODO somehow ensure that there is always room for the eos, otherwise we
     // end up in an weird state
     huf_encode_char(&self->encode_eos, &compressed);
+    huf_encode_flush(&compressed);
   }
 
   return it;
@@ -416,22 +441,27 @@ typedef bool (*cb_t)(struct Huffman *self, bool, struct sp_cbb *sink);
 static struct HufDecodeInfo *
 huf_decode_walk(char *cur, size_t *bits, struct HufDecodeInfo *tree)
 {
-  const char mask = 1 << 7;
-  bool head;
-
   assert(*bits);
 
-  head = (*cur) & mask;
+  const char mask = 1 << 7;
+  const bool head = (*cur) & mask;
+  huf_log("%c", head ? '1' : '0');
+  fflush(stdout);
+
   *cur <<= 1;
   (*bits)--;
 
   if (head) {
-    tree = tree->left;
-  } else {
     tree = tree->right;
+  } else {
+    tree = tree->left;
   }
 
   if (tree->kind != HufDecodeKind_NODE) {
+    return tree;
+  }
+
+  if (*bits == 0) {
     return tree;
   }
 
@@ -444,20 +474,20 @@ huf_decode_bits(struct Huffman *self, char cur, struct sp_cbb *sink)
   struct HufDecodeInfo *tree = self->decode;
   size_t cur_bits            = 8;
 
-Lit2 : {
+Lit:
   if (self->decode_bits) {
-  Lit : {
-    char before_cur    = self->decode_cur;
-    size_t before_bits = self->decode_bits;
+    const char before_cur    = self->decode_cur;
+    const size_t before_bits = self->decode_bits;
 
     tree = huf_decode_walk(&self->decode_cur, &self->decode_bits, tree);
+    assertx(tree);
     if (tree->kind == HufDecodeKind_LEAF) {
+      huf_log(":%c][", tree->raw);
       sp_cbb_write(sink, &tree->raw, sizeof(tree->raw));
       tree = self->decode;
-      if (self->decode_bits) {
-        goto Lit;
-      }
+      goto Lit;
     } else if (tree->kind == HufDecodeKind_EOS) {
+      huf_log(":EOS]");
       return false;
     } else {
       if (cur_bits == 0) {
@@ -465,16 +495,14 @@ Lit2 : {
         self->decode_bits = before_bits;
       }
     }
-  } //Lit
   }
 
   if (cur_bits) {
     self->decode_cur  = cur;
     self->decode_bits = cur_bits;
     cur_bits          = 0;
-    goto Lit2;
+    goto Lit;
   }
-} //Lit2
 
   return true;
 }
@@ -486,13 +514,73 @@ huffman_decode(struct Huffman *self,
 {
   bool result = true;
 
+  huf_log("[");
   while (!sp_cbb_is_empty(compressed) && result) {
     char cur;
     assertx_n(sp_cbb_read(compressed, &cur, sizeof(cur)));
     result = huf_decode_bits(self, cur, sink);
   }
 
+  assert(sp_cbb_is_empty(compressed));
+
   return result;
+}
+
+/* ======================================== */
+static void
+huf_log_encode(struct Huffman *self)
+{
+  size_t i;
+  struct sp_bst_It it;
+
+  sp_bst_for_each (&it, self->encode) {
+    struct HufEncodeInfo *head = it.head;
+
+    if (head->raw == '\0') {
+      huf_log("'\\0'|");
+    } else
+      printf("'%c' |", head->raw);
+    for (i = 0; i < head->bits_len; ++i) {
+      if (head->bits[i]) {
+        printf("1:");
+      } else {
+        printf("0:");
+      }
+    }
+    printf("\n");
+  }
+
+  {
+    struct HufEncodeInfo *head = &self->encode_eos;
+    if (head->raw == '\0') {
+      printf("EOS |");
+    } else
+      printf("'%c'|", head->raw);
+    for (i = 0; i < head->bits_len; ++i) {
+      if (head->bits[i]) {
+        printf("1:");
+      } else {
+        printf("0:");
+      }
+    }
+    printf("\n\n");
+  }
+}
+
+static void
+huf_log_byte(const char *ctx, uint8_t raw, size_t bit_length)
+{
+  size_t i;
+  printf("%s[", ctx);
+  for (i = 0; i < bit_length; ++i) {
+    if (raw & (1 << 7)) {
+      printf("1:");
+    } else {
+      printf("0:");
+    }
+    raw <<= 1;
+  }
+  printf("]\n");
 }
 
 /* ======================================== */

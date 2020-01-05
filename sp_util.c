@@ -127,9 +127,10 @@ sp_pair_init(void *first, void *second)
 {
   struct sp_pair *result;
 
-  result         = calloc(1, sizeof(*result));
-  result->first  = first;
-  result->second = second;
+  if ((result = calloc(1, sizeof(*result)))) {
+    result->first  = first;
+    result->second = second;
+  }
 
   return result;
 }
@@ -139,10 +140,21 @@ sp_pair_free(struct sp_pair **pself)
 {
   assert(pself);
 
-  free(*pself);
-  *pself = NULL;
+  if (*pself) {
+    free(*pself);
+    *pself = NULL;
+  }
 
   return 0;
+}
+
+//==============================
+void
+sp_util_std_flush(void)
+{
+  /* printf("flush\n"); */
+  fflush(stdout);
+  fflush(stderr);
 }
 
 //==============================
