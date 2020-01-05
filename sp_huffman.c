@@ -338,7 +338,7 @@ huf_write_bits(uint8_t b, size_t bits, struct HufBuf *dest)
 
     dest->bit_length += remaining;
     bits -= remaining;
-    b = b << remaining;
+    b <<= remaining;
 
     if (dest->bit_length == 8) {
       assertx_n(sp_cbb_write(dest->dest, &tmp, sizeof(tmp)));
@@ -357,7 +357,7 @@ huf_mask(size_t idx)
 static void
 huf_encode_char(const struct HufEncodeInfo *src, struct HufBuf *dest)
 {
-  size_t src_idx        = 0;
+  size_t src_idx   = 0;
   size_t remaining = src->bits_len;
 
   //TODO check dest buff size

@@ -53,3 +53,4 @@ dkms.conf
 build
 .ccls-cache
 .gdb_breakpoints
+test
