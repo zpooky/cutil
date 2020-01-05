@@ -31,7 +31,7 @@ struct HufEncodeInfo {
   sp_bst_Node base;
   char raw;
   bool bits[BITS_MAX];
-  size_t len;
+  size_t bits_len;
 };
 
 static int
@@ -122,6 +122,9 @@ struct Huffman {
 
   struct sp_bst * /*HufEncodeInfo*/ encode;
   struct HufEncodeInfo encode_eos;
+
+  char decode_cur;
+  size_t decode_bits;
 };
 
 static struct HufDecodeInfo *
@@ -214,8 +217,8 @@ huf_build_encode(struct Huffman *self,
       printf("HufDecodeKind_EOS: ");
     }
 
-    tmp->raw = cur->raw;
-    tmp->len = idx;
+    tmp->raw      = cur->raw;
+    tmp->bits_len = idx;
     memcpy(&tmp->bits, bits, sizeof(tmp->bits));
 
     printf("cur->raw[%c, %p]\n", cur->raw, (void *)cur);
@@ -352,18 +355,19 @@ huf_mask(size_t idx)
 }
 
 static void
-huf_encode_char(const struct HufEncodeInfo *x, struct HufBuf *dest)
+huf_encode_char(const struct HufEncodeInfo *src, struct HufBuf *dest)
 {
-  size_t xb        = 0;
-  size_t remaining = x->len;
+  size_t src_idx        = 0;
+  size_t remaining = src->bits_len;
 
   //TODO check dest buff size
   while (remaining > 0) {
-    size_t i;
+    size_t i    = 0;
     uint8_t b   = 0;
     size_t bits = 0;
+
     for (i = 0; i < sp_util_min(8, remaining); ++i) {
-      if (x->bits[xb++]) {
+      if (src->bits[src_idx++]) {
         b |= huf_mask(bits);
       }
       bits++;
@@ -406,9 +410,89 @@ huffman_encode(const struct Huffman *self,
   return it;
 }
 
-void
-huffman_decode(const struct Huffman *self, const char *compressed)
+/* ======================================== */
+typedef bool (*cb_t)(struct Huffman *self, bool, struct sp_cbb *sink);
+
+static struct HufDecodeInfo *
+huf_decode_walk(char *cur, size_t *bits, struct HufDecodeInfo *tree)
 {
+  const char mask = 1 << 7;
+  bool head;
+
+  assert(*bits);
+
+  head = (*cur) & mask;
+  *cur <<= 1;
+  (*bits)--;
+
+  if (head) {
+    tree = tree->left;
+  } else {
+    tree = tree->right;
+  }
+
+  if (tree->kind != HufDecodeKind_NODE) {
+    return tree;
+  }
+
+  return huf_decode_walk(cur, bits, tree);
+}
+
+static bool
+huf_decode_bits(struct Huffman *self, char cur, struct sp_cbb *sink)
+{
+  struct HufDecodeInfo *tree = self->decode;
+  size_t cur_bits            = 8;
+
+Lit2 : {
+  if (self->decode_bits) {
+  Lit : {
+    char before_cur    = self->decode_cur;
+    size_t before_bits = self->decode_bits;
+
+    tree = huf_decode_walk(&self->decode_cur, &self->decode_bits, tree);
+    if (tree->kind == HufDecodeKind_LEAF) {
+      sp_cbb_write(sink, &tree->raw, sizeof(tree->raw));
+      tree = self->decode;
+      if (self->decode_bits) {
+        goto Lit;
+      }
+    } else if (tree->kind == HufDecodeKind_EOS) {
+      return false;
+    } else {
+      if (cur_bits == 0) {
+        self->decode_cur  = before_cur;
+        self->decode_bits = before_bits;
+      }
+    }
+  } //Lit
+  }
+
+  if (cur_bits) {
+    self->decode_cur  = cur;
+    self->decode_bits = cur_bits;
+    cur_bits          = 0;
+    goto Lit2;
+  }
+} //Lit2
+
+  return true;
+}
+
+bool
+huffman_decode(struct Huffman *self,
+               struct sp_cbb *compressed,
+               struct sp_cbb *sink)
+{
+  bool result = true;
+
+  while (!sp_cbb_is_empty(compressed) && result) {
+    char cur;
+    assertx_n(sp_cbb_read(compressed, &cur, sizeof(cur)));
+    result = huf_decode_bits(self, cur, sink);
+  }
+
+  return result;
 }
 
 /* ======================================== */

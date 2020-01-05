@@ -2,6 +2,7 @@
 #define SP_INTERV_HUFFMAN_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /* ======================================== */
 struct sp_cbb;
@@ -21,8 +22,10 @@ huffman_encode(const struct Huffman *,
                size_t len,
                struct sp_cbb *dest);
 
-void
-huffman_decode(const struct Huffman *, const char *compressed);
+bool
+huffman_decode(struct Huffman *,
+               struct sp_cbb *compressed,
+               struct sp_cbb *sink);
 
 /* ======================================== */
 
