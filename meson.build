@@ -19,6 +19,9 @@ cutil_src = [
   'sp_str.c',
 
   'sp_huffman.c',
+  'sp_perfect_hash_map.c',
+  'sp_diffie_hellman.c',
+  'sp_hash.c',
 
 ]
 

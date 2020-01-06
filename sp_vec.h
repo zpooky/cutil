@@ -9,9 +9,6 @@ struct sp_vec;
 
 typedef void sp_vec_T;
 
-typedef int (*sp_vec_cmp_cb)(sp_vec_T *, sp_vec_T *);
-typedef int (*sp_vec_it_cb)(sp_vec_T *, void *closure);
-
 //==============================
 struct sp_vec *
 sp_vec_init(void);
@@ -71,10 +68,14 @@ sp_vec_index_of_impl(const struct sp_vec *self, sp_vec_T **);
   sp_vec_index_of_impl(self, (sp_vec_T **)element);
 
 //==============================
+typedef int (*sp_vec_cmp_cb)(sp_vec_T *, sp_vec_T *);
+
 int
 sp_vec_sort(struct sp_vec *self, sp_vec_cmp_cb);
 
 //==============================
+typedef int (*sp_vec_it_cb)(sp_vec_T *, void *closure);
+
 int
 sp_vec_for_each(struct sp_vec *self, void *closure, sp_vec_it_cb);
 

@@ -457,6 +457,7 @@ huf_decode_walk(char *cur, size_t *bits, struct HufDecodeInfo *tree)
     tree = tree->left;
   }
 
+  assertx(tree);
   if (tree->kind != HufDecodeKind_NODE) {
     return tree;
   }
@@ -480,7 +481,6 @@ Lit:
     const size_t before_bits = self->decode_bits;
 
     tree = huf_decode_walk(&self->decode_cur, &self->decode_bits, tree);
-    assertx(tree);
     if (tree->kind == HufDecodeKind_LEAF) {
       huf_log(":%c][", tree->raw);
       sp_cbb_write(sink, &tree->raw, sizeof(tree->raw));

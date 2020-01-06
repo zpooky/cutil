@@ -68,4 +68,10 @@ sp_util_std_flush(void);
 #endif
 
 //==============================
+typedef int (*sp_util_sort_cmp_cb)(void *, void *);
+
+void
+sp_util_sort(void **, size_t, sp_util_sort_cmp_cb);
+
+//==============================
 #endif

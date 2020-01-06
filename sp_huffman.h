@@ -1,5 +1,5 @@
-#ifndef SP_INTERV_HUFFMAN_H
-#define SP_INTERV_HUFFMAN_H
+#ifndef SP_HUFFMAN_H
+#define SP_HUFFMAN_H
 
 #include <stddef.h>
 #include <stdbool.h>

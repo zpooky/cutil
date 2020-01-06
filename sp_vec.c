@@ -339,8 +339,11 @@ sp_vec_for_each(struct sp_vec *self, void *closure, sp_vec_it_cb it)
 {
   if (self) {
     size_t i;
+
     for (i = 0; i < self->length; ++i) {
-      int res = it(self->entries[i], closure);
+      int res;
+
+      res = it(self->entries[i], closure);
       if (res != 0) {
         return res;
       }
