@@ -27,7 +27,13 @@
 #define BITS_MAX 16
 
 /* ======================================== */
+/* #define HUF_LOG */
+
+#ifdef HUF_LOG
 #define huf_log(...) printf(__VA_ARGS__)
+#else
+#define huf_log(...) (void)0
+#endif
 
 static void
 huf_log_encode(struct Huffman *self);
@@ -527,6 +533,7 @@ huffman_decode(struct Huffman *self,
 }
 
 /* ======================================== */
+#ifdef HUF_LOG
 static void
 huf_log_encode(struct Huffman *self)
 {
@@ -582,5 +589,20 @@ huf_log_byte(const char *ctx, uint8_t raw, size_t bit_length)
   }
   printf("]\n");
 }
+#else
+static void
+huf_log_encode(struct Huffman *self)
+{
+  (void)self;
+}
+
+static void
+huf_log_byte(const char *ctx, uint8_t raw, size_t bit_length)
+{
+  (void)ctx;
+  (void)raw;
+  (void)bit_length;
+}
+#endif
 
 /* ======================================== */

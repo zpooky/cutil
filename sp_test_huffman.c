@@ -31,7 +31,7 @@ sp_test_huffman(void)
   assert(sp_cbb_length(uncompressed) == psize);
 
   assert(sp_cbb_pop_front(uncompressed, tmp, sizeof(tmp)) == psize);
-  printf("|%s|\n", tmp);
+  /* printf("|%s|\n", tmp); */
   assert(strcmp(plaintext, tmp) == 0);
 
   sp_cbb_free(&compressed);

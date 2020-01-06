@@ -52,6 +52,9 @@ sp_pair_init(void *, void *);
 int
 sp_pair_free(struct sp_pair **);
 
+void
+sp_pair_set(sp_pair *dest, sp_pair *src);
+
 //==============================
 void
 sp_util_std_flush(void);

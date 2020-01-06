@@ -268,68 +268,11 @@ sp_vec_index_of_impl(const struct sp_vec *self, sp_vec_T **data)
 }
 
 //==============================
-static size_t
-partition(void **in, size_t length, sp_vec_cmp_cb cmp)
-{
-  void **head = in;
-  void **tail = in + (length - 1);
-
-  void **const start = in;
-  void **const end   = in + length;
-
-  void **p = tail;
-
-  while (true) {
-    while (head != end && cmp(*head, /*<*/ *p) == -1) {
-      head++;
-    }
-
-    while (tail != start && cmp(*p, /*<*/ *tail) == -1) {
-      tail--;
-    }
-
-    if (head >= tail) {
-      break;
-    }
-
-    /* Pivot needs to be the same even if its position gets swapped. */
-    if (head == p) {
-      p = tail;
-    } else if (tail == p) {
-      p = head;
-    }
-
-    sp_util_swap_voidp(head, tail);
-    head++;
-    tail--;
-  }
-
-  assert(head < end);
-  assert(head >= start);
-
-  assert(tail < end);
-  assert(tail >= start);
-
-  return head - in;
-}
-
-static void
-quicksort(void **in, size_t length, sp_vec_cmp_cb cmp)
-{
-  if (length > 1) {
-    assert(in);
-
-    size_t pivot = partition(in, length, cmp);
-    quicksort(in, pivot, cmp);
-    quicksort(in + pivot, length - pivot, cmp);
-  }
-}
-
 int
 sp_vec_sort(struct sp_vec *self, sp_vec_cmp_cb cmp)
 {
   assert(self);
-  quicksort(self->entries, self->length, cmp);
+  sp_util_sort(self->entries, self->length, cmp);
   return 0;
 }
 
