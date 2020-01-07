@@ -25,8 +25,9 @@ sp_vec_init(void)
 struct sp_vec *
 sp_vec_init_cap(size_t capacity)
 {
-  struct sp_vec *result = sp_vec_init();
-  if (result) {
+  struct sp_vec *result;
+
+  if ((result = sp_vec_init())) {
     result->entries  = calloc(capacity, sizeof(sp_vec_T *));
     result->capacity = capacity;
   }

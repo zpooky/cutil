@@ -53,48 +53,51 @@ ix(struct sp_phash_map *self, struct sp_pair *entries, size_t len)
 
   for (i = 0; i < len; ++i) {
     size_t a;
-
-    size_t cluster_len = cluster[i] ? sp_vec_length(cluster[i]) : 0;
-    uint32_t seed      = 0;
-    uint32_t item      = 0;
+    struct sp_pair *cur;
+    uint32_t seed = 0;
+    uint32_t item = 0;
 
     struct sp_pair *tmp_values[len];
     memset(tmp_values, 0, sizeof(tmp_values));
 
-    if (cluster_len == 0) {
+    if (!cluster[i]) {
       break;
     }
-    printf("- %zu[len:%zu,i:%zu]\n", cluster_len, self->length, i);
+    printf("- %zu[i:%zu]\n", self->length, i);
 
-    while (item < cluster_len) {
+    while (item < sp_vec_length(cluster[i])) {
+      cur = sp_vec_get(cluster[i], item);
       size_t slot;
 
-      slot =
-        self->hash(seed, sp_vec_get(cluster[i], item), self->closure) % len;
+      printf("#%u:", *((uint32_t *)cur->second));
+      slot = self->hash(seed, cur->first, self->closure) % len;
       if (self->values[slot].first || tmp_values[slot]) {
         ++seed;
         item = 0;
         memset(tmp_values, 0, sizeof(tmp_values));
+        printf("%zu]:%zu\n[", slot, sp_vec_length(cluster[i]));
       } else {
-        tmp_values[slot] = sp_vec_get(cluster[i], item);
+        printf("%zu,", slot);
+        tmp_values[slot] = cur;
         ++item;
       }
-
     } //while
+    printf("]\n");
 
     for (a = 0; a < len; ++a) {
       if (tmp_values[a]) {
+        assertx((self->hash(seed, tmp_values[a]->first, self->closure) % len) ==
+                a);
         assertx(!(self->values[a].first || self->values[a].second));
         sp_pair_set(&self->values[a], tmp_values[a]);
       }
     } //for
 
-    ind_hash = self->hash(0, sp_vec_get(cluster[i], 0), self->closure);
-    ind_idx  = ind_hash % len;
+    cur                     = sp_vec_get(cluster[i], 0);
+    ind_hash                = self->hash(0, cur->first, self->closure);
+    ind_idx                 = ind_hash % len;
     self->indirect[ind_idx] = seed;
-
   } //for
-  printf("--\n");
 
   for (; i < len; ++i) {
     size_t cluster_len = cluster[i] ? sp_vec_length(cluster[i]) : 0;
@@ -103,19 +106,13 @@ ix(struct sp_phash_map *self, struct sp_pair *entries, size_t len)
     assert(!cluster[i]);
   }
 
-  /* for (; i < len; ++i) { */
-  /*   size_t cluster_len = cluster[i] ? sp_vec_length(cluster[i]) : 0; */
-  /*   assert(cluster_len <= 1); */
-  /*  */
-  /*   if (cluster_len == 0) { */
-  /*     break; */
-  /*   } */
-  /*  */
-  /*   ind_hash = self->hash(0, , self->closure); */
-  /*   ind_idx  = ind_hash % len; */
-  /*  */
-  /*   //TODO process all with length=1 */
-  /* } //for */
+  for (i = 0; i < len; ++i) {
+    if (cluster[i]) {
+      sp_vec_free(&cluster[i]);
+    } else {
+      break;
+    }
+  }
 }
 
 /* http://cmph.sourceforge.net/papers/esa09.pdf */
