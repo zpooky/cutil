@@ -84,17 +84,17 @@ sp_uri2_drop_head(struct sp_uri2 *);
 struct sp_vec;
 
 struct sp_vec * /*sp_str*/
-  sp_uri_path_elements(const struct sp_URI *);
+sp_uri_path_elements(const struct sp_URI *);
 
 struct sp_vec * /*sp_str*/
-  sp_uri2_path_elements(const struct sp_uri2 *);
+sp_uri2_path_elements(const struct sp_uri2 *);
 
 //==============================
 bool
 sp_uri2_eq(const sp_uri2 *, const sp_uri2 *);
 
 bool
-sp_uri2_prefix_eq(const sp_uri2 *, const sp_uri2 *);
+sp_uri2_prefix_eq(const sp_uri2 *self, const sp_uri2 *prefix);
 
 //==============================
 int

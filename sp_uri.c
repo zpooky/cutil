@@ -1,15 +1,15 @@
 #include "sp_uri.h"
 
-#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-#include <string.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "sp_vec.h"
-#include "sp_str.h"
 #include "sp_fs.h"
+#include "sp_str.h"
+#include "sp_vec.h"
 
 //==============================
 #define SP_URI_BLOCK_MAX (16)
@@ -252,8 +252,8 @@ sp_uri_path(const struct sp_URI *self)
         /* last entry in block */
         prepend = true;
       }
-    } //for
-  } //for_each
+    } // for
+  } // for_each
 
   return result;
 }
@@ -437,7 +437,7 @@ sp_uri2_path_elements(const struct sp_uri2 *self)
     return NULL;
   }
 
-  //XXX this is a copy of append_all
+  // XXX this is a copy of append_all
   while (it < end) {
     const char *next;
     size_t len;
@@ -478,16 +478,28 @@ bool
 sp_uri2_prefix_eq(const sp_uri2 *self, const sp_uri2 *prefix)
 {
   size_t plen;
+  size_t slen;
 
   assert(self);
   assert(prefix);
 
   plen = strlen(sp_uri2_path(prefix));
-  if (plen > strlen(sp_uri2_path(self))) {
+  slen = strlen(sp_uri2_path(self));
+  if (plen > slen) {
     return false;
   }
 
-  return strncmp(sp_uri2_path(self), sp_uri2_path(prefix), plen) == 0;
+  if (strncmp(sp_uri2_path(self), sp_uri2_path(prefix), plen) != 0) {
+    return false;
+  }
+
+  if (slen > plen) {
+    if (sp_uri2_path(self)[plen] != '/') {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 //==============================

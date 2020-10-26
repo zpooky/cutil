@@ -95,6 +95,19 @@ sp_util_htonll(uint64_t n)
 #endif
 }
 
+uint64_t
+sp_util_ntohll(uint64_t n)
+{
+#if __BYTE_ORDER == __BIG_ENDIAN
+  return n;
+#else
+  uint32_t low  = (uint32_t)n;
+  uint32_t high = (uint32_t)(n >> 32);
+
+  return (((uint64_t)ntohl(high)) << 32) + ntohl(low);
+#endif
+}
+
 //==============================
 int
 sp_util_size_t_cmp(size_t f, size_t s)

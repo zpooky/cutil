@@ -35,6 +35,9 @@ sp_util_swap_char_arr(char *, char *, size_t);
 //==============================
 uint64_t sp_util_htonll(uint64_t);
 
+uint64_t
+sp_util_ntohll(uint64_t n);
+
 //==============================
 int sp_util_size_t_cmp(size_t, size_t);
 

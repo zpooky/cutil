@@ -73,23 +73,44 @@ int
 sp_sink_write(struct sp_sink *self, const void *in, size_t length)
 {
   int res = 0;
-  if (length > sp_cbb_capacity(self->buffer) ||
-      length > sp_cbb_remaining_write(self->buffer)) {
-    if ((res = sp_sink_flush(self)) < 0) {
+  if (length > sp_cbb_capacity(self->buffer)) {
+    res = -ENOMEM;
+    goto Lout;
+  }
+
+  if (length > sp_cbb_remaining_write(self->buffer)) {
+    if ((res = sp_sink_flush(self)) != 0) {
       goto Lout;
     }
   }
 
-  if (length > sp_cbb_capacity(self->buffer)) {
-    //TODO flush in directly
-    /* struct sp_cbb tmp = {0}; */
-    /* self->write(&tmp, self->arg); */
-    assert(false);
-  } else {
-    if (!sp_cbb_write(self->buffer, in, length)) {
-      res = -ENOMEM;
+  if (!sp_cbb_write(self->buffer, in, length)) {
+    res = -ENOMEM;
+    goto Lout;
+  }
+
+Lout:
+  return res;
+}
+
+int
+sp_sink_write_cbb(struct sp_sink *self, struct sp_cbb *in)
+{
+  int res = 0;
+  if (sp_cbb_remaining_read(in) > sp_cbb_capacity(self->buffer)) {
+    res = -ENOMEM;
+    goto Lout;
+  }
+
+  if (sp_cbb_remaining_read(in) > sp_cbb_remaining_write(self->buffer)) {
+    if ((res = sp_sink_flush(self)) != 0) {
       goto Lout;
     }
+  }
+
+  if (!sp_cbb_write_cbb(self->buffer, in)) {
+    res = -ENOMEM;
+    goto Lout;
   }
 
 Lout:
@@ -130,6 +151,13 @@ sp_sink_flush(struct sp_sink *self)
 }
 
 //==============================
+bool
+sp_sink_is_empty(const struct sp_sink *self)
+{
+  return sp_cbb_is_empty(self->buffer);
+}
+
+//==============================
 int
 sp_sink_free(struct sp_sink **self)
 {
@@ -143,6 +171,19 @@ sp_sink_free(struct sp_sink **self)
   free(*self);
   *self = NULL;
 
+  return 0;
+}
+
+//==============================
+sp_sink_mark_t
+sp_sink_mark(struct sp_sink *self)
+{
+  return 0;
+}
+
+int
+sp_sink_unmark(struct sp_sink *self, sp_sink_mark_t m, bool s)
+{
   return 0;
 }
 

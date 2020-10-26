@@ -123,7 +123,9 @@ sp_bst_insert_impl(struct sp_bst *self, sp_bst_T *in)
 }
 
 sp_bst_T *
-sp_bst_insert2_impl(struct sp_bst *self, sp_bst_T *in, sp_bst_node_new_cb node_new)
+sp_bst_insert2_impl(struct sp_bst *self,
+                    sp_bst_T *in,
+                    sp_bst_node_new_cb node_new)
 {
   struct sp_bst_Node *res = NULL;
 
@@ -164,6 +166,18 @@ sp_bst_insert2_impl(struct sp_bst *self, sp_bst_T *in, sp_bst_node_new_cb node_n
   }
 
   return res;
+}
+
+static struct sp_bst_Node *
+sp_bst_insert_identity_cb(sp_bst_T *in)
+{
+  return (struct sp_bst_Node *)in;
+}
+
+sp_bst_T *
+sp_bst_insert_identity_impl(struct sp_bst *self, sp_bst_T *in)
+{
+  return sp_bst_insert2_impl(self, in, sp_bst_insert_identity_cb);
 }
 
 //==============================

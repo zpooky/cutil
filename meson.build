@@ -23,6 +23,9 @@ cutil_src = [
   'sp_diffie_hellman.c',
   'sp_hash.c',
 
+  'sp_bitset.c',
+  'sp_source.c',
+
 ]
 
 cutil_link_options = [

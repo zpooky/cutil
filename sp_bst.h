@@ -59,6 +59,12 @@ sp_bst_insert2_impl(struct sp_bst *, sp_bst_T *, sp_bst_node_new_cb);
 #define sp_bst_insert2(self, in, new_cb)                                       \
   ((typeof(in))sp_bst_insert2_impl((self), &(in)->base), new_cb)
 
+sp_bst_T *
+sp_bst_insert_identity_impl(struct sp_bst *, sp_bst_T *);
+
+#define sp_bst_insert_identity(self, in)                                       \
+  ((typeof(in))sp_bst_insert_identity_impl((self), &(in)->base))
+
 //==============================
 sp_bst_T *
 sp_bst_find_impl(struct sp_bst *, sp_bst_T *needle);
