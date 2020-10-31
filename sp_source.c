@@ -8,6 +8,8 @@
 
 #include "sp_cbb.h"
 
+#include <stdio.h>
+
 //==============================
 struct sp_source {
   sp_source_read_cb read_cb;
@@ -29,6 +31,21 @@ sp_source_init(sp_source_read_cb r, size_t cap, void *arg)
   }
 
   return result;
+}
+
+//==============================
+int
+sp_source_free(struct sp_source **pself)
+{
+  assert(pself);
+  if (*pself) {
+    struct sp_source *self = *pself;
+    sp_cbb_free(&self->buffer);
+    free(self);
+    *pself = NULL;
+  }
+
+  return 0;
 }
 
 //==============================
@@ -159,6 +176,31 @@ sp_source_consume_reaonly_view(struct sp_source *self, size_t length)
   //}
 
   return sp_cbb_consume_readonly_view(self->buffer, length);
+}
+
+//==============================
+void
+sp_source_dump_hex(const struct sp_source *self)
+{
+  struct sp_cbb_Arr arr[2] = {0};
+  size_t alen              = 0;
+  size_t p;
+
+  assert(self);
+
+  if (sp_cbb_remaining_read(self->buffer) == 0) {
+    if (!sp_cbb_is_readonly(self->buffer)) {
+
+      self->read_cb(self->buffer, self->arg);
+    }
+  }
+
+  /* printf("%s: read:%zu\n", __func__, sp_cbb_remaining_read(self->buffer)); */
+
+  alen = sp_cbb_read_buffer(self->buffer, arr);
+  for (p = 0; p < alen; ++p) {
+    sp_util_to_hex(arr[p].base, arr[p].len);
+  }
 }
 
 //==============================

@@ -197,6 +197,51 @@ sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, sp_heap_T *dummy)
 }
 
 //==============================
+void *
+sp_heap_head(struct sp_heap *self)
+{
+  assert(self);
+
+  return sp_vec_get(self->vec, 0);
+}
+
+//==============================
+bool
+sp_heap_remove_impl(struct sp_heap *self, sp_heap_T *in)
+{
+  /* 1. swap(in->idx, self->vec.last.idx);
+   * 2. drop last
+   * 3. update_key(in->idx) # adjust to position of the previously last item
+   */
+  assert(self);
+  assert(in);
+  size_t idx = in->idx;
+  sp_heap_T *last;
+
+  if ((last = sp_vec_get_last(self->vec))) {
+    if (idx != last->idx) {
+      size_t last_idx = last->idx;
+      assert(idx < last_idx);
+      assert(last_idx == sp_vec_length(self->vec) - 1);
+
+      sp_heap_internal_swap(self, idx, last_idx);
+      assert(last->idx == idx);
+      assert(last == sp_vec_get(self->vec, idx));
+
+      sp_heap_update_key_impl(self, last);
+    } else {
+      sp_vec_remove(self->vec, idx);
+    }
+  } else {
+    /* $in was not in heap */
+    assert(false);
+    return false;
+  }
+
+  return true;
+}
+
+//==============================
 void
 sp_heap_update_key_impl(struct sp_heap *self, sp_heap_T *subject)
 {

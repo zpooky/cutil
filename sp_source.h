@@ -15,6 +15,10 @@ struct sp_source *
 sp_source_init(sp_source_read_cb, size_t cap, void *arg);
 
 //==============================
+int
+sp_source_free(struct sp_source **);
+
+//==============================
 bool
 sp_source_read(struct sp_source *, void *, size_t);
 
@@ -48,6 +52,10 @@ sp_source_reaonly_view(struct sp_source *, size_t length);
 
 struct sp_cbb *
 sp_source_consume_reaonly_view(struct sp_source *, size_t length);
+
+//==============================
+void
+sp_source_dump_hex(const struct sp_source *);
 
 //==============================
 #endif

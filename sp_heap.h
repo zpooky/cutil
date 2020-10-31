@@ -31,6 +31,17 @@ sp_heap_dequeue_impl(struct sp_heap *, sp_heap_T **, sp_heap_T *);
   sp_heap_dequeue_impl((self), (sp_heap_T **)(out), (typeof((*(out))->base) *)0)
 
 //==============================
+void *
+sp_heap_head(struct sp_heap *);
+
+//==============================
+bool
+sp_heap_remove_impl(struct sp_heap *, sp_heap_T *);
+
+#define sp_heap_remove(self, in)                                               \
+  sp_heap_remove_impl((self), (typeof((*(out))->base) *)in)
+
+//==============================
 void
 sp_heap_update_key_impl(struct sp_heap *, sp_heap_T *subject);
 

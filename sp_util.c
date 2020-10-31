@@ -8,7 +8,7 @@
 
 //==============================
 void
-to_hex(const uint8_t *raw, size_t len)
+sp_util_to_hex(const uint8_t *raw, size_t len)
 {
   size_t i;
 
