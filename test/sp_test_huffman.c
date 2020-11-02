@@ -14,8 +14,8 @@ sp_test_huffman(void)
   struct sp_cbb *compressed, *uncompressed;
   const char *plaintext = "abcdefabcdeabcdabcaba";
   /* const char *plaintext = "ab"; */
-  const size_t psize    = strlen(plaintext) + 1;
-  char tmp[256]         = {0};
+  const size_t psize = strlen(plaintext) + 1;
+  char tmp[256]      = {0};
 
   compressed   = sp_cbb_init(1024);
   uncompressed = sp_cbb_init(1024);
@@ -28,7 +28,7 @@ sp_test_huffman(void)
 
   assert(sp_cbb_is_empty(compressed));
   assert(!sp_cbb_is_empty(uncompressed));
-  assert(sp_cbb_length(uncompressed) == psize);
+  assert(sp_cbb_remaining_read(uncompressed) == psize);
 
   assert(sp_cbb_pop_front(uncompressed, tmp, sizeof(tmp)) == psize);
   /* printf("|%s|\n", tmp); */

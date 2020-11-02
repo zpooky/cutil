@@ -28,6 +28,10 @@ sp_source_pop_front(struct sp_source *, void *, size_t);
 
 //==============================
 size_t
+sp_source_peek_front(const struct sp_source *, void *, size_t);
+
+//==============================
+size_t
 sp_source_capacity(const struct sp_source *);
 
 //==============================
@@ -43,7 +47,7 @@ int
 sp_source_unmark(struct sp_source *, const sp_source_mark_t *);
 
 //==============================
-size_t
+bool
 sp_source_consume_bytes(struct sp_source *, size_t);
 
 //==============================
@@ -58,4 +62,16 @@ void
 sp_source_dump_hex(const struct sp_source *);
 
 //==============================
+void
+sp_source_get_internal_state(struct sp_source *self,
+                             sp_source_read_cb *r,
+                             void **arg);
+
+void
+sp_source_set_internal_state(struct sp_source *self,
+                             sp_source_read_cb r,
+                             void *arg);
+
+//==============================
+
 #endif

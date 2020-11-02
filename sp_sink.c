@@ -175,15 +175,17 @@ sp_sink_free(struct sp_sink **self)
 }
 
 //==============================
-sp_sink_mark_t
-sp_sink_mark(struct sp_sink *self)
+int
+sp_sink_mark(struct sp_sink *self, sp_sink_mark_t *out)
 {
+  //TODO
   return 0;
 }
 
 int
-sp_sink_unmark(struct sp_sink *self, sp_sink_mark_t m, bool s)
+sp_sink_unmark(struct sp_sink *self, const sp_sink_mark_t *in)
 {
+  //TODO
   return 0;
 }
 

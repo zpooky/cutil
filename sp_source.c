@@ -3,12 +3,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include <sp_util.h>
 
 #include "sp_cbb.h"
-
-#include <stdio.h>
 
 //==============================
 struct sp_source {
@@ -64,7 +63,7 @@ sp_source_read(struct sp_source *self, void *out, size_t out_len)
       return false;
     }
 
-    self->read_cb(self->buffer, self->arg);
+    self->read_cb(self->buffer, self->arg); //TODO handle return
   }
 
   return sp_cbb_read(self->buffer, out, out_len);
@@ -72,7 +71,28 @@ sp_source_read(struct sp_source *self, void *out, size_t out_len)
 
 //==============================
 size_t
-sp_source_pop_front(struct sp_source *, void *, size_t);
+sp_source_pop_front(struct sp_source *self, void *out, size_t out_len)
+{
+  size_t result;
+  assert(self);
+
+  result = sp_source_peek_front(self, out, out_len);
+  if (!sp_source_consume_bytes(self, result)) {
+    //bug
+    assert(false);
+    result = 0;
+  }
+
+  return result;
+}
+
+//==============================
+size_t
+sp_source_peek_front(const struct sp_source *self, void *out, size_t out_len)
+{
+  assert(self);
+  return sp_cbb_peek_front(self->buffer, out, out_len);
+}
 
 //==============================
 size_t
@@ -87,7 +107,9 @@ int
 sp_source_mark(struct sp_source *self, sp_source_mark_t *out)
 {
   sp_cbb_mark_t mark = {0};
+
   assert(self);
+
   sp_cbb_read_mark(self->buffer, &mark);
   out->before   = mark.before;
   out->rollback = mark.rollback;
@@ -107,30 +129,33 @@ sp_source_unmark(struct sp_source *self, const sp_source_mark_t *in)
 }
 
 //==============================
-size_t
+bool
 sp_source_consume_bytes(struct sp_source *self, size_t bytes)
 {
-  while (bytes) {
-    size_t l = sp_util_min(sp_cbb_remaining_read(self->buffer), bytes);
-    if (!sp_cbb_consume_bytes(self->buffer, bytes)) {
-      assert(false);
-      break;
+  if (bytes > sp_source_capacity(self)) {
+    //bug
+    assert(false);
+    return false;
+  }
+
+  if (sp_cbb_remaining_read(self->buffer) < bytes) {
+    if (sp_cbb_is_readonly(self->buffer)) {
+      return false;
     }
 
-    bytes -= l;
-    if (bytes > 0) {
-      if (sp_cbb_is_readonly(self->buffer)) {
-        break;
-      }
+    self->read_cb(self->buffer, self->arg); //TODO handle return
 
-      self->read_cb(self->buffer, self->arg);
-      if (sp_cbb_remaining_read(self->buffer) == 0) {
-        break;
-      }
+    if (sp_cbb_remaining_read(self->buffer) < bytes) {
+      return false;
     }
   }
 
-  return bytes;
+  if (!sp_cbb_consume_bytes(self->buffer, bytes)) {
+    //bug
+    assert(false);
+  }
+
+  return true;
 }
 
 //==============================
@@ -149,7 +174,7 @@ sp_source_reaonly_view(struct sp_source *self, size_t length)
       return NULL;
     }
 
-    self->read_cb(self->buffer, self->arg);
+    self->read_cb(self->buffer, self->arg); //TODO handle return
   }
 
   return sp_cbb_readonly_view(self->buffer, length);
@@ -171,7 +196,7 @@ sp_source_consume_reaonly_view(struct sp_source *self, size_t length)
       return NULL;
     }
 
-    self->read_cb(self->buffer, self->arg);
+    self->read_cb(self->buffer, self->arg); //TODO handle return
   }
   //}
 
@@ -191,7 +216,7 @@ sp_source_dump_hex(const struct sp_source *self)
   if (sp_cbb_remaining_read(self->buffer) == 0) {
     if (!sp_cbb_is_readonly(self->buffer)) {
 
-      self->read_cb(self->buffer, self->arg);
+      self->read_cb(self->buffer, self->arg); //TODO handle return
     }
   }
 
@@ -201,6 +226,27 @@ sp_source_dump_hex(const struct sp_source *self)
   for (p = 0; p < alen; ++p) {
     sp_util_to_hex(arr[p].base, arr[p].len);
   }
+}
+
+//==============================
+void
+sp_source_get_internal_state(struct sp_source *self,
+                             sp_source_read_cb *r,
+                             void **arg)
+{
+  assert(self);
+  *r   = self->read_cb;
+  *arg = self->arg;
+}
+
+void
+sp_source_set_internal_state(struct sp_source *self,
+                             sp_source_read_cb r,
+                             void *arg)
+{
+  assert(self);
+  self->read_cb = r;
+  self->arg     = arg;
 }
 
 //==============================

@@ -20,9 +20,6 @@ sp_cbb_remaining_read(const struct sp_cbb *);
 
 //==============================
 size_t
-sp_cbb_length(const struct sp_cbb *);
-
-size_t
 sp_cbb_capacity(const struct sp_cbb *);
 
 //==============================
@@ -81,6 +78,10 @@ sp_cbb_pop_front(struct sp_cbb *, /*DEST*/ void *, size_t);
 //==============================
 bool
 sp_cbb_read(struct sp_cbb *, /*DEST*/ void *, size_t);
+
+//==============================
+uint8_t
+sp_cbb_get(const struct sp_cbb *self, size_t idx);
 
 //==============================
 int

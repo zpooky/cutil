@@ -20,6 +20,9 @@ struct sp_cbb {
   bool free_buffer;
 
   bool free_self;
+
+  int rmark;
+  size_t roriginal;
 };
 
 //==============================
@@ -44,6 +47,7 @@ sp_cbb_init(size_t capacity)
   uint8_t *b;
   assert(capacity > 0);
 
+  //TODO limit capacity to power of 8
   //XXX allocate $buffer together with calloc(cbyte_buffer)
   if ((b = calloc(capacity, sizeof(*b)))) {
     if ((result = sp_cbb_init_internal(b, capacity, 0, 0))) {
@@ -83,9 +87,10 @@ size_t
 sp_cbb_remaining_write(const struct sp_cbb *self)
 {
   assert(self);
-  assert(self->capacity >= sp_cbb_length(self));
+  size_t r      = self->rmark ? self->roriginal : self->r;
+  size_t length = sp_cbb_remaining_read2(self->w, r);
 
-  return sp_cbb_remaining_write2(self->capacity, sp_cbb_length(self));
+  return sp_cbb_remaining_write2(self->capacity, length);
 }
 
 size_t
@@ -97,14 +102,6 @@ sp_cbb_remaining_read(const struct sp_cbb *self)
 }
 
 //==============================
-size_t
-sp_cbb_length(const struct sp_cbb *self)
-{
-  assert(self);
-
-  return sp_cbb_remaining_read(self);
-}
-
 size_t
 sp_cbb_capacity(const struct sp_cbb *self)
 {
@@ -127,7 +124,7 @@ sp_cbb_is_full(const struct sp_cbb *self)
 {
   assert(self);
 
-  return sp_cbb_length(self) == self->capacity;
+  return sp_cbb_remaining_write(self) == 0;
 }
 
 bool
@@ -143,6 +140,11 @@ void
 sp_cbb_clear(struct sp_cbb *self)
 {
   assert(self);
+  if (self->read_only) {
+    assert(false);
+    return;
+  }
+
   self->r = self->w = 0;
 }
 
@@ -284,7 +286,7 @@ sp_cbb_write_buffer(struct sp_cbb *self, struct sp_cbb_Arr *res)
    */
   size_t writable;
   size_t w       = self->w;
-  const size_t r = self->r;
+  const size_t r = self->rmark ? self->roriginal : self->r;
 
   if (self->read_only) {
     assert(false);
@@ -322,14 +324,14 @@ Lit:
 size_t
 sp_cbb_peek_front(const struct sp_cbb *self, /*DEST*/ void *draw, size_t len)
 {
-  assert(self);
-  assert(draw);
-
   struct sp_cbb_Arr out[2];
   size_t out_len;
   size_t i;
   size_t result = 0;
   uint8_t *dest = draw;
+
+  assert(self);
+  assert(draw);
 
   out_len = sp_cbb_read_buffer2(self, out, self->w, self->r);
   for (i = 0; i < out_len && len > 0; ++i) {
@@ -362,16 +364,19 @@ sp_cbb_consume_bytes(struct sp_cbb *self, size_t b)
 bool
 sp_cbb_produce_bytes(struct sp_cbb *self, size_t b)
 {
-  assert(sp_cbb_remaining_write(self) >= b);
 
   if (self->read_only) {
     assert(false);
     return false;
   }
 
-  self->w += b;
-
-  return true;
+  if (sp_cbb_remaining_write(self) >= b) {
+    self->w += b;
+    return true;
+  } else {
+    assert(false);
+    return false;
+  }
 }
 
 //==============================
@@ -413,6 +418,17 @@ sp_cbb_read(struct sp_cbb *self, /*DEST*/ void *draw, size_t len)
 }
 
 //==============================
+uint8_t
+sp_cbb_get(const struct sp_cbb *self, size_t idx)
+{
+  assert(self);
+  size_t r = self->r + idx;
+  assert(idx < sp_cbb_remaining_read(self));
+
+  return self->buffer[sp_cbb_index(r, self->capacity)];
+}
+
+//==============================
 int
 sp_cbb_free(struct sp_cbb **pself)
 {
@@ -450,16 +466,25 @@ sp_cbb_free(struct sp_cbb **pself)
 int
 sp_cbb_read_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 {
-  /* TODO */
-  assert(false);
+  out->before   = self->r;
+  out->rollback = false;
+  if (self->rmark == 0) {
+    self->roriginal = self->r;
+  }
+  self->rmark++;
   return 0;
 }
 
 int
 sp_cbb_read_unmark(struct sp_cbb *self, const sp_cbb_mark_t *in)
 {
-  /* TODO */
-  assert(false);
+  assert(self);
+  assert(in);
+  if (in->rollback) {
+    self->r = in->before;
+  }
+
+  self->rmark--;
   return 0;
 }
 
@@ -480,7 +505,7 @@ sp_cbb_write_unmark(struct sp_cbb *self, const sp_cbb_mark_t *out)
 }
 
 //==============================
-struct sp_cbb *
+static struct sp_cbb *
 sp_cbb_consume_readonly_view_internal(struct sp_cbb *self,
                                       size_t consume,
                                       size_t length)

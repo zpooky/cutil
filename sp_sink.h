@@ -44,13 +44,16 @@ int
 sp_sink_free(struct sp_sink **);
 
 //==============================
-typedef int sp_sink_mark_t;
-
-sp_sink_mark_t
-sp_sink_mark(struct sp_sink *);
+typedef struct {
+  size_t before;
+  bool rollback;
+} sp_sink_mark_t;
 
 int
-sp_sink_unmark(struct sp_sink *, sp_sink_mark_t, bool);
+sp_sink_mark(struct sp_sink *, sp_sink_mark_t *out);
+
+int
+sp_sink_unmark(struct sp_sink *, const sp_sink_mark_t *in);
 
 //==============================
 #endif
