@@ -66,14 +66,10 @@ sp_cbb_init(size_t capacity)
 
 //==============================
 static size_t
-sp_cbb_remaining_read2(size_t write, size_t read)
+sp_cbb_remaining_read2(size_t w, size_t r)
 {
-  if (write >= read) {
-    return write - read;
-  }
-
-  assert(false); //TODO????
-  return 0;
+  assert(w >= r);
+  return w - r;
 }
 
 static size_t
@@ -239,18 +235,21 @@ sp_cbb_write_cbb(struct sp_cbb *self, struct sp_cbb *in)
 static size_t
 sp_cbb_read_buffer2(const struct sp_cbb *self,
                     struct sp_cbb_Arr *res,
-                    size_t w,
-                    size_t r)
+                    const size_t w,
+                    const size_t r)
 {
   /*  read     write    read
    * |xxxxxxxx|........|xxxxxxxxxx|
    */
   size_t res_len = 0;
   size_t bytes;
+  size_t rd = r;
+
+  res[0].len = res[1].len = 0;
 Lit:
-  bytes = sp_cbb_remaining_read2(w, r);
+  bytes = sp_cbb_remaining_read2(w, rd);
   if (bytes > 0) {
-    const size_t r_idx = sp_cbb_index(r, self->capacity);
+    const size_t r_idx = sp_cbb_index(rd, self->capacity);
     const size_t l     = sp_util_min(bytes, sp_cbb_capacity(self) - r_idx);
 
     if (l > 0) {
@@ -261,10 +260,11 @@ Lit:
       cur->len               = l;
       ++res_len;
 
-      r += l;
+      rd += l;
       goto Lit;
     }
   }
+  assert(sp_cbb_remaining_read2(w, r) == res[0].len + res[1].len);
 
   return res_len;
 }
@@ -484,6 +484,7 @@ sp_cbb_read_unmark(struct sp_cbb *self, const sp_cbb_mark_t *in)
     self->r = in->before;
   }
 
+  assert(self->rmark > 0);
   self->rmark--;
   return 0;
 }

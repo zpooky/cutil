@@ -8,7 +8,7 @@
 
 //==============================
 struct sp_sink {
-  sp_sink_write_out_cb write;
+  sp_sink_write_cb write_cb;
   struct sp_cbb *buffer;
   void *arg;
 };
@@ -54,15 +54,15 @@ sp_sink_file_write_out(struct sp_cbb *buffer, void *closure)
 
 //==============================
 struct sp_sink *
-sp_sink_init(sp_sink_write_out_cb w, size_t cap, void *arg)
+sp_sink_init(sp_sink_write_cb w, size_t cap, void *arg)
 {
   struct sp_sink *result;
   assert(w);
 
   if ((result = calloc(1, sizeof(*result)))) {
-    result->write  = w;
-    result->buffer = sp_cbb_init(cap);
-    result->arg    = arg;
+    result->write_cb = w;
+    result->buffer   = sp_cbb_init(cap);
+    result->arg      = arg;
   }
 
   return result;
@@ -147,7 +147,7 @@ Lit:
 int
 sp_sink_flush(struct sp_sink *self)
 {
-  return self->write(self->buffer, self->arg);
+  return self->write_cb(self->buffer, self->arg);
 }
 
 //==============================
@@ -178,15 +178,53 @@ sp_sink_free(struct sp_sink **self)
 int
 sp_sink_mark(struct sp_sink *self, sp_sink_mark_t *out)
 {
-  //TODO
+  sp_cbb_mark_t mark = {0};
+
+  assert(self);
+
+  /* TODO: the purpose of this mark is to only allow flush:ing of unmarked bytes */
+
+  sp_cbb_write_mark(self->buffer, &mark);
+  out->before   = mark.before;
+  out->rollback = mark.rollback;
+
   return 0;
 }
 
 int
 sp_sink_unmark(struct sp_sink *self, const sp_sink_mark_t *in)
 {
-  //TODO
-  return 0;
+  sp_cbb_mark_t mark = {
+    .before   = in->before,
+    .rollback = in->rollback,
+  };
+  assert(self);
+  return sp_cbb_write_unmark(self->buffer, &mark);
+}
+
+//==============================
+void
+sp_sink_get_internal_state(struct sp_sink *self,
+                           sp_sink_write_cb *w,
+                           struct sp_cbb **buffer,
+                           void **arg)
+{
+  assert(self);
+  *w      = self->write_cb;
+  *buffer = self->buffer;
+  *arg    = self->arg;
+}
+
+void
+sp_sink_set_internal_state(struct sp_sink *self,
+                           sp_sink_write_cb w,
+                           struct sp_cbb *buffer,
+                           void *arg)
+{
+  assert(self);
+  self->write_cb = w;
+  self->buffer   = buffer;
+  self->arg      = arg;
 }
 
 //==============================

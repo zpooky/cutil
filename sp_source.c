@@ -232,21 +232,49 @@ sp_source_dump_hex(const struct sp_source *self)
 void
 sp_source_get_internal_state(struct sp_source *self,
                              sp_source_read_cb *r,
+                             struct sp_cbb **buffer,
                              void **arg)
 {
   assert(self);
-  *r   = self->read_cb;
-  *arg = self->arg;
+  *r      = self->read_cb;
+  *buffer = self->buffer;
+  *arg    = self->arg;
 }
 
 void
 sp_source_set_internal_state(struct sp_source *self,
                              sp_source_read_cb r,
+                             struct sp_cbb *buffer,
                              void *arg)
 {
   assert(self);
   self->read_cb = r;
+  self->buffer  = buffer;
   self->arg     = arg;
+}
+
+//==============================
+bool
+sp_source_ensure_at_least_readable(struct sp_source *self, size_t len)
+{
+  assert(self);
+  if (len > sp_source_capacity(self)) {
+    assert(false);
+    return false;
+  }
+
+  if (sp_cbb_remaining_read(self->buffer) >= len) {
+    return true;
+  }
+
+  if (!sp_cbb_is_readonly(self->buffer)) {
+    self->read_cb(self->buffer, self->arg); //TODO handle return
+    if (sp_cbb_remaining_read(self->buffer) >= len) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //==============================

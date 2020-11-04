@@ -65,13 +65,18 @@ sp_source_dump_hex(const struct sp_source *);
 void
 sp_source_get_internal_state(struct sp_source *self,
                              sp_source_read_cb *r,
+                             struct sp_cbb **buffer,
                              void **arg);
 
 void
 sp_source_set_internal_state(struct sp_source *self,
                              sp_source_read_cb r,
+                             struct sp_cbb *buffer,
                              void *arg);
 
 //==============================
+bool
+sp_source_ensure_at_least_readable(struct sp_source *self, size_t len);
 
+//==============================
 #endif

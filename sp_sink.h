@@ -11,14 +11,14 @@ struct sp_cbb;
 //==============================
 struct sp_sink;
 
-typedef int (*sp_sink_write_out_cb)(struct sp_cbb *, void *);
+typedef int (*sp_sink_write_cb)(struct sp_cbb *, void *);
 
 int
 sp_sink_file_write_out(struct sp_cbb *, void *);
 
 //==============================
 struct sp_sink *
-sp_sink_init(sp_sink_write_out_cb, size_t cap, void *arg);
+sp_sink_init(sp_sink_write_cb, size_t cap, void *arg);
 
 //==============================
 int
@@ -54,6 +54,19 @@ sp_sink_mark(struct sp_sink *, sp_sink_mark_t *out);
 
 int
 sp_sink_unmark(struct sp_sink *, const sp_sink_mark_t *in);
+
+//==============================
+void
+sp_sink_get_internal_state(struct sp_sink *self,
+                           sp_sink_write_cb *w,
+                           struct sp_cbb **buffer,
+                           void **arg);
+
+void
+sp_sink_set_internal_state(struct sp_sink *self,
+                           sp_sink_write_cb w,
+                           struct sp_cbb *buffer,
+                           void *arg);
 
 //==============================
 #endif
