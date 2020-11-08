@@ -21,7 +21,7 @@ struct sp_sink *
 sp_sink_init(sp_sink_write_cb, size_t cap, void *arg);
 
 //==============================
-int
+bool
 sp_sink_write(struct sp_sink *, const void *, size_t);
 
 int

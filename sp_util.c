@@ -38,6 +38,46 @@ sp_util_to_hex(const uint8_t *raw, size_t len)
   printf("\n");
 }
 
+const char *
+sp_util_hex_decode(const char *it, size_t lhex, uint8_t *out, size_t lout)
+{
+  const char *const end = it + lhex;
+  //TODO indicate out length
+
+  uint8_t lookup[('F' - '0') + 1];
+  lookup['0' - '0'] = 0x0;
+  lookup['1' - '0'] = 0x1;
+  lookup['2' - '0'] = 0x2;
+  lookup['3' - '0'] = 0x3;
+  lookup['4' - '0'] = 0x4;
+  lookup['5' - '0'] = 0x5;
+  lookup['6' - '0'] = 0x6;
+  lookup['7' - '0'] = 0x7;
+  lookup['8' - '0'] = 0x8;
+  lookup['9' - '0'] = 0x9;
+  lookup['A' - '0'] = 0xA;
+  lookup['B' - '0'] = 0xB;
+  lookup['C' - '0'] = 0xC;
+  lookup['D' - '0'] = 0xD;
+  lookup['E' - '0'] = 0xE;
+  lookup['F' - '0'] = 0xF;
+
+  while (it != end) {
+    int idxf = (int)(*it++ - '0');
+    int idxs = (int)(*it++ - '0');
+    assert(idxf < sizeof(lookup));
+    assert(idxf > 0);
+    assert(idxs < sizeof(lookup));
+    assert(idxs > 0);
+
+    uint8_t f = lookup[idxf];
+    uint8_t s = lookup[idxs];
+    *out++    = (f << 4) | s;
+  }
+
+  return it;
+}
+
 //==============================
 void
 sp_util_swap_voidp_impl(void **f, void **s)

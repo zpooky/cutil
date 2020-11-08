@@ -69,23 +69,25 @@ sp_sink_init(sp_sink_write_cb w, size_t cap, void *arg)
 }
 
 //==============================
-int
+bool
 sp_sink_write(struct sp_sink *self, const void *in, size_t length)
 {
-  int res = 0;
+  bool res = true;
   if (length > sp_cbb_capacity(self->buffer)) {
-    res = -ENOMEM;
+    res = false;
     goto Lout;
   }
 
   if (length > sp_cbb_remaining_write(self->buffer)) {
-    if ((res = sp_sink_flush(self)) != 0) {
+    if ((sp_sink_flush(self)) != 0) {
+
+      res = false;
       goto Lout;
     }
   }
 
   if (!sp_cbb_write(self->buffer, in, length)) {
-    res = -ENOMEM;
+    res = false;
     goto Lout;
   }
 
@@ -159,17 +161,17 @@ sp_sink_is_empty(const struct sp_sink *self)
 
 //==============================
 int
-sp_sink_free(struct sp_sink **self)
+sp_sink_free(struct sp_sink **pself)
 {
-  assert(self);
-  assert(*self);
-
-  sp_sink_flush(*self);
-
-  sp_cbb_free(&(*self)->buffer);
-
-  free(*self);
-  *self = NULL;
+  assert(pself);
+  if (*pself) {
+    struct sp_sink *self = *pself;
+    sp_sink_flush(self);
+    sp_cbb_clear(self->buffer);
+    sp_cbb_free(&self->buffer);
+    free(self);
+    *pself = NULL;
+  }
 
   return 0;
 }

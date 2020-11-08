@@ -4,8 +4,7 @@
 #include <stdlib.h>
 
 #include "sp_util.h"
-
-#define BS_BITS (sizeof(int) * 8)
+#include "sp_cbb.h"
 
 //==============================
 struct sp_bitset {
@@ -15,22 +14,41 @@ struct sp_bitset {
 };
 
 //==============================
+#define BS_BITS (sizeof(int) * 8)
 static size_t
-capacity_of_bits(size_t capacity)
+bits_to_capacity(size_t bits)
 {
-  return capacity / BS_BITS + (capacity % BS_BITS == 0 ? 0 : 1);
+  return (bits / BS_BITS) + (bits % BS_BITS == 0 ? 0 : 1);
 }
 
 struct sp_bitset *
-sp_bitset_init(size_t bits_capacity)
+sp_bitset_init(size_t bits)
 {
-  size_t capacity = sp_util_max(capacity_of_bits(bits_capacity), 1);
+  size_t capacity = sp_util_max(bits_to_capacity(bits), 1);
   struct sp_bitset *result;
 
   if ((result = calloc(1, sizeof(*result)))) {
-    result->raw    = calloc(capacity, sizeof(*result->raw));
+    result->raw    = calloc(capacity, sizeof(int));
     result->length = capacity;
-    result->bits   = bits_capacity;
+    result->bits   = bits;
+  }
+
+  return result;
+}
+
+struct sp_bitset *
+sp_bitset_init_cbb(struct sp_cbb *in, size_t length)
+{
+  struct sp_bitset *result;
+
+  assert(in);
+  if (length > sp_cbb_remaining_read(in)) {
+    assert(false);
+    return NULL;
+  }
+
+  if ((result = sp_bitset_init(length * 8))) {
+    sp_bitset_read(result, in, length);
   }
 
   return result;
@@ -94,7 +112,7 @@ bit_index(size_t abs_idx)
 }
 
 bool
-sp_bitset_test(struct sp_bitset *self, size_t idx)
+sp_bitset_test(const struct sp_bitset *self, size_t idx)
 {
   size_t wIdx = word_index(idx);
   assert(wIdx < self->length);
@@ -162,6 +180,100 @@ sp_bitset_is_all(const struct sp_bitset *self, int v)
   }
 
   return true;
+}
+
+//==============================
+/* test: {
+ *   uint8_t r[128];
+ *   size_t rl;
+ *   size_t i;
+ *   struct sp_bitset *b = sp_bitset_init(64);
+ *   struct sp_bitset *bin;
+ *   struct sp_cbb *out = sp_cbb_init(1024);
+ *   sp_bitset_set(b, 0, true);
+ *   sp_bitset_set(b, 1, true);
+ *   sp_bitset_set(b, 8, true);
+ *   sp_bitset_write(b, out);
+ *   rl = sp_cbb_peek_front(out, r, sizeof(r));
+ *   sp_util_to_hex(r, rl);
+ *   bin = sp_bitset_init_cbb(out, sp_cbb_remaining_read(out));
+ *   for (i = 0; i < 64; ++i) {
+ *     assert(sp_bitset_test(b, i) == sp_bitset_test(bin, i));
+ *   }
+ * }
+ */
+/*
+ * bit index:
+ * [8-0][16-8][24-16][32-24]
+ */
+bool
+sp_bitset_write(const struct sp_bitset *self, struct sp_cbb *out)
+{
+  bool result = true;
+  size_t i;
+  size_t bits = 0;
+  uint8_t c   = 0;
+  sp_cbb_mark_t m;
+
+  sp_cbb_write_mark(out, &m);
+
+  for (i = 0; i < self->bits; ++i) {
+    c = c | ((sp_bitset_test(self, i) ? 1 : 0) << bits);
+    ++bits;
+
+    if (bits == 8) {
+      bits = 0;
+      if (!sp_cbb_write(out, &c, 1)) {
+        result = false;
+        break;
+      }
+      c = 0;
+    }
+  }
+
+  if (result && bits > 0) {
+    result = sp_cbb_write(out, &c, 1);
+  }
+
+  m.rollback = !result;
+  sp_cbb_write_unmark(out, &m);
+  return result;
+}
+
+bool
+sp_bitset_read(struct sp_bitset *self, struct sp_cbb *in, size_t length)
+{
+  size_t bidx = 0;
+  assert(self);
+  assert(in);
+
+  bool result = true;
+  if (length > sp_cbb_remaining_read(in)) {
+    assert(false);
+    return false;
+  }
+
+  if (length > (self->length * BS_BITS)) {
+    assert(false);
+    return false;
+  }
+
+  while (length && result) {
+    size_t i;
+    char c;
+
+    if (!(result = sp_cbb_read(in, &c, 1))) {
+      break;
+    }
+    for (i = 0; i < 8; ++i) {
+      char x = c >> i;
+      sp_bitset_set(self, bidx++, x & 1);
+    }
+
+    --length;
+  }
+
+  return result;
 }
 
 //==============================

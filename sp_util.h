@@ -13,6 +13,9 @@
 void
 sp_util_to_hex(const uint8_t *raw, size_t len);
 
+const char *
+sp_util_hex_decode(const char *hex, size_t lhex, uint8_t *out, size_t lout);
+
 //==============================
 void
 sp_util_swap_voidp_impl(void **, void **);

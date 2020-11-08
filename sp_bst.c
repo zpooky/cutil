@@ -315,6 +315,7 @@ sp_bst_clear(struct sp_bst *self)
         sp_queue_enqueue(stack, current->right);
       }
 
+      current->left = current->right = NULL;
       self->node_free(current);
     } while (sp_queue_dequeue(stack, &current));
 

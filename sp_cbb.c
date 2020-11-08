@@ -21,8 +21,10 @@ struct sp_cbb {
 
   bool free_self;
 
-  int rmark;
-  size_t roriginal;
+  int mark_r;
+  size_t original_r;
+
+  int mark_w;
 };
 
 //==============================
@@ -83,7 +85,7 @@ size_t
 sp_cbb_remaining_write(const struct sp_cbb *self)
 {
   assert(self);
-  size_t r      = self->rmark ? self->roriginal : self->r;
+  size_t r      = self->mark_r ? self->original_r : self->r;
   size_t length = sp_cbb_remaining_read2(self->w, r);
 
   return sp_cbb_remaining_write2(self->capacity, length);
@@ -286,7 +288,7 @@ sp_cbb_write_buffer(struct sp_cbb *self, struct sp_cbb_Arr *res)
    */
   size_t writable;
   size_t w       = self->w;
-  const size_t r = self->rmark ? self->roriginal : self->r;
+  const size_t r = self->mark_r ? self->original_r : self->r;
 
   if (self->read_only) {
     assert(false);
@@ -468,10 +470,10 @@ sp_cbb_read_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 {
   out->before   = self->r;
   out->rollback = false;
-  if (self->rmark == 0) {
-    self->roriginal = self->r;
+  if (self->mark_r == 0) {
+    self->original_r = self->r;
   }
-  self->rmark++;
+  self->mark_r++;
   return 0;
 }
 
@@ -480,28 +482,39 @@ sp_cbb_read_unmark(struct sp_cbb *self, const sp_cbb_mark_t *in)
 {
   assert(self);
   assert(in);
+
   if (in->rollback) {
     self->r = in->before;
+    assert(self->r <= self->w);
   }
 
-  assert(self->rmark > 0);
-  self->rmark--;
+  assert(self->mark_r > 0);
+  self->mark_r--;
   return 0;
 }
 
 int
 sp_cbb_write_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 {
-  /* TODO */
-  assert(false);
+  out->before   = self->w;
+  out->rollback = false;
+  self->mark_w++;
+
   return 0;
 }
 
 int
-sp_cbb_write_unmark(struct sp_cbb *self, const sp_cbb_mark_t *out)
+sp_cbb_write_unmark(struct sp_cbb *self, const sp_cbb_mark_t *in)
 {
-  /* TODO */
-  assert(false);
+  if (in->rollback) {
+    self->w = in->before;
+    /* we have to make sure that $r not becomes gt $w when we rollback*/
+    self->r = self->r <= self->w ? self->r : self->w;
+  }
+
+  assert(self->mark_w > 0);
+  self->mark_w--;
+
   return 0;
 }
 
@@ -530,7 +543,7 @@ sp_cbb_consume_readonly_view_internal(struct sp_cbb *self,
     return NULL;
   }
 
-  result = sp_cbb_init_internal(self->buffer, self->capacity, r, r + length);
+  (result = sp_cbb_init_internal(self->buffer, self->capacity, r, r + length));
   if (result) {
     assert(sp_cbb_remaining_read(result) == length);
     while (root->root) {

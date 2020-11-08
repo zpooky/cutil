@@ -39,6 +39,7 @@ sp_source_free(struct sp_source **pself)
   assert(pself);
   if (*pself) {
     struct sp_source *self = *pself;
+    sp_cbb_clear(self->buffer);
     sp_cbb_free(&self->buffer);
     free(self);
     *pself = NULL;
