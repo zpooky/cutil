@@ -225,7 +225,7 @@ sp_source_dump_hex(const struct sp_source *self)
 
   alen = sp_cbb_read_buffer(self->buffer, arr);
   for (p = 0; p < alen; ++p) {
-    sp_util_to_hex(arr[p].base, arr[p].len);
+    sp_util_to_hex(NULL, arr[p].base, arr[p].len);
   }
 }
 
@@ -237,9 +237,15 @@ sp_source_get_internal_state(struct sp_source *self,
                              void **arg)
 {
   assert(self);
-  *r      = self->read_cb;
-  *buffer = self->buffer;
-  *arg    = self->arg;
+  if (r) {
+    *r = self->read_cb;
+  }
+  if (buffer) {
+    *buffer = self->buffer;
+  }
+  if (arg) {
+    *arg = self->arg;
+  }
 }
 
 void
@@ -249,9 +255,15 @@ sp_source_set_internal_state(struct sp_source *self,
                              void *arg)
 {
   assert(self);
-  self->read_cb = r;
-  self->buffer  = buffer;
-  self->arg     = arg;
+  if (r) {
+    self->read_cb = r;
+  }
+  if (buffer) {
+    self->buffer = buffer;
+  }
+  if (arg) {
+    self->arg = arg;
+  }
 }
 
 //==============================

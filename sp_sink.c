@@ -212,9 +212,15 @@ sp_sink_get_internal_state(struct sp_sink *self,
                            void **arg)
 {
   assert(self);
-  *w      = self->write_cb;
-  *buffer = self->buffer;
-  *arg    = self->arg;
+  if (w) {
+    *w = self->write_cb;
+  }
+  if (buffer) {
+    *buffer = self->buffer;
+  }
+  if (arg) {
+    *arg = self->arg;
+  }
 }
 
 void
@@ -224,9 +230,15 @@ sp_sink_set_internal_state(struct sp_sink *self,
                            void *arg)
 {
   assert(self);
-  self->write_cb = w;
-  self->buffer   = buffer;
-  self->arg      = arg;
+  if (w) {
+    self->write_cb = w;
+  }
+  if (buffer) {
+    self->buffer = buffer;
+  }
+  if (arg) {
+    self->arg = arg;
+  }
 }
 
 //==============================

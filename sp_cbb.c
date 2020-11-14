@@ -247,7 +247,8 @@ sp_cbb_read_buffer2(const struct sp_cbb *self,
   size_t bytes;
   size_t rd = r;
 
-  res[0].len = res[1].len = 0;
+  memset(res, 0, sizeof(*res) * 2);
+
 Lit:
   bytes = sp_cbb_remaining_read2(w, rd);
   if (bytes > 0) {

@@ -8,7 +8,7 @@
 
 //==============================
 void
-sp_util_to_hex(const uint8_t *raw, size_t len)
+sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len)
 {
   size_t i;
 
@@ -30,6 +30,9 @@ sp_util_to_hex(const uint8_t *raw, size_t len)
   lookup[0xE] = 'E';
   lookup[0xF] = 'F';
 
+  if (ctx) {
+    printf("%s ", ctx);
+  }
   for (i = 0; i < len; ++i) {
     int first  = (raw[i] >> 4) & 0xf;
     int second = raw[i] & 0xf;
@@ -42,7 +45,8 @@ const char *
 sp_util_hex_decode(const char *it, size_t lhex, uint8_t *out, size_t lout)
 {
   const char *const end = it + lhex;
-  //TODO indicate out length
+  //TODO add indicate out length
+  // TODO lowercase parse
 
   uint8_t lookup[('F' - '0') + 1];
   lookup['0' - '0'] = 0x0;
@@ -62,13 +66,16 @@ sp_util_hex_decode(const char *it, size_t lhex, uint8_t *out, size_t lout)
   lookup['E' - '0'] = 0xE;
   lookup['F' - '0'] = 0xF;
 
+  assert(lhex % 2 == 0);
+
   while (it != end) {
     int idxf = (int)(*it++ - '0');
     int idxs = (int)(*it++ - '0');
     assert(idxf < sizeof(lookup));
-    assert(idxf > 0);
+    assert(idxf >= 0);
+
     assert(idxs < sizeof(lookup));
-    assert(idxs > 0);
+    assert(idxs >= 0);
 
     uint8_t f = lookup[idxf];
     uint8_t s = lookup[idxs];
