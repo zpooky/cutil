@@ -106,6 +106,13 @@ int
 sp_cbb_write_unmark(struct sp_cbb *, const sp_cbb_mark_t *);
 
 //==============================
+bool
+sp_cbb_is_read_mark(const struct sp_cbb *);
+
+bool
+sp_cbb_is_write_mark(const struct sp_cbb *);
+
+//==============================
 struct sp_cbb *
 sp_cbb_readonly_view(struct sp_cbb *self, size_t length);
 

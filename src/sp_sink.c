@@ -95,26 +95,25 @@ Lout:
   return res;
 }
 
-int
+bool
 sp_sink_write_cbb(struct sp_sink *self, struct sp_cbb *in)
 {
-  int res = 0;
+  bool res = false;
   if (sp_cbb_remaining_read(in) > sp_cbb_capacity(self->buffer)) {
-    res = -ENOMEM;
     goto Lout;
   }
 
   if (sp_cbb_remaining_read(in) > sp_cbb_remaining_write(self->buffer)) {
-    if ((res = sp_sink_flush(self)) != 0) {
+    if (sp_sink_flush(self) != 0) {
       goto Lout;
     }
   }
 
   if (!sp_cbb_write_cbb(self->buffer, in)) {
-    res = -ENOMEM;
     goto Lout;
   }
 
+  res = true;
 Lout:
   return res;
 }
@@ -183,6 +182,9 @@ sp_sink_mark(struct sp_sink *self, sp_sink_mark_t *out)
   sp_cbb_mark_t mark = {0};
 
   assert(self);
+  assert(out);
+  /* just to try to ensure that not double marked the same $out */
+  assert(out->before == 0);
 
   /* TODO: the purpose of this mark is to only allow flush:ing of unmarked bytes */
 
@@ -202,6 +204,12 @@ sp_sink_unmark(struct sp_sink *self, const sp_sink_mark_t *in)
   };
   assert(self);
   return sp_cbb_write_unmark(self->buffer, &mark);
+}
+
+bool
+sp_sink_is_marked(const struct sp_sink *self)
+{
+  return sp_cbb_is_write_mark(self->buffer);
 }
 
 //==============================

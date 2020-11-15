@@ -63,6 +63,10 @@ sp_source_dump_hex(const struct sp_source *);
 
 //==============================
 void
+sp_source_eager_fill(struct sp_source *);
+
+//==============================
+void
 sp_source_get_internal_state(struct sp_source *self,
                              sp_source_read_cb *r,
                              struct sp_cbb **buffer,

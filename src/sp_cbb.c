@@ -19,8 +19,6 @@ struct sp_cbb {
   struct sp_cbb *root;
   bool free_buffer;
 
-  bool free_self;
-
   int mark_r;
   size_t original_r;
 
@@ -57,7 +55,6 @@ sp_cbb_init(size_t capacity)
       result->root        = NULL;
       result->free_buffer = true;
 
-      result->free_self = true;
     } else {
       free(b);
     }
@@ -205,19 +202,18 @@ sp_cbb_write(struct sp_cbb *self, const void *in, size_t length)
 bool
 sp_cbb_write_cbb(struct sp_cbb *self, struct sp_cbb *in)
 {
-  size_t length;
+  const size_t length = sp_cbb_remaining_read(in);
   if (self->read_only) {
     assert(false);
     return false;
   }
-  length = sp_cbb_remaining_read(in);
 
   if (sp_cbb_remaining_write(self) >= length) {
     struct sp_cbb_Arr out[2];
-    size_t out_len, i, debug = 0;
+    size_t l_out, i, debug = 0;
 
-    out_len = sp_cbb_read_buffer(self, out);
-    for (i = 0; i < out_len; ++i) {
+    l_out = sp_cbb_read_buffer(in, out);
+    for (i = 0; i < l_out; ++i) {
       size_t written;
       written = sp_cbb_push_back(self, out[i].base, out[i].len);
       assert(written == out[i].len);
@@ -275,6 +271,7 @@ Lit:
 size_t
 sp_cbb_read_buffer(const struct sp_cbb *self, struct sp_cbb_Arr *res)
 {
+
   return sp_cbb_read_buffer2(self, res, self->w, self->r);
 }
 
@@ -439,7 +436,9 @@ sp_cbb_free(struct sp_cbb **pself)
 
   if (*pself) {
     struct sp_cbb *self = *pself;
-    assert(sp_cbb_is_empty(self));
+    if (!self->root) {
+      assert(sp_cbb_is_empty(self));
+    }
 
     if (self->read_only) {
       self->read_only--;
@@ -456,10 +455,8 @@ sp_cbb_free(struct sp_cbb **pself)
     }
     self->buffer = NULL;
 
-    if (self->free_self) {
-      free(self);
-      *pself = NULL;
-    }
+    free(self);
+    *pself = NULL;
   }
 
   return 0;
@@ -520,6 +517,19 @@ sp_cbb_write_unmark(struct sp_cbb *self, const sp_cbb_mark_t *in)
 }
 
 //==============================
+bool
+sp_cbb_is_read_mark(const struct sp_cbb *self)
+{
+  return self->mark_r > 0;
+}
+
+bool
+sp_cbb_is_write_mark(const struct sp_cbb *self)
+{
+  return self->mark_w > 0;
+}
+
+//==============================
 static struct sp_cbb *
 sp_cbb_consume_readonly_view_internal(struct sp_cbb *self,
                                       size_t consume,
@@ -544,7 +554,7 @@ sp_cbb_consume_readonly_view_internal(struct sp_cbb *self,
     return NULL;
   }
 
-  (result = sp_cbb_init_internal(self->buffer, self->capacity, r, r + length));
+  result = sp_cbb_init_internal(self->buffer, self->capacity, r, r + length);
   if (result) {
     assert(sp_cbb_remaining_read(result) == length);
     while (root->root) {

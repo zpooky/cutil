@@ -24,7 +24,7 @@ sp_sink_init(sp_sink_write_cb, size_t cap, void *arg);
 bool
 sp_sink_write(struct sp_sink *, const void *, size_t);
 
-int
+bool
 sp_sink_write_cbb(struct sp_sink *, struct sp_cbb *);
 
 //==============================
@@ -54,6 +54,9 @@ sp_sink_mark(struct sp_sink *, sp_sink_mark_t *out);
 
 int
 sp_sink_unmark(struct sp_sink *, const sp_sink_mark_t *in);
+
+bool
+sp_sink_is_marked(const struct sp_sink *);
 
 //==============================
 void

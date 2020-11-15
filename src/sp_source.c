@@ -92,6 +92,15 @@ size_t
 sp_source_peek_front(const struct sp_source *self, void *out, size_t out_len)
 {
   assert(self);
+  if (sp_cbb_remaining_read(self->buffer) < out_len) {
+    if (!sp_cbb_is_full(self->buffer)) {
+      if (!sp_cbb_is_readonly(self->buffer)) {
+
+        self->read_cb(self->buffer, self->arg); //TODO handle return
+      }
+    }
+  }
+
   return sp_cbb_peek_front(self->buffer, out, out_len);
 }
 
@@ -226,6 +235,17 @@ sp_source_dump_hex(const struct sp_source *self)
   alen = sp_cbb_read_buffer(self->buffer, arr);
   for (p = 0; p < alen; ++p) {
     sp_util_to_hex(NULL, arr[p].base, arr[p].len);
+  }
+}
+
+//==============================
+void
+sp_source_eager_fill(struct sp_source *self)
+{
+  if (!sp_cbb_is_full(self->buffer)) {
+    if (!sp_cbb_is_readonly(self->buffer)) {
+      self->read_cb(self->buffer, self->arg); //TODO handle return
+    }
   }
 }
 
