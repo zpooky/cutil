@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 //==============================
 #define sp_util_max(a, b) (((a) > (b)) ? (a) : (b))
@@ -13,6 +14,12 @@
 void
 sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len);
 
+//==============================
+const uint8_t *
+sp_util_hex_encode(const uint8_t *it,
+                   const uint8_t *const end,
+                   char *out,
+                   size_t l_out);
 const char *
 sp_util_hex_decode(const char *hex, size_t lhex, uint8_t *out, size_t lout);
 
@@ -81,6 +88,10 @@ typedef int (*sp_util_sort_cmp_cb)(void *, void *);
 
 void
 sp_util_sort(void **, size_t, sp_util_sort_cmp_cb);
+
+//==============================
+bool
+sp_util_is_printable(const uint8_t *b, size_t len);
 
 //==============================
 #endif

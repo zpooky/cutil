@@ -5,30 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 //==============================
+static const char hex_encode_lookup[] = {
+  '0', '1', '2', '3', '4', '5', '6', '7',
+  '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+};
 void
 sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len)
 {
   size_t i;
-
-  char lookup[16];
-  lookup[0x0] = '0';
-  lookup[0x1] = '1';
-  lookup[0x2] = '2';
-  lookup[0x3] = '3';
-  lookup[0x4] = '4';
-  lookup[0x5] = '5';
-  lookup[0x6] = '6';
-  lookup[0x7] = '7';
-  lookup[0x8] = '8';
-  lookup[0x9] = '9';
-  lookup[0xA] = 'A';
-  lookup[0xB] = 'B';
-  lookup[0xC] = 'C';
-  lookup[0xD] = 'D';
-  lookup[0xE] = 'E';
-  lookup[0xF] = 'F';
 
   if (ctx) {
     printf("%s ", ctx);
@@ -36,9 +23,32 @@ sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len)
   for (i = 0; i < len; ++i) {
     int first  = (raw[i] >> 4) & 0xf;
     int second = raw[i] & 0xf;
-    printf("%c%c", lookup[first], lookup[second]);
+    printf("%c%c", hex_encode_lookup[first], hex_encode_lookup[second]);
   }
   printf("\n");
+}
+
+//==============================
+const uint8_t *
+sp_util_hex_encode(const uint8_t *it,
+                   const uint8_t *const end,
+                   char *out,
+                   size_t l_out)
+{
+  assert(l_out > 0);
+  --l_out;
+  if (l_out) {
+    const char *const eout = out + l_out - (l_out % 2);
+
+    while (it != end && out != eout) {
+      *out++ = hex_encode_lookup[(*it >> 4) & 0xf];
+      *out++ = hex_encode_lookup[*it & 0xf];
+      ++it;
+    }
+  }
+
+  *out = '\0';
+  return it;
 }
 
 const char *
@@ -290,6 +300,19 @@ void
 sp_util_sort(void **raw, size_t len, sp_util_sort_cmp_cb cmp)
 {
   quicksort(raw, len, cmp);
+}
+
+//==============================
+bool
+sp_util_is_printable(const uint8_t *b, size_t len)
+{
+  size_t i;
+  for (i = 0; i < len; ++i) {
+    if (!(isprint(b[i]))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 //==============================
