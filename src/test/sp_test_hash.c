@@ -51,7 +51,7 @@
  */
 
 #include <stdio.h>
-#include "sp_hash.h"
+#include "sp_fnv.h"
 /* #include <stddef.h> */
 #include <stdint.h>
 #include <assert.h>
@@ -719,7 +719,7 @@ test_fnv32a()
   struct test_vector *t;
   int tstnum;
   for (t = fnv_test_str, tstnum = 1; t->buf != NULL; ++t, ++tstnum) {
-    uint32_t hval = sp_hash_fnv1a0(t->buf, t->len);
+    uint32_t hval = sp_fnv1a_hash(t->buf, t->len);
     assert(hval == fnv1a_32_vector[tstnum - 1].fnv1a_32);
   }
 }
@@ -730,7 +730,7 @@ test_fnv32()
   struct test_vector *t;
   int tstnum;
   for (t = fnv_test_str, tstnum = 1; t->buf != NULL; ++t, ++tstnum) {
-    uint32_t hval = sp_hash_fnv1_0(t->buf, t->len);
+    uint32_t hval = sp_fnv1_hash(t->buf, t->len);
     assert(hval == fnv1_32_vector[tstnum - 1].fnv1_32);
   }
 }

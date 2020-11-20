@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "sp_perfect_hash_map.h"
-#include "sp_hash.h"
+#include "sp_fnv.h"
 #include "sp_util.h"
 
 static uint32_t
@@ -17,8 +17,8 @@ sp_test_hash(uint32_t seed, uint32_t *key, void *closure)
 
   /* printf("key: %u\n", *key); */
 
-  hash = sp_hash_fnv1a0(&seed, sizeof(seed));
-  return sp_hash_fnv1a(hash, key, sizeof(*key));
+  hash = sp_fnv1a_hash(&seed, sizeof(seed));
+  return sp_fnv1a_hash_update(key, sizeof(*key), hash);
 }
 
 int

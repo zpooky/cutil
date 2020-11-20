@@ -1,6 +1,14 @@
-#include "sp_hash.h"
+#include "sp_fnv.h"
 
-/* ======================================== */
+//==============================
+uint32_t
+sp_fnv1a_hash(const void *raw, size_t l)
+{
+  /*2166136261*/
+  uint32_t FNV_offset_basis = 0x811c9dc5;
+  return sp_fnv1a_hash_update(raw, l, FNV_offset_basis);
+}
+
 /* fnv1a:
  * hash = offset_basis
  * for each octet_of_data to be hashed
@@ -9,7 +17,7 @@
  * return hash
  */
 uint32_t
-sp_hash_fnv1a(uint32_t hash, const void *raw, size_t l)
+sp_fnv1a_hash_update(const void *raw, size_t l, uint32_t hash)
 {
   /*16777619*/
   const uint32_t FNV_PRIME = 0x01000193;
@@ -24,15 +32,15 @@ sp_hash_fnv1a(uint32_t hash, const void *raw, size_t l)
   return hash;
 }
 
+//==============================
 uint32_t
-sp_hash_fnv1a0(const void *raw, size_t l)
+sp_fnv1_hash(const void *raw, size_t l)
 {
   /*2166136261*/
   uint32_t FNV_offset_basis = 0x811c9dc5;
-  return sp_hash_fnv1a(FNV_offset_basis, raw, l);
+  return sp_fnv1_hash_update(raw, l, FNV_offset_basis);
 }
 
-/* ======================================== */
 /* fnv1:
  * hash = offset_basis
  * for each octet_of_data to be hashed
@@ -41,7 +49,7 @@ sp_hash_fnv1a0(const void *raw, size_t l)
  * return hash
  */
 uint32_t
-sp_hash_fnv1(uint32_t hash, const void *raw, size_t l)
+sp_fnv1_hash_update(const void *raw, size_t l, uint32_t hash)
 {
   /*16777619*/
   const uint32_t FNV_PRIME = 0x01000193;
@@ -56,12 +64,4 @@ sp_hash_fnv1(uint32_t hash, const void *raw, size_t l)
   return hash;
 }
 
-uint32_t
-sp_hash_fnv1_0(const void *raw, size_t l)
-{
-  /*2166136261*/
-  uint32_t FNV_offset_basis = 0x811c9dc5;
-  return sp_hash_fnv1(FNV_offset_basis, raw, l);
-}
-
-/* ======================================== */
+//==============================

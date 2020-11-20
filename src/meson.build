@@ -2,7 +2,6 @@ cutil_src = [
   'sp_svec.c',
   'sp_vec.c',
   'sp_sink.c',
-  'sp_faucet.c',
   'sp_fs.c',
   'sp_stack.c',
   'sp_bst.c',
@@ -14,10 +13,12 @@ cutil_src = [
   'sp_buf.c',
   'sp_str.c',
 
+  'sp_fnv.c',
+  'sp_djb.c',
+
   'sp_huffman.c',
   'sp_perfect_hash_map.c',
   'sp_diffie_hellman.c',
-  'sp_hash.c',
 
   'sp_bitset.c',
   'sp_source.c',

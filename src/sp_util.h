@@ -11,6 +11,9 @@
 #define sp_util_min(a, b) (((a) < (b)) ? (a) : (b))
 
 //==============================
+#define SP_KB 1024
+
+//==============================
 void
 sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len);
 
