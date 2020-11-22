@@ -23,6 +23,8 @@ cutil_src = [
   'sp_bitset.c',
   'sp_source.c',
 
+  'sp_vec_copy.c',
+  'sp_heap_copy.c',
 ]
 
 cutil_link_options = [

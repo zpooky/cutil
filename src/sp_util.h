@@ -56,6 +56,9 @@ int sp_util_size_t_cmp(size_t, size_t);
 
 int sp_util_uint32_cmp(uint32_t, uint32_t);
 
+int
+sp_util_void_cmp(const void *, const void *);
+
 //==============================
 typedef struct sp_pair {
   void *first;

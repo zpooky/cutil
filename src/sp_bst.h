@@ -8,6 +8,7 @@
 struct sp_bst;
 
 typedef struct sp_bst_Node {
+  void *parent;
   struct sp_bst_Node *left;
   struct sp_bst_Node *right;
 } sp_bst_Node;
@@ -37,6 +38,9 @@ sp_bst_voidp_init(void);
 
 struct sp_bst *
 sp_bst_voidp_init_cmp(sp_bst_node_cmp_cb cmp);
+
+struct sp_bst *
+sp_bst_init_identity(sp_bst_node_cmp_cb cmp);
 
 //==============================
 bool
@@ -84,6 +88,11 @@ sp_bst_remove_free_impl(struct sp_bst *, sp_bst_T *needle);
 
 #define sp_bst_remove_free(self, needle)                                       \
   sp_bst_remove_free_impl((self), &(needle)->base)
+
+void
+sp_bst_remove_self_impl(sp_bst_Node *needle);
+
+#define sp_bst_remove_self(needle) sp_bst_remove_self_impl(&(needle)->base)
 
 //==============================
 int

@@ -1,6 +1,7 @@
 #include "sp_heap.h"
 #include "sp_vec.h"
 #include "sp_util.h"
+#include "sp_heap_internal.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -26,24 +27,6 @@ sp_heap_init(sp_heap_cmp_cb cmp)
 }
 
 //==============================
-static size_t
-sp_heap_parent(size_t idx)
-{
-  return (idx - 1) / 2;
-}
-
-static size_t
-sp_heap_left_child(size_t idx)
-{
-  return (2 * idx) + 1;
-}
-
-static size_t
-sp_heap_right_child(size_t idx)
-{
-  return (2 * idx) + 2;
-}
-
 static void
 sp_heap_internal_swap(struct sp_heap *self, size_t idx0, size_t idx1)
 {
@@ -68,18 +51,17 @@ sp_heap_internal_swap(struct sp_heap *self, size_t idx0, size_t idx1)
 static size_t
 sp_heap_shift_up(struct sp_heap *self, size_t idx)
 {
-  size_t par_idx;
-
   while (true) {
-    sp_vec_T *me;
     sp_vec_T *parent;
+    size_t par_idx;
+    sp_vec_T *me;
 
     if (idx == 0) {
       /* we are root, we can not shift up further */
       return idx;
     }
 
-    par_idx = sp_heap_parent(idx);
+    par_idx = sp_heap_util_parent(idx);
     me      = sp_vec_get(self->vec, idx);
     parent  = sp_vec_get(self->vec, par_idx);
 
@@ -142,11 +124,11 @@ sp_heap_shift_down(struct sp_heap *self, size_t idx)
 Lit:
   extreme_idx = sp_heap_length(self);
 
-  left_idx = sp_heap_left_child(idx);
+  left_idx = sp_heap_util_left_child(idx);
   if (left_idx < sp_heap_length(self)) {
     extreme_idx = left_idx;
 
-    right_idx = sp_heap_right_child(idx);
+    right_idx = sp_heap_util_right_child(idx);
     if (right_idx < sp_heap_length(self)) {
       extreme_idx = sp_heap_extreme(self, right_idx, left_idx);
     }
@@ -173,6 +155,7 @@ bool
 sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, sp_heap_T *dummy)
 {
   (void)dummy;
+  assert(self);
   assert(out);
 
   if (!sp_heap_is_empty(self)) {

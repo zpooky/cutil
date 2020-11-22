@@ -42,5 +42,9 @@ bool
 sp_bitset_read(struct sp_bitset *self, struct sp_cbb *in, size_t length);
 
 //==============================
+size_t
+sp_bitset_bits(const struct sp_bitset *self);
+
+//==============================
 
 #endif

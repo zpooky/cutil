@@ -192,6 +192,17 @@ sp_util_uint32_cmp(uint32_t f, uint32_t s)
   return 0;
 }
 
+int
+sp_util_void_cmp(const void *f, const void *s)
+{
+  assert(f);
+  assert(s);
+
+  intptr_t fi = (intptr_t)f;
+  intptr_t si = (intptr_t)s;
+  return fi - si;
+}
+
 //==============================
 struct sp_pair *
 sp_pair_init(void *first, void *second)
