@@ -19,7 +19,9 @@ struct sp_heap_copy {
 
 //==============================
 static void
-sp_heap_copy_copy_memcopy(sp_heap_copy_T *dest, sp_heap_copy_T *src, size_t sz)
+sp_heap_copy_copy_memcopy(sp_heap_copy_T *dest,
+                          const sp_heap_copy_T *src,
+                          size_t sz)
 {
   memcpy(dest, src, sz);
 }

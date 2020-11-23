@@ -1,29 +1,11 @@
 #include "sp_cbb.h"
 
-#include <stdint.h>
 #include <memory.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <stdint.h>
 
 #include "sp_util.h"
-
-//==============================
-struct sp_cbb {
-  uint8_t *buffer;
-  size_t r;
-  size_t w;
-  size_t capacity;
-
-  int read_only;
-  struct sp_cbb *root;
-  bool free_buffer;
-
-  int mark_r;
-  size_t original_r;
-
-  int mark_w;
-};
+#include "sp_cbb_internal.h"
 
 //==============================
 static struct sp_cbb *
@@ -31,10 +13,7 @@ sp_cbb_init_internal(uint8_t *b, size_t capacity, size_t r, size_t w)
 {
   struct sp_cbb *result = NULL;
   if ((result = calloc(1, sizeof(*result)))) {
-    result->buffer   = b;
-    result->r        = r;
-    result->w        = w;
-    result->capacity = capacity;
+    sp_cbb_init_internal0(result, b, capacity, r, w);
   }
 
   return result;

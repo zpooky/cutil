@@ -10,12 +10,15 @@ struct sp_vec_copy;
 typedef void sp_vec_copy_T;
 
 //==============================
-typedef int (*sp_vec_copy_copy_cb)(sp_vec_copy_T *dest,
-                                   const sp_vec_copy_T *src,
-                                   size_t);
+typedef void (*sp_vec_copy_copy_cb)(sp_vec_copy_T *dest,
+                                    const sp_vec_copy_T *src,
+                                    size_t);
 
 struct sp_vec_copy *
 sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb);
+
+struct sp_vec_copy *
+sp_vec_copy_init0(size_t align, size_t sz);
 
 struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
@@ -101,10 +104,13 @@ sp_vec_copy_begin(struct sp_vec_copy *);
 sp_vec_copy_T *
 sp_vec_copy_end(struct sp_vec_copy *);
 
+sp_vec_copy_T *
+sp_vec_copy_next(struct sp_vec_copy *, sp_vec_copy_T *);
+
 #define sp_vec_copy_for_each2(it, self)                                        \
   for (it = (typeof(it))sp_vec_copy_begin(self);                               \
        (sp_vec_copy_T *)it != sp_vec_copy_end(self);                           \
-       it = (typeof(it))(((sp_vec_copy_T *)it) + 1))
+       it = (typeof(it))sp_vec_copy_next(self, it))
 
 //==============================
 

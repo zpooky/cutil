@@ -211,9 +211,9 @@ sp_bitset_write(const struct sp_bitset *self, struct sp_cbb *out)
 {
   bool result = true;
   size_t i;
-  size_t bits = 0;
-  uint8_t c   = 0;
-  sp_cbb_mark_t m;
+  size_t bits     = 0;
+  uint8_t c       = 0;
+  sp_cbb_mark_t m = {0};
 
   sp_cbb_write_mark(out, &m);
 
@@ -229,7 +229,7 @@ sp_bitset_write(const struct sp_bitset *self, struct sp_cbb *out)
       }
       c = 0;
     }
-  }
+  } //for
 
   if (result && bits > 0) {
     result = sp_cbb_write(out, &c, 1);
