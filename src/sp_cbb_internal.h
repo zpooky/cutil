@@ -22,7 +22,7 @@ struct sp_cbb {
   int mark_w;
 };
 
-inline void
+static inline void
 sp_cbb_init_internal0(struct sp_cbb *self,
                      uint8_t *b,
                      size_t capacity,
