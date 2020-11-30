@@ -162,12 +162,12 @@ sp_uri2_init(struct sp_uri2 *self, const char *path)
     res = sp_uri2_append_all(self, path);
 
     if (strcmp(self->buf, path) != 0) {
-      printf("==========\n");
-      printf("self->buf: %s\n", self->buf);
-      printf("path: %s\n", path);
-      fflush(stdout);
-      fflush(stderr);
-      assert(strcmp(self->buf, path) == 0);
+      /* printf("==========\n"); */
+      /* printf("self->buf: %s\n", self->buf); */
+      /* printf("path: %s\n", path); */
+      /* fflush(stdout); */
+      /* fflush(stderr); */
+      /* assert(strcmp(self->buf, path) == 0); */
     }
   }
 

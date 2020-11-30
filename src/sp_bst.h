@@ -8,7 +8,6 @@
 struct sp_bst;
 
 typedef struct sp_bst_Node {
-  void *parent;
   struct sp_bst_Node *left;
   struct sp_bst_Node *right;
 } sp_bst_Node;
@@ -89,11 +88,6 @@ sp_bst_remove_free_impl(struct sp_bst *, sp_bst_T *needle);
 #define sp_bst_remove_free(self, needle)                                       \
   sp_bst_remove_free_impl((self), &(needle)->base)
 
-void
-sp_bst_remove_self_impl(sp_bst_Node *needle);
-
-#define sp_bst_remove_self(needle) sp_bst_remove_self_impl(&(needle)->base)
-
 //==============================
 int
 sp_bst_clear(struct sp_bst *);
@@ -134,6 +128,10 @@ sp_bst_next(struct sp_bst_It *);
 //TODO break does not work
 #define sp_bst_for_each(it, self)                                              \
   for (sp_bst_begin((self), (it)); (it)->head; sp_bst_next((it)))
+
+//==============================
+struct sp_bst_Node *
+sp_bst_identity_new_cb(struct sp_bst_Node *in);
 
 //==============================
 

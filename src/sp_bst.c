@@ -8,7 +8,6 @@
 #include "sp_queue.h"
 #include "sp_vec.h"
 #include "sp_stack.h"
-#include "sp_util.h"
 
 //==============================
 struct sp_bst {
@@ -40,14 +39,38 @@ sp_bst_init(sp_bst_node_cmp_cb node_cmp,
   return result;
 }
 
+struct sp_bst_Node *
+sp_bst_identity_new_cb(struct sp_bst_Node *in)
+{
+  return in;
+}
+
+static int
+sp_bst_identity_free_cb(struct sp_bst_Node *in)
+{
+  return 0;
+}
+
+struct sp_bst *
+sp_bst_init_identity(sp_bst_node_cmp_cb cmp)
+{
+  return sp_bst_init(cmp, //
+                     (sp_bst_node_new_cb)sp_bst_identity_new_cb, //
+                     (sp_bst_node_free_cb)sp_bst_identity_free_cb);
+}
+
 //==============================
 static int
 sp_bst_voidp_cmp_cb(sp_bst_voidp_Node *f, sp_bst_voidp_Node *s)
 {
   assert(f);
+  assert(f->value);
   assert(s);
+  assert(s->value);
 
-  return sp_util_void_cmp(f->value, s->value);
+  uintptr_t first = (uintptr_t)f->value, second = (uintptr_t)s->value;
+
+  return (int)(first - second);
 }
 
 static struct sp_bst_Node *
@@ -69,18 +92,6 @@ sp_bst_voidp_free_cb(sp_bst_voidp_Node *in)
   return 0;
 }
 
-static struct sp_bst_Node *
-sp_bst_identity_new_cb(struct sp_bst_Node *in)
-{
-  return in;
-}
-
-static int
-sp_bst_identity_free_cb(struct sp_bst_Node *in)
-{
-  return 0;
-}
-
 struct sp_bst *
 sp_bst_voidp_init(void)
 {
@@ -95,14 +106,6 @@ sp_bst_voidp_init_cmp(sp_bst_node_cmp_cb cmp)
   return sp_bst_init(cmp, //
                      (sp_bst_node_new_cb)sp_bst_voidp_new_cb, //
                      (sp_bst_node_free_cb)sp_bst_voidp_free_cb);
-}
-
-struct sp_bst *
-sp_bst_init_identity(sp_bst_node_cmp_cb cmp)
-{
-  return sp_bst_init(cmp, //
-                     (sp_bst_node_new_cb)sp_bst_identity_new_cb, //
-                     (sp_bst_node_free_cb)sp_bst_identity_free_cb);
 }
 
 //==============================
@@ -152,15 +155,12 @@ sp_bst_insert2_impl(struct sp_bst *self,
 
   if (!self->root) {
     res = self->root = node_new(in);
-    res->parent      = self;
     assert(res);
   } else {
-    struct sp_bst_Node *it     = self->root;
-    struct sp_bst_Node *parent = NULL;
+    struct sp_bst_Node *it = self->root;
     int in_cmp;
 
   Lit:
-    parent = it;
     in_cmp = self->node_cmp(in, it);
     if (in_cmp > 0) {
       if (it->right) {
@@ -169,7 +169,6 @@ sp_bst_insert2_impl(struct sp_bst *self,
       }
       res = it->right = node_new(in);
       assert(res);
-      res->parent = parent;
     } else if (in_cmp < 0) {
       if (it->left) {
         it = it->left;
@@ -177,7 +176,6 @@ sp_bst_insert2_impl(struct sp_bst *self,
       }
       res = it->left = node_new(in);
       assert(res);
-      res->parent = parent;
     }
     /* else duplicate */
   }
@@ -207,8 +205,7 @@ sp_bst_T *
 sp_bst_find_impl(struct sp_bst *self, sp_bst_T *needle)
 {
   struct sp_bst_Node *it;
-  struct sp_bst_Node *res    = NULL;
-  struct sp_bst_Node *parent = NULL;
+  struct sp_bst_Node *res = NULL;
 
   assert(self);
   assert(needle);
@@ -217,13 +214,10 @@ sp_bst_find_impl(struct sp_bst *self, sp_bst_T *needle)
 
   while (it) {
     int in_cmp = self->node_cmp(needle, it);
-    parent     = it;
     if (in_cmp > 0) {
       it = it->right;
-      assert(it && it->parent == parent);
     } else if (in_cmp < 0) {
       it = it->left;
-      assert(it && it->parent == parent);
     } else {
       res = it;
       break;
@@ -237,58 +231,69 @@ sp_bst_find_impl(struct sp_bst *self, sp_bst_T *needle)
 static sp_bst_T *
 remove_min(struct sp_bst *self, struct sp_bst_Node *in)
 {
+  //TODO We have to refind the $in node parent in the remove operation, create
+  //     specialized remove with support for parent,child.
   while (in->left) {
     in = in->left;
   }
 
-  sp_bst_remove_self_impl(in);
-  return in;
+  return sp_bst_remove_impl(self, in);
 }
 
 sp_bst_T *
 sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
 {
-  struct sp_bst_Node *res = NULL;
+  struct sp_bst_Node *res    = NULL;
+  struct sp_bst_Node *parent = NULL;
   struct sp_bst_Node *it;
 
   assert(self);
   assert(needle);
 
-  if ((it = sp_bst_find_impl(self, needle))) {
-    struct sp_bst_Node *inherit = NULL;
+  it = self->root;
 
-    if (it->left && it->right) {
-      inherit       = remove_min(self, it->right);
-      inherit->left = it->left;
+  while (it) {
+    int in_cmp = self->node_cmp(needle, it);
+    if (in_cmp > 0) {
+      parent = it;
+      it     = it->right;
+    } else if (in_cmp < 0) {
+      parent = it;
+      it     = it->left;
+    } else /*eq*/ {
+      struct sp_bst_Node *inherit = NULL;
 
-      if (inherit != it->right) {
-        inherit->right = it->right;
+      if (it->left && it->right) {
+        inherit       = remove_min(self, it->right);
+        inherit->left = it->left;
+
+        if (inherit != it->right) {
+          inherit->right = it->right;
+        }
+      } else if (it->left) {
+        inherit = it->left;
+      } else if (it->right) {
+        inherit = it->right;
       }
-    } else if (it->left) {
-      inherit = it->left;
-    } else if (it->right) {
-      inherit = it->right;
-    }
 
-    /* correct parent -> child link */
-    if (it->parent != self) {
-      struct sp_bst_Node *parent = it->parent;
-      if (parent->right == it) {
-        parent->right = inherit;
+      /* correct parent -> child link */
+      if (parent) {
+        if (parent->right == it) {
+          parent->right = inherit;
+        } else {
+          assert(parent->left == it);
+          parent->left = inherit;
+        }
       } else {
-        assert(parent->left == it);
-        parent->left = inherit;
+        self->root = inherit;
       }
-      inherit->parent = parent;
-    } else {
-      self->root      = inherit;
-      inherit->parent = self;
-    }
 
-    res        = it;
-    res->left  = NULL;
-    res->right = NULL;
-  }
+      res        = it;
+      res->left  = NULL;
+      res->right = NULL;
+      break;
+    }
+  } //while
 
   return res;
 }
@@ -308,20 +313,6 @@ sp_bst_remove_free_impl(struct sp_bst *self, sp_bst_T *needle)
   }
 
   return false;
-}
-
-void
-sp_bst_remove_self_impl(sp_bst_Node *needle)
-{
-  struct sp_bst *self = NULL;
-  sp_bst_Node *it     = needle->parent;
-  assert(it);
-  while (it->parent) {
-    it = needle->parent;
-  }
-  self = (struct sp_bst *)it;
-
-  sp_bst_remove_impl(self, needle);
 }
 
 //==============================
@@ -344,7 +335,7 @@ sp_bst_clear(struct sp_bst *self)
         sp_queue_enqueue(stack, current->right);
       }
 
-      current->parent = current->left = current->right = NULL;
+      current->left = current->right = NULL;
       self->node_free(current);
     } while (sp_queue_dequeue(stack, &current));
 

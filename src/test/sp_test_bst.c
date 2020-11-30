@@ -310,32 +310,50 @@ sp_do_test_simple(void)
     }
   } //for
 
+  assert(sp_bst_length(bst) == MAX);
+
+  for (i = 0; i < MAX; ++i) {
+    struct sp_test *out = NULL;
+    struct sp_test tmp  = {.data = data[i]};
+    out                 = sp_bst_find(bst, &tmp);
+    assert(out);
+    assert(out->data == data[i]);
+  }
+
   shuffle_int(data, (size_t)MAX);
   for (i = 0; i < MAX; ++i) {
     struct sp_test *out = NULL;
     struct sp_test tmp  = {0};
 
+    /* assert(sp_bst_length(bst) == MAX - i); */
     for (a = 0; a < i; ++a) {
       tmp.data = data[a];
       out      = sp_bst_find(bst, &tmp);
       assert(!out);
     }
 
-    printf(".remove: %d\n", i);
+    /* printf(".remove: %d\n", i); */
     tmp.data = data[i];
     out      = sp_bst_find(bst, &tmp);
     assert(out);
     assert(out->data == data[i]);
-    sp_bst_remove_self(out);
+    sp_bst_remove(bst, out);
 
-    for (a = i; a < MAX; ++a) {
+    for (a = i + 1; a < MAX; ++a) {
       tmp.data = data[a];
       out      = sp_bst_find(bst, &tmp);
       assert(out);
       assert(out->data == data[a]);
     }
   } //for
+  for (i = 0; i < MAX; ++i) {
+    struct sp_test *out = NULL;
+    struct sp_test tmp  = {.data = data[i]};
+    out                 = sp_bst_find(bst, &tmp);
+    assert(!out);
+  }
   assert(sp_bst_length(bst) == 0);
+  assert(sp_bst_is_empty(bst));
 
   sp_bst_free(&bst);
   return 0;
