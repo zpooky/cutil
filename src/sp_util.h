@@ -100,4 +100,8 @@ bool
 sp_util_is_printable(const uint8_t *b, size_t len);
 
 //==============================
+size_t
+sp_util_align(size_t v, size_t align);
+
+//==============================
 #endif

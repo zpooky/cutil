@@ -275,7 +275,10 @@ sp_vec_copy_clear(struct sp_vec_copy *self)
 
 //==============================
 sp_vec_copy_T *
-sp_vec_copy_array(struct sp_vec_copy *);
+sp_vec_copy_array(struct sp_vec_copy *self)
+{
+  return self->raw;
+}
 
 //==============================
 sp_vec_copy_T *

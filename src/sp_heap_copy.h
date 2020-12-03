@@ -44,8 +44,8 @@ bool
 sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
 
 //==============================
-void
-sp_heap_copy_update_key_impl(struct sp_heap_copy *subject, sp_heap_copy_T *);
+sp_heap_copy_T *
+sp_heap_copy_update_key(struct sp_heap_copy *, sp_heap_copy_T *);
 
 //==============================
 size_t

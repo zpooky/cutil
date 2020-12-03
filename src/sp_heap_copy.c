@@ -204,8 +204,16 @@ bool
 sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
 
 //==============================
-void
-sp_heap_copy_update_key_impl(struct sp_heap_copy *subject, sp_heap_copy_T *);
+sp_heap_copy_T *
+sp_heap_copy_update_key(struct sp_heap_copy *self, sp_heap_copy_T *subject)
+{
+  size_t idx = sp_vec_copy_index_of(self->vec, subject);
+
+  idx = sp_heap_copy_shift_down(self, idx);
+  idx = sp_heap_copy_shift_up(self, idx);
+
+  return sp_vec_copy_get(self->vec, idx);
+}
 
 //==============================
 size_t
@@ -227,7 +235,10 @@ sp_heap_copy_is_empty(const struct sp_heap_copy *self)
 
 //==============================
 sp_heap_copy_T *
-sp_heap_copy_array(struct sp_heap_copy *);
+sp_heap_copy_array(struct sp_heap_copy *self)
+{
+  return sp_vec_copy_array(self->vec);
+}
 
 //==============================
 int
