@@ -1,36 +1,18 @@
 #include "sp_bitset.h"
 
 #include <assert.h>
-#include <stdlib.h>
 
-#include "sp_util.h"
+#include "sp_bitset_internal.h"
 #include "sp_cbb.h"
 
 //==============================
-struct sp_bitset {
-  int *raw;
-  size_t length;
-  size_t bits;
-};
-
-//==============================
-#define BS_BITS (sizeof(int) * 8)
-static size_t
-bits_to_capacity(size_t bits)
-{
-  return (bits / BS_BITS) + (bits % BS_BITS == 0 ? 0 : 1);
-}
-
 struct sp_bitset *
 sp_bitset_init(size_t bits)
 {
-  size_t capacity = sp_util_max(bits_to_capacity(bits), 1);
   struct sp_bitset *result;
 
   if ((result = calloc(1, sizeof(*result)))) {
-    result->raw    = calloc(capacity, sizeof(int));
-    result->length = capacity;
-    result->bits   = bits;
+    sp_bitset_init_internal(result, bits);
   }
 
   return result;
@@ -59,11 +41,9 @@ sp_bitset_free(struct sp_bitset **pself)
 {
   assert(pself);
 
-  struct sp_bitset *self = *pself;
-  if (self) {
-    if (self->raw) {
-      free(self->raw);
-    }
+  if (*pself) {
+    struct sp_bitset *self = *pself;
+    sp_bitset_free_internal(self);
 
     free(self);
     *pself = NULL;
@@ -79,6 +59,7 @@ mask_out(size_t idx)
   int result = 0;
   return (result | 1) << idx;
 }
+
 static int
 mask_out_multiple(size_t bits)
 {

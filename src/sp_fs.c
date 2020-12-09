@@ -91,6 +91,7 @@ sp_fs_mkdirs(const char *path, mode_t mode)
   char *b_it;
   struct stat st = {0};
   int res        = 0;
+  bool first     = true;
 
   if (plen > sizeof(buf)) {
     errno = ENAMETOOLONG;
@@ -128,8 +129,12 @@ sp_fs_mkdirs(const char *path, mode_t mode)
       errno = ENOTDIR;
       return -1;
     } else {
+      if (first) {
+        return 0;
+      }
       break;
     }
+    first = false;
   } while (1);
 Lmkdir:
   if (strlen(buf) == 0) {

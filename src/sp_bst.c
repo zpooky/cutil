@@ -60,6 +60,14 @@ sp_bst_init_identity(sp_bst_node_cmp_cb cmp)
 }
 
 //==============================
+int
+sp_bst_free_cb(sp_bst_T *e)
+{
+  free(e);
+  return 0;
+}
+
+//==============================
 static int
 sp_bst_voidp_cmp_cb(sp_bst_voidp_Node *f, sp_bst_voidp_Node *s)
 {

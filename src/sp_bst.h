@@ -133,6 +133,9 @@ sp_bst_next(struct sp_bst_It *);
 struct sp_bst_Node *
 sp_bst_identity_new_cb(struct sp_bst_Node *in);
 
+int
+sp_bst_free_cb(sp_bst_T *);
+
 //==============================
 
 #endif

@@ -1,23 +1,12 @@
 #include "sp_vec_copy.h"
 
-#include <stdint.h>
+#include "sp_vec_copy_internal.h"
+
 #include <stdlib.h>
 #include <memory.h>
 #include <assert.h>
 
 #include "sp_util.h"
-
-//==============================
-struct sp_vec_copy {
-  uint8_t *raw;
-  size_t length;
-  size_t capacity;
-
-  size_t align;
-  size_t sz;
-
-  sp_vec_copy_copy_cb copy;
-};
 
 //==============================
 static void
@@ -31,10 +20,7 @@ sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb copy)
 {
   struct sp_vec_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
-    result->sz    = sz;
-    result->align = align;
-
-    result->copy = copy;
+    sp_vec_copy_internal_init(result, 0, align, sz, copy);
   }
   return result;
 }
@@ -54,8 +40,7 @@ sp_vec_copy_init_cap(size_t capacity,
   struct sp_vec_copy *result;
 
   if ((result = sp_vec_copy_init(align, sz, copy))) {
-    result->raw      = aligned_alloc(align, capacity * sz);
-    result->capacity = capacity;
+    sp_vec_copy_internal_init(result, capacity, align, sz, copy);
   }
   return result;
 }
@@ -66,12 +51,7 @@ sp_vec_copy_free(struct sp_vec_copy **pself)
   assert(pself);
   if (*pself) {
     struct sp_vec_copy *self = *pself;
-    if (self->raw) {
-      free(self->raw);
-    }
-    self->raw    = NULL;
-    self->length = self->sz = 0;
-
+    sp_vec_copy_internal_free(self);
     free(self);
     *pself = NULL;
   }

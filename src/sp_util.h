@@ -40,6 +40,9 @@ void
 sp_util_swap_size_t(size_t *, size_t *);
 
 void
+sp_util_swap_uint8_t(uint8_t *, uint8_t *);
+
+void
 sp_util_swap_char(char *, char *);
 
 void

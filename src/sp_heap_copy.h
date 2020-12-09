@@ -41,6 +41,10 @@ sp_heap_copy_head(struct sp_heap_copy *);
 
 //==============================
 bool
+sp_heap_copy_drop_head(struct sp_heap_copy *);
+
+//==============================
+bool
 sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
 
 //==============================

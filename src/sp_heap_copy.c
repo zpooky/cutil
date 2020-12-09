@@ -201,6 +201,25 @@ sp_heap_copy_head(struct sp_heap_copy *self)
 
 //==============================
 bool
+sp_heap_copy_drop_head(struct sp_heap_copy *self)
+{
+  assert(self);
+
+  if (!sp_heap_copy_is_empty(self)) {
+    const size_t head = 0;
+    const size_t last = sp_vec_copy_length(self->vec) - 1;
+    sp_vec_copy_swap(self->vec, head, last);
+    sp_vec_copy_remove(self->vec, last);
+    sp_heap_copy_shift_down(self, head);
+
+    return true;
+  }
+
+  return false;
+}
+
+//==============================
+bool
 sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
 
 //==============================
