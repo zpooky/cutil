@@ -129,6 +129,14 @@ sp_util_swap_uint8_t(uint8_t *f, uint8_t *s)
 }
 
 void
+sp_util_swap_uint32_t(uint32_t *f, uint32_t *s)
+{
+  uint32_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
 sp_util_swap_char(char *f, char *s)
 {
   char tmp = *f;

@@ -45,6 +45,13 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *);
 bool
 sp_hashset_is_empty(const struct sp_hashset *self);
 
+size_t
+sp_hashset_length(const struct sp_hashset *self);
+
+//==============================
+void
+sp_hashset_dump(struct sp_hashset *self);
+
 //==============================
 
 #endif

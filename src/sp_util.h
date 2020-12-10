@@ -43,6 +43,9 @@ void
 sp_util_swap_uint8_t(uint8_t *, uint8_t *);
 
 void
+sp_util_swap_uint32_t(uint32_t *, uint32_t *);
+
+void
 sp_util_swap_char(char *, char *);
 
 void

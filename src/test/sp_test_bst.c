@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "sp_bst.h"
+#include "sp_util.h"
 
 struct sp_test {
   struct sp_bst_Node base;
@@ -55,20 +56,12 @@ test_it_cb(struct sp_test *c, int *arg)
 }
 
 static void
-swap_int(int *f, int *s)
-{
-  int tmp = *f;
-  *f      = *s;
-  *s      = tmp;
-}
-
-static void
 shuffle_int(int *arr, size_t len)
 {
   size_t i;
   for (i = 0; i < len; ++i) {
     size_t idx = (size_t)rand() % len;
-    swap_int(arr + i, arr + idx);
+    sp_util_swap_uint32_t(arr + i, arr + idx);
   }
 }
 
