@@ -61,7 +61,7 @@ shuffle_int(int *arr, size_t len)
   size_t i;
   for (i = 0; i < len; ++i) {
     size_t idx = (size_t)rand() % len;
-    sp_util_swap_uint32_t(arr + i, arr + idx);
+    sp_util_swap_int32_t(arr + i, arr + idx);
   }
 }
 

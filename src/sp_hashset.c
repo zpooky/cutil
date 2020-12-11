@@ -13,9 +13,16 @@
 /* #include "sp_vec_copy_internal.h" */
 
 //==============================
+#if 0
 typedef uint8_t PSL_t;
-/* #define PSL_EMPTY ((PSL_t) ~((PSL_t)0)) */
 #define PSL_MAX UCHAR_MAX
+#define swap_GENERIC sp_util_swap_uint8_t
+#else
+typedef uint16_t PSL_t;
+#define PSL_MAX UINT16_MAX
+#define swap_GENERIC sp_util_swap_uint16_t
+#endif
+
 #define PSL_EMPTY 0
 #define PSL_INITIAL 1
 
@@ -144,7 +151,8 @@ sp_hashset_get(struct sp_hashset *self, size_t idx)
 static bool
 sp_hashset_is_full(struct sp_hashset *self)
 {
-  size_t length = self->length + (self->capacity / PSL_MAX) + 1;
+  /* size_t c = sp_util_min(self->capacity / PSL_MAX, 1); */
+  size_t length = self->length + sp_util_max(self->capacity/10,1);
   if (sp_hashset_is_empty(self)) {
     return true;
   }
@@ -215,11 +223,12 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
     if (PSL > self->psl[it]) {
       result = result ? result : dest;
       sp_hashset_swap(self, in, dest);
-      sp_util_swap_uint8_t(&self->psl[it], &PSL);
+      swap_GENERIC(&self->psl[it], &PSL);
     }
 
     /* TODO how to ensure that PSL not becomes PSL_EMPTY? */
     PSL++;
+    assert(PSL<PSL_MAX);
 
     it = (it + 1) % self->capacity;
   } while (it != start);
@@ -305,7 +314,7 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
       if (self->psl[it] > PSL_INITIAL) {
         sp_hashset_swap(self, sp_hashset_get(self, priv),
                         sp_hashset_get(self, it));
-        sp_util_swap_uint8_t(&self->psl[priv], &self->psl[it]);
+        swap_GENERIC(&self->psl[priv], &self->psl[it]);
       } else {
         break;
       }

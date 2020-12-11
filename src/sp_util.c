@@ -129,9 +129,39 @@ sp_util_swap_uint8_t(uint8_t *f, uint8_t *s)
 }
 
 void
+sp_util_swap_int8_t(int8_t *f, int8_t *s){
+  int8_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
+sp_util_swap_uint16_t(uint16_t *f, uint16_t *s)
+{
+  uint16_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
+sp_util_swap_int16_t(int16_t *f, int16_t *s)
+{
+  int16_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
 sp_util_swap_uint32_t(uint32_t *f, uint32_t *s)
 {
   uint32_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
+sp_util_swap_int32_t(int32_t *f, int32_t *s){
+  int32_t tmp = *f;
   *f          = *s;
   *s          = tmp;
 }
