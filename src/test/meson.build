@@ -6,6 +6,7 @@ cutil_test_src = files([
   'sp_test_perfect_hash_map.c',
   'sp_test_hash.c',
   'sp_test_hashset.c',
+  'sp_test_sort.c',
 
   'test.c',
 ])

@@ -78,8 +78,6 @@ sp_do_test_bst(void)
                   (sp_bst_node_free_cb)test_free);
     bool retry = true;
 
-    srand((unsigned)time(NULL));
-
     int data[MAX];
     for (i = 0; i < MAX; ++i) {
       cmp = 0;

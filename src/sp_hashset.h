@@ -19,6 +19,8 @@ typedef bool (*sp_hashset_eq_cb)(const sp_hashset_T *,
                                  const sp_hashset_T *,
                                  size_t sz);
 
+typedef bool (*sp_hashset_clear_cb)(sp_hashset_T *, size_t sz, void *closure);
+
 struct sp_hashset *
 sp_hashset_init(size_t align,
                 size_t sz,
@@ -28,6 +30,15 @@ sp_hashset_init(size_t align,
 
 int
 sp_hashset_free(struct sp_hashset **);
+
+//==============================
+void
+sp_hashset_set_clear_cb(struct sp_hashset *self,
+                        sp_hashset_clear_cb cb,
+                        void *closure);
+
+void
+sp_hashset_clear(struct sp_hashset *self);
 
 //==============================
 sp_hashset_T *
@@ -51,6 +62,10 @@ sp_hashset_length(const struct sp_hashset *self);
 //==============================
 void
 sp_hashset_dump(struct sp_hashset *self);
+
+//==============================
+void
+sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz);
 
 //==============================
 

@@ -63,6 +63,9 @@ sp_util_swap_char(char *, char *);
 void
 sp_util_swap_char_arr(char *, char *, size_t);
 
+void
+sp_util_swap_raw(void *, void *, size_t);
+
 //==============================
 uint64_t sp_util_htonll(uint64_t);
 
@@ -72,7 +75,15 @@ sp_util_ntohll(uint64_t n);
 //==============================
 int sp_util_size_t_cmp(size_t, size_t);
 
+int sp_util_uint16_cmp(uint16_t, uint16_t);
+
 int sp_util_uint32_cmp(uint32_t, uint32_t);
+
+int
+sp_util_uint16p_cmp(const uint16_t *, const uint16_t *);
+
+int
+sp_util_uint32p_cmp(const uint32_t *, const uint32_t *);
 
 int
 sp_util_void_cmp(const void *, const void *);
@@ -108,10 +119,27 @@ sp_util_std_flush(void);
 #endif
 
 //==============================
-typedef int (*sp_util_sort_cmp_cb)(void *, void *);
+typedef int (*sp_util_sort_cmp_cb)(const void *, const void *);
+typedef void (*sp_util_sort_swap_cb)(void *, void *, size_t sz);
+
+bool
+sp_util_is_sorted(const void *arr,
+                  size_t arr_len,
+                  size_t entry_sz,
+                  sp_util_sort_cmp_cb);
 
 void
-sp_util_sort(void **, size_t, sp_util_sort_cmp_cb);
+sp_util_sort0(void *arr,
+              size_t arr_len,
+              size_t entry_sz,
+              sp_util_sort_cmp_cb,
+              sp_util_sort_swap_cb swap);
+
+void
+sp_util_sort(void *arr, size_t arr_len, size_t entry_sz, sp_util_sort_cmp_cb);
+
+void
+sp_util_sort_ptr_arr(void **, size_t, sp_util_sort_cmp_cb);
 
 //==============================
 bool
@@ -120,6 +148,29 @@ sp_util_is_printable(const uint8_t *b, size_t len);
 //==============================
 size_t
 sp_util_align(size_t v, size_t align);
+
+//==============================
+void *
+sp_util_bin_search(void *arr,
+                   size_t arr_len,
+                   void *needle,
+                   size_t needle_sz,
+                   sp_util_sort_cmp_cb cmp);
+
+//==============================
+size_t
+sp_util_bin_insert_uniq0(void *arr,
+                         size_t *arr_len,
+                         const void *in,
+                         size_t in_size,
+                         sp_util_sort_cmp_cb cmp,
+                         sp_util_sort_swap_cb swap);
+size_t
+sp_util_bin_insert_uniq(void *arr,
+                        size_t *arr_len,
+                        const void *in,
+                        size_t in_size,
+                        sp_util_sort_cmp_cb cmp);
 
 //==============================
 #endif

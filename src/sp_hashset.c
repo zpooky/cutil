@@ -41,6 +41,9 @@ struct sp_hashset {
   sp_hashset_hash_cb hash;
   sp_hashset_copy_cb copy;
   sp_hashset_eq_cb eq;
+
+  sp_hashset_clear_cb clear;
+  void *clear_closure;
 };
 
 //==============================
@@ -131,6 +134,8 @@ sp_hashset_free(struct sp_hashset **pself)
 
   if (*pself) {
     struct sp_hashset *self = *pself;
+
+    sp_hashset_clear(self);
     sp_hashset_free_int(self);
 
     free(self);
@@ -147,12 +152,36 @@ sp_hashset_get(struct sp_hashset *self, size_t idx)
   return self->bucket + (idx * self->sz);
 }
 
+void
+sp_hashset_set_clear_cb(struct sp_hashset *self,
+                        sp_hashset_clear_cb cb,
+                        void *closure)
+{
+  self->clear         = cb;
+  self->clear_closure = closure;
+}
+
+void
+sp_hashset_clear(struct sp_hashset *self)
+{
+  if (self->clear) {
+    size_t i;
+    for (i = 0; i < self->capacity && self->length > 0; ++i) {
+      if (self->psl[i] != PSL_EMPTY) {
+        self->clear(sp_hashset_get(self, i), self->sz, self->clear_closure);
+        self->psl[i] = PSL_EMPTY;
+        --self->length;
+      }
+    } //for
+  }
+}
+
 //==============================
 static bool
 sp_hashset_is_full(struct sp_hashset *self)
 {
   /* size_t c = sp_util_min(self->capacity / PSL_MAX, 1); */
-  size_t length = self->length + sp_util_max(self->capacity/10,1);
+  size_t length = self->length + sp_util_max(self->capacity / 10, 1);
   if (sp_hashset_is_empty(self)) {
     return true;
   }
@@ -228,7 +257,7 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
 
     /* TODO how to ensure that PSL not becomes PSL_EMPTY? */
     PSL++;
-    assert(PSL<PSL_MAX);
+    assert(PSL < PSL_MAX);
 
     it = (it + 1) % self->capacity;
   } while (it != start);
@@ -354,3 +383,12 @@ sp_hashset_dump(struct sp_hashset *self)
   }
   printf("\n");
 }
+
+//==============================
+void
+sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz)
+{
+  memcpy(dest, src, sz);
+}
+
+//==============================

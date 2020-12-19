@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <string.h>
 
 //==============================
 static const char hex_encode_lookup[] = {
@@ -129,18 +130,19 @@ sp_util_swap_uint8_t(uint8_t *f, uint8_t *s)
 }
 
 void
-sp_util_swap_int8_t(int8_t *f, int8_t *s){
+sp_util_swap_int8_t(int8_t *f, int8_t *s)
+{
   int8_t tmp = *f;
-  *f          = *s;
-  *s          = tmp;
+  *f         = *s;
+  *s         = tmp;
 }
 
 void
 sp_util_swap_uint16_t(uint16_t *f, uint16_t *s)
 {
   uint16_t tmp = *f;
-  *f          = *s;
-  *s          = tmp;
+  *f           = *s;
+  *s           = tmp;
 }
 
 void
@@ -155,12 +157,13 @@ void
 sp_util_swap_uint32_t(uint32_t *f, uint32_t *s)
 {
   uint32_t tmp = *f;
-  *f          = *s;
-  *s          = tmp;
+  *f           = *s;
+  *s           = tmp;
 }
 
 void
-sp_util_swap_int32_t(int32_t *f, int32_t *s){
+sp_util_swap_int32_t(int32_t *f, int32_t *s)
+{
   int32_t tmp = *f;
   *f          = *s;
   *s          = tmp;
@@ -181,6 +184,15 @@ sp_util_swap_char_arr(char *f, char *s, size_t len)
   for (i = 0; i < len; ++i) {
     sp_util_swap_char(f + i, s + i);
   }
+}
+
+void
+sp_util_swap_raw(void *f, void *s, size_t len)
+{
+  uint8_t tmp[len];
+  memcpy(tmp, f, len);
+  memcpy(f, s, len);
+  memcpy(s, tmp, len);
 }
 
 //==============================
@@ -226,6 +238,19 @@ sp_util_size_t_cmp(size_t f, size_t s)
 }
 
 int
+sp_util_uint16_cmp(uint16_t f, uint16_t s)
+{
+  if (f > s) {
+    return 1;
+  }
+  if (f < s) {
+    return -1;
+  }
+
+  return 0;
+}
+
+int
 sp_util_uint32_cmp(uint32_t f, uint32_t s)
 {
   if (f > s) {
@@ -236,6 +261,22 @@ sp_util_uint32_cmp(uint32_t f, uint32_t s)
   }
 
   return 0;
+}
+
+int
+sp_util_uint16p_cmp(const uint16_t *f, const uint16_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_uint16_cmp(*f, *s);
+}
+
+int
+sp_util_uint32p_cmp(const uint32_t *f, const uint32_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_uint32_cmp(*f, *s);
 }
 
 int
@@ -296,24 +337,52 @@ sp_util_std_flush(void)
 }
 
 //==============================
-static size_t
-partition(void **in, size_t length, sp_util_sort_cmp_cb cmp)
+// partition(arr=[1,2,3], arr_len=3, entry_sz=sizeof(arr[0]), cmp)
+bool
+sp_util_is_sorted(const void *arr,
+                  size_t arr_len,
+                  size_t entry_sz,
+                  sp_util_sort_cmp_cb cmp)
 {
-  void **head = in;
-  void **tail = in + (length - 1);
+  if (arr_len > 0) {
+    size_t i;
+    for (i = 0; i < arr_len - 1; ++i) {
+      const void *cur  = arr + (i * entry_sz);
+      const void *next = arr + ((i + 1) * entry_sz);
 
-  void **const start = in;
-  void **const end   = in + length;
+      if (cmp(cur, next) > 0) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-  void **p = tail;
+// partition(arr=[1,2,3], arr_len=3, entry_sz=sizeof(arr[0]), cmp)
+static size_t
+partition(void *arr,
+          size_t arr_len,
+          size_t entry_sz,
+          sp_util_sort_cmp_cb cmp,
+          sp_util_sort_swap_cb swap)
+{
+  void *head = arr;
+  void *tail = arr + ((arr_len - 1) * entry_sz);
+
+  void *const start = arr;
+  void *const end   = arr + (arr_len * entry_sz);
+
+  void *p = tail;
+
+  assert(arr_len > 0);
 
   while (true) {
-    while (head != end && cmp(*head, /*<*/ *p) == -1) {
-      head++;
+    while (head != end && cmp(head, p) < 0) {
+      head += entry_sz;
     }
 
-    while (tail != start && cmp(*p, /*<*/ *tail) == -1) {
-      tail--;
+    while (tail != start && cmp(p, tail) < 0) {
+      tail -= entry_sz;
     }
 
     if (head >= tail) {
@@ -327,10 +396,10 @@ partition(void **in, size_t length, sp_util_sort_cmp_cb cmp)
       p = head;
     }
 
-    sp_util_swap_voidp(head, tail);
-    head++;
-    tail--;
-  }
+    swap(head, tail, entry_sz);
+    head += entry_sz;
+    tail -= entry_sz;
+  } //while
 
   assert(head < end);
   assert(head >= start);
@@ -338,25 +407,51 @@ partition(void **in, size_t length, sp_util_sort_cmp_cb cmp)
   assert(tail < end);
   assert(tail >= start);
 
-  return head - in;
+  assert((head - arr) % entry_sz == 0);
+  return (head - arr) / entry_sz;
 }
 
 static void
-quicksort(void **in, size_t length, sp_util_sort_cmp_cb cmp)
+quicksort(void *arr,
+          size_t arr_len,
+          size_t entry_sz,
+          sp_util_sort_cmp_cb cmp,
+          sp_util_sort_swap_cb swap)
 {
-  if (length > 1) {
-    assert(in);
+  if (arr_len > 1) {
+    assert(arr);
 
-    size_t pivot = partition(in, length, cmp);
-    quicksort(in, pivot, cmp);
-    quicksort(in + pivot, length - pivot, cmp);
+    size_t pivot_idx = partition(arr, arr_len, entry_sz, cmp, swap);
+    quicksort(arr, pivot_idx, entry_sz, cmp, swap);
+    quicksort(arr + (pivot_idx * entry_sz), arr_len - pivot_idx, entry_sz, cmp,
+              swap);
   }
 }
-//
+
 void
-sp_util_sort(void **raw, size_t len, sp_util_sort_cmp_cb cmp)
+sp_util_sort0(void *arr,
+              size_t arr_len,
+              size_t entry_sz,
+              sp_util_sort_cmp_cb cmp,
+              sp_util_sort_swap_cb swap)
 {
-  quicksort(raw, len, cmp);
+
+  quicksort(arr, arr_len, entry_sz, cmp, swap);
+}
+
+void
+sp_util_sort(void *arr,
+             size_t arr_len,
+             size_t entry_sz,
+             sp_util_sort_cmp_cb cmp)
+{
+  sp_util_sort0(arr, arr_len, entry_sz, cmp, sp_util_swap_raw);
+}
+
+void
+sp_util_sort_ptr_arr(void **arr, size_t arr_len, sp_util_sort_cmp_cb cmp)
+{
+  sp_util_sort(arr, arr_len, sizeof(*arr), cmp);
 }
 
 //==============================
@@ -378,6 +473,134 @@ sp_util_align(size_t v, size_t align)
 {
   assert(align % 8 == 0);
   return (v + (align - 1)) & -align;
+}
+
+//==============================
+// arr=[1,2,3], arr_len=3, needle=&2, entry_sz=sizeof(2), cmp
+void *
+sp_util_bin_search(void *arr,
+                   size_t arr_len,
+                   void *needle,
+                   size_t needle_sz,
+                   sp_util_sort_cmp_cb cmp)
+{
+  while (arr_len > 0) {
+    size_t mid_idx = arr_len / 2;
+    void *mid      = arr + (mid_idx * needle_sz);
+    int res        = cmp(needle, mid);
+    if (res == 0) {
+      return mid;
+    }
+    if (mid_idx == 0) {
+      break;
+    }
+
+    if (res > 0) {
+      arr = mid;
+    } else if (res < 0) {
+    }
+    arr_len -= mid_idx;
+  } //while
+
+  return NULL;
+}
+
+//==============================
+static void *
+sp_util_bin_search_lt(void *arr,
+                      const size_t arr_len,
+                      void *in,
+                      size_t in_size,
+                      sp_util_sort_cmp_cb cmp)
+{
+  size_t length = arr_len;
+  while (length > 0) {
+    size_t cur_idx = length / 2;
+    void *cur      = arr + (cur_idx * in_size);
+    int res        = cmp(in, cur);
+    if (res == 0) {
+      return cur;
+    }
+    if (cur_idx == 0) {
+      break;
+    }
+
+    if (/*in > cur*/ res > 0) {
+      size_t mid_next_idx = cur_idx + 1;
+      assert(mid_next_idx < length);
+      void *next = arr + (mid_next_idx * in_size);
+      if (cmp(next, in) > 0) {
+        //next > in > cur
+        return cur;
+      }
+      arr = cur;
+    } else if (/*in < cur*/ res < 0) {
+      size_t mid_priv_idx = cur_idx - 1;
+      assert(mid_priv_idx < length && cur_idx > 0);
+      void *priv = arr + (mid_priv_idx * in_size);
+      if (cmp(priv, in) < 0) {
+        //cur > in > priv
+        return priv;
+      }
+    }
+    length -= cur_idx;
+  } //while
+
+  return NULL;
+}
+
+size_t
+sp_util_bin_insert_uniq0(void *arr,
+                         size_t *arr_len,
+                         const void *in,
+                         size_t in_size,
+                         sp_util_sort_cmp_cb cmp,
+                         sp_util_sort_swap_cb swap)
+{
+  size_t right = *arr_len;
+  size_t left  = 0;
+  size_t mid   = 0;
+  size_t res   = 0;
+  int eq       = 0;
+
+  while (left < right) {
+    mid = (left + right) / 2;
+    eq  = cmp(in, arr + (mid * in_size));
+    if (eq < 0) {
+      right = mid;
+    } else if (eq > 0) {
+      left = mid + 1;
+    } else {
+      return mid;
+    }
+  } //while
+
+  if (eq > 0) {
+    mid++;
+  }
+  res = mid;
+
+  void *src = arr + (*arr_len * in_size);
+  memcpy(src, in, in_size);
+
+  for (; mid < *arr_len; ++mid) {
+    void *dest = arr + (mid * in_size);
+    swap(dest, src, in_size);
+  }
+  ++(*arr_len);
+
+  return res;
+}
+
+size_t
+sp_util_bin_insert_uniq(void *arr,
+                        size_t *arr_len,
+                        const void *in,
+                        size_t in_size,
+                        sp_util_sort_cmp_cb cmp)
+{
+  return sp_util_bin_insert_uniq0(arr, arr_len, in, in_size, cmp,
+                                  sp_util_swap_raw);
 }
 
 //==============================

@@ -273,7 +273,7 @@ int
 sp_vec_sort(struct sp_vec *self, sp_vec_cmp_cb cmp)
 {
   assert(self);
-  sp_util_sort(self->entries, self->length, cmp);
+  sp_util_sort_ptr_arr(self->entries, self->length, cmp);
   return 0;
 }
 
