@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "sp_util.h"
+
 //==============================
 struct sp_vec_copy {
   uint8_t *raw;
@@ -47,6 +49,21 @@ sp_vec_copy_internal_free(struct sp_vec_copy *self)
   }
   self->raw    = NULL;
   self->length = self->sz = 0;
+}
+
+//==============================
+static inline void
+sp_vec_copy_swap_self(struct sp_vec_copy *f, struct sp_vec_copy *s)
+{
+  sp_util_swap_voidp(&f->raw, &s->raw);
+
+  sp_util_swap_size_t(&f->length, &s->length);
+  sp_util_swap_size_t(&f->capacity, &s->capacity);
+
+  sp_util_swap_size_t(&f->align, &s->align);
+  sp_util_swap_size_t(&f->sz, &s->sz);
+
+  sp_util_swap_voidp(&f->copy, &s->copy);
 }
 
 //==============================

@@ -4,9 +4,6 @@
 
 #include <stdlib.h>
 #include <memory.h>
-#include <assert.h>
-
-#include "sp_util.h"
 
 //==============================
 static void
@@ -48,7 +45,7 @@ sp_vec_copy_init_cap(size_t capacity,
 int
 sp_vec_copy_free(struct sp_vec_copy **pself)
 {
-  assert(pself);
+  assertx(pself);
   if (*pself) {
     struct sp_vec_copy *self = *pself;
     sp_vec_copy_internal_free(self);
@@ -108,11 +105,11 @@ static void
 sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src)
 {
   size_t i;
-  assert(dest);
-  assert(src);
-  assert(src->length <= (dest->capacity - dest->length));
-  assert(src->sz == dest->sz);
-  assert(src->align == dest->align);
+  assertx(dest);
+  assertx(src);
+  assertx(src->length <= (dest->capacity - dest->length));
+  assertx(src->sz == dest->sz);
+  assertx(src->align == dest->align);
 
   for (i = 0; i < src->length; ++i) {
     sp_vec_copy_T *s, *d;
@@ -124,36 +121,22 @@ sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src)
   }
 }
 
-static void
-sp_vec_copy_swap_self(struct sp_vec_copy *f, struct sp_vec_copy *s)
-{
-  sp_util_swap_voidp(&f->raw, &s->raw);
-
-  sp_util_swap_size_t(&f->length, &s->length);
-  sp_util_swap_size_t(&f->capacity, &s->capacity);
-
-  sp_util_swap_size_t(&f->align, &s->align);
-  sp_util_swap_size_t(&f->sz, &s->sz);
-
-  sp_util_swap_voidp(&f->copy, &s->copy);
-}
-
 sp_vec_copy_T *
 sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
 {
-  size_t idx;
   sp_vec_copy_T *result;
+  size_t idx;
 
-  assert(self);
-  assert(in);
+  assertx(self);
+  assertx(in);
 
-  assert(self->length <= self->capacity);
+  assertx(self->length <= self->capacity);
 
   if (self->length == self->capacity) {
     struct sp_vec_copy *tmp;
+    size_t capacity = sp_util_max(16, self->capacity * 2);
 
-    tmp = sp_vec_copy_init_cap(sp_util_max(16, self->capacity * 2), self->align,
-                               self->sz, self->copy);
+    tmp = sp_vec_copy_init_cap(capacity, self->align, self->sz, self->copy);
     if (!tmp) {
       return NULL;
     }
@@ -166,6 +149,7 @@ sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
   idx    = self->length++;
   result = self->raw + (idx * self->sz);
   self->copy(result, in, self->sz);
+  assertx(idx == sp_vec_copy_index_of(self, result));
 
   return result;
 }
@@ -177,8 +161,8 @@ sp_vec_copy_append_vec(struct sp_vec_copy *self, struct sp_vec_copy *);
 void
 sp_vec_copy_remove(struct sp_vec_copy *self, size_t idx)
 {
-  assert(self);
-  assert(idx < self->length);
+  assertx(self);
+  assertx(idx < self->length);
 
   if (idx < self->length) {
     const size_t last = self->length - 1;
@@ -195,8 +179,8 @@ sp_vec_copy_remove(struct sp_vec_copy *self, size_t idx)
 bool
 sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)
 {
-  assert(f < self->length);
-  assert(s < self->length);
+  assertx(f < self->length);
+  assertx(s < self->length);
 
   if (f < self->length && s < self->length) {
     //TODO improve (maybe use a free slot in self->raw instead of $tmp)
@@ -212,7 +196,7 @@ sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)
     return true;
   }
 
-  assert(false);
+  assertx(false);
   return false;
 }
 
@@ -220,14 +204,15 @@ sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)
 size_t
 sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_vec_copy_T *n)
 {
-  uintptr_t nidx     = (uintptr_t)n;
-  uintptr_t ridx     = (uintptr_t)self->raw;
-  uintptr_t ridx_end = ridx + (self->sz * self->capacity);
-  assert(nidx >= ridx);
-  assert(nidx < ridx_end);
-  assert(nidx % self->align == 0);
+  uintptr_t n_idx     = (uintptr_t)n;
+  uintptr_t r_idx     = (uintptr_t)self->raw;
+  uintptr_t r_idx_end = r_idx + (self->sz * self->capacity);
+  assertx(n_idx >= r_idx);
+  assertx(n_idx < r_idx_end);
+  assertx(n_idx % self->align == 0);
+  assertx((n_idx - r_idx) % self->sz == 0);
 
-  return (ridx - nidx) / self->sz;
+  return (n_idx - r_idx) / self->sz;
 }
 
 //==============================
@@ -248,7 +233,7 @@ sp_vec_copy_for_each(struct sp_vec_copy *self,
 int
 sp_vec_copy_clear(struct sp_vec_copy *self)
 {
-  assert(self);
+  assertx(self);
   self->length = 0;
   return 0;
 }

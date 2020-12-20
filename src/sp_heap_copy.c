@@ -64,14 +64,14 @@ sp_heap_copy_free(struct sp_heap_copy **pself)
 }
 
 //==============================
-size_t
+static size_t
 sp_heap_copy_shift_up(struct sp_heap_copy *self, size_t idx)
 {
 
   while (true) {
-    size_t par_idx;
-    sp_vec_copy_T *me;
     sp_vec_copy_T *parent;
+    sp_vec_copy_T *me;
+    size_t par_idx;
 
     if (idx == 0) {
       /* we are root, we can not shift up further */

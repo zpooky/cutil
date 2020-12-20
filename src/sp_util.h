@@ -107,15 +107,26 @@ sp_pair_set(sp_pair *dest, sp_pair *src);
 void
 sp_util_std_flush(void);
 
-#define assertx assert
+void
+sp_util_assert(const char *file,
+               unsigned int line,
+               const char *proto,
+               const char *cond);
+
 #ifdef NDEBUG
 #define assertx_n(n) (n)
+#define assertx(__e) ((void)0)
 #else
 #define assertx_n(n)                                                           \
   do {                                                                         \
     sp_util_std_flush();                                                       \
     assert(n);                                                                 \
   } while (0)
+
+#define assertx(__e)                                                           \
+  if (!(__e)) {                                                                \
+    sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
+  }
 #endif
 
 //==============================

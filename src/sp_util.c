@@ -8,6 +8,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include <execinfo.h> // backtrace
+
 //==============================
 static const char hex_encode_lookup[] = {
   '0', '1', '2', '3', '4', '5', '6', '7',
@@ -328,12 +330,61 @@ sp_pair_set(sp_pair *dest, sp_pair *src)
 }
 
 //==============================
+#define SP_CL_GREEN "\033[92m"
+#define SP_CL_RESET "\033[0m"
 void
 sp_util_std_flush(void)
 {
   /* printf("flush\n"); */
   fflush(stdout);
   fflush(stderr);
+}
+
+static void inline sp_util_backtrace(FILE *dest, const char *proto)
+{
+  const int BT_BUF_SIZE = 100;
+  void *buffer[BT_BUF_SIZE];
+  char **strings;
+  int nptrs;
+
+  nptrs = backtrace(buffer, BT_BUF_SIZE);
+  if ((strings = backtrace_symbols(buffer, nptrs))) {
+    int i;
+
+    for (i = 0; i < nptrs; i++) {
+      if (strstr(strings[i], proto)) {
+        fprintf(dest, SP_CL_GREEN "%s" SP_CL_RESET "\n", strings[i]);
+      } else {
+        fprintf(dest, "%s\n", strings[i]);
+      }
+    }
+
+    free(strings);
+  }
+}
+
+void
+sp_util_assert(const char *file,
+               unsigned int line,
+               const char *proto,
+               const char *cond)
+{
+  FILE *dest = stdout;
+
+  fprintf(dest, "\nassertion failed: (%s)\n", cond);
+  fprintf(dest,
+          "%s"
+          ":%s()"
+          ":" SP_CL_GREEN "%d" SP_CL_RESET "\n\n",
+          file, proto, line);
+
+  sp_util_backtrace(dest, proto);
+  sp_util_std_flush();
+
+  /* raise(SIGABRT); */
+  abort();
+  exit(1);
+  /* terminate(); */
 }
 
 //==============================
@@ -506,49 +557,6 @@ sp_util_bin_search(void *arr,
 }
 
 //==============================
-static void *
-sp_util_bin_search_lt(void *arr,
-                      const size_t arr_len,
-                      void *in,
-                      size_t in_size,
-                      sp_util_sort_cmp_cb cmp)
-{
-  size_t length = arr_len;
-  while (length > 0) {
-    size_t cur_idx = length / 2;
-    void *cur      = arr + (cur_idx * in_size);
-    int res        = cmp(in, cur);
-    if (res == 0) {
-      return cur;
-    }
-    if (cur_idx == 0) {
-      break;
-    }
-
-    if (/*in > cur*/ res > 0) {
-      size_t mid_next_idx = cur_idx + 1;
-      assert(mid_next_idx < length);
-      void *next = arr + (mid_next_idx * in_size);
-      if (cmp(next, in) > 0) {
-        //next > in > cur
-        return cur;
-      }
-      arr = cur;
-    } else if (/*in < cur*/ res < 0) {
-      size_t mid_priv_idx = cur_idx - 1;
-      assert(mid_priv_idx < length && cur_idx > 0);
-      void *priv = arr + (mid_priv_idx * in_size);
-      if (cmp(priv, in) < 0) {
-        //cur > in > priv
-        return priv;
-      }
-    }
-    length -= cur_idx;
-  } //while
-
-  return NULL;
-}
-
 size_t
 sp_util_bin_insert_uniq0(void *arr,
                          size_t *arr_len,
