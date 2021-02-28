@@ -180,8 +180,8 @@ sp_hashset_clear(struct sp_hashset *self)
 static bool
 sp_hashset_is_full(struct sp_hashset *self)
 {
-  /* size_t c = sp_util_min(self->capacity / PSL_MAX, 1); */
-  size_t length = self->length + sp_util_max(self->capacity / 10, 1);
+  /* size_t c = sp_min(self->capacity / PSL_MAX, 1); */
+  size_t length = self->length + sp_max(self->capacity / 10, 1);
   if (sp_hashset_is_empty(self)) {
     return true;
   }
@@ -198,7 +198,7 @@ sp_hashset_rehash(struct sp_hashset *self)
   size_t new_cap;
   size_t i;
 
-  new_cap = sp_util_max(8, self->capacity * 2);
+  new_cap = sp_max(8, self->capacity * 2);
   sp_hashset_init_int(&tmp, new_cap, self->align, self->sz, self->hash,
                       self->copy, self->eq);
 

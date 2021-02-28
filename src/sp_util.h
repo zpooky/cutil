@@ -6,9 +6,9 @@
 #include <stdbool.h>
 
 //==============================
-#define sp_util_max(a, b) (((a) > (b)) ? (a) : (b))
+#define sp_max(a, b) (((a) > (b)) ? (a) : (b))
 
-#define sp_util_min(a, b) (((a) < (b)) ? (a) : (b))
+#define sp_min(a, b) (((a) < (b)) ? (a) : (b))
 
 //==============================
 #define SP_KB 1024

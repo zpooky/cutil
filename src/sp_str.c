@@ -191,7 +191,7 @@ sp_str_append_len(struct sp_str *self, const char *o, size_t len)
   if (required > self->capacity) {
     struct sp_str tmp;
     sp_str_init(&tmp,
-                sp_util_max(required, sp_util_max(16, self->capacity * 2)));
+                sp_max(required, sp_max(16, self->capacity * 2)));
     sp_str_append_str(&tmp, self);
     sp_str_swap(&tmp, self);
     sp_str_free(&tmp);

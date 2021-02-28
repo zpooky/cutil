@@ -111,7 +111,7 @@ sp_buf_push_back(struct sp_buf *self, sp_buf_T *in)
   assert(in);
 
   if (sp_buf_is_full(self)) {
-    struct sp_buf *tmp = sp_buf_init(sp_util_max(16, self->capacity * 2));
+    struct sp_buf *tmp = sp_buf_init(sp_max(16, self->capacity * 2));
     if (!tmp) {
       return false;
     }

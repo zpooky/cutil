@@ -24,7 +24,7 @@ bits_to_capacity(size_t bits)
 static inline int
 sp_bitset_init_internal(struct sp_bitset *self, size_t bits)
 {
-  size_t capacity = sp_util_max(bits_to_capacity(bits), 1);
+  size_t capacity = sp_max(bits_to_capacity(bits), 1);
   self->raw       = calloc(capacity, sizeof(int));
   self->length    = capacity;
   self->bits      = bits;

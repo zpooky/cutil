@@ -146,7 +146,7 @@ sp_cbb_push_back(struct sp_cbb *self, const void *in, size_t in_len)
   out_len = sp_cbb_write_buffer(self, out);
   for (i = 0; i < out_len && in_len > 0; ++i) {
     uint8_t *const seg = out[i].base;
-    size_t seg_len     = sp_util_min(out[i].len, in_len);
+    size_t seg_len     = sp_min(out[i].len, in_len);
 
     memcpy(seg, in, seg_len);
 
@@ -228,7 +228,7 @@ Lit:
   bytes = sp_cbb_remaining_read2(w, rd);
   if (bytes > 0) {
     const size_t r_idx = sp_cbb_index(rd, self->capacity);
-    const size_t l     = sp_util_min(bytes, sp_cbb_capacity(self) - r_idx);
+    const size_t l     = sp_min(bytes, sp_cbb_capacity(self) - r_idx);
 
     if (l > 0) {
       assert(res_len < 2);
@@ -279,7 +279,7 @@ Lit:
   if (writable > 0) {
     const size_t w_idx                  = sp_cbb_index(w, self->capacity);
     const size_t length_until_array_end = sp_cbb_capacity(self) - w_idx;
-    const size_t seg_len = sp_util_min(writable, length_until_array_end);
+    const size_t seg_len = sp_min(writable, length_until_array_end);
     uint8_t *seg         = self->buffer + w_idx;
 
     assert(seg_len > 0);
@@ -314,7 +314,7 @@ sp_cbb_peek_front(const struct sp_cbb *self, /*DEST*/ void *draw, size_t len)
 
   out_len = sp_cbb_read_buffer2(self, out, self->w, self->r);
   for (i = 0; i < out_len && len > 0; ++i) {
-    size_t seg_len           = sp_util_min(out[i].len, len);
+    size_t seg_len           = sp_min(out[i].len, len);
     const uint8_t *const seg = out[i].base;
 
     memcpy(dest + result, seg, seg_len);

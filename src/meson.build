@@ -40,13 +40,11 @@ cutil_lib = static_library('cutil',
               cutil_src,
               include_directories: cutil_include,
               # cpp_args: cutil_compile_options,
-              # dependencies: cutil_deps
               )
 
 cutil_dep = declare_dependency(
               include_directories: cutil_include,
               link_with: cutil_lib,
-              # dependencies: cutil_deps
               )
 
 subdir('test')

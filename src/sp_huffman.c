@@ -346,7 +346,7 @@ huf_write_bits(uint8_t in, size_t bits, struct HufBuf *dest)
 {
   while (bits) {
     dest->raw        = dest->bit_length ? dest->raw : 0;
-    size_t remaining = sp_util_min(8 - dest->bit_length, bits);
+    size_t remaining = sp_min(8 - dest->bit_length, bits);
 
     uint8_t tmp = in >> dest->bit_length;
     dest->raw   = tmp | dest->raw;
@@ -392,7 +392,7 @@ huf_encode_char(const struct HufEncodeInfo *src, struct HufBuf *dest)
     uint8_t b   = 0;
     size_t bits = 0;
 
-    for (i = 0; i < sp_util_min(8, remaining); ++i) {
+    for (i = 0; i < sp_min(8, remaining); ++i) {
       if (src->bits[src_idx++]) {
         b |= huf_mask(bits);
       }

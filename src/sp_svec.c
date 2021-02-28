@@ -196,7 +196,7 @@ sp_svec_append_impl(struct sp_svec *self, sp_svec_T *in)
 
   if (self->length == self->capacity) {
     struct sp_svec *tmp;
-    size_t cap = sp_util_max(16, self->capacity * 2);
+    size_t cap = sp_max(16, self->capacity * 2);
 
     tmp = sp_svec_init_impl_cap(self->align, self->szof, cap);
     if (!tmp) {

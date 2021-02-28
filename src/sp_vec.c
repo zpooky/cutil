@@ -171,7 +171,7 @@ sp_vec_append_impl(struct sp_vec *self, sp_vec_T *in)
   if (self->length == self->capacity) {
     struct sp_vec *tmp;
 
-    tmp = sp_vec_init_cap(sp_util_max(16, self->capacity * 2));
+    tmp = sp_vec_init_cap(sp_max(16, self->capacity * 2));
     if (!tmp) {
       return NULL;
     }

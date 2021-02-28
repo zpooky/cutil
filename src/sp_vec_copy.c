@@ -134,7 +134,7 @@ sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
 
   if (self->length == self->capacity) {
     struct sp_vec_copy *tmp;
-    size_t capacity = sp_util_max(16, self->capacity * 2);
+    size_t capacity = sp_max(16, self->capacity * 2);
 
     tmp = sp_vec_copy_init_cap(capacity, self->align, self->sz, self->copy);
     if (!tmp) {
