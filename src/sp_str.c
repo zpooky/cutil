@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "sp_util.h"
 
@@ -228,6 +229,23 @@ int
 sp_str_append_char(sp_str *self, char c)
 {
   return sp_str_append_len(self, &c, 1);
+}
+
+int
+sp_str_appends(sp_str *self, ...)
+{
+  va_list ap;
+  const char *it;
+
+
+  /* $self is the the last argument before the variable argument list */
+  va_start(ap, self);
+  while ((it = va_arg(ap, const char *))) {
+    sp_str_append(self, it);
+  }
+  va_end(ap);
+
+  return 0;
 }
 
 //==============================
