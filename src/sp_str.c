@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "sp_util.h"
 
@@ -191,8 +192,7 @@ sp_str_append_len(struct sp_str *self, const char *o, size_t len)
   required = self->length + len;
   if (required > self->capacity) {
     struct sp_str tmp;
-    sp_str_init(&tmp,
-                sp_max(required, sp_max(16, self->capacity * 2)));
+    sp_str_init(&tmp, sp_max(required, sp_max(16, self->capacity * 2)));
     sp_str_append_str(&tmp, self);
     sp_str_swap(&tmp, self);
     sp_str_free(&tmp);
@@ -236,7 +236,6 @@ sp_str_appends(sp_str *self, ...)
 {
   va_list ap;
   const char *it;
-
 
   /* $self is the the last argument before the variable argument list */
   va_start(ap, self);
@@ -321,6 +320,18 @@ sp_str_swap(struct sp_str *f, struct sp_str *s)
   sp_util_swap_char_arr(f->sbuf, s->sbuf, sizeof(f->sbuf));
   sp_util_swap_size_t(&f->length, &s->length);
   sp_util_swap_size_t(&f->capacity, &s->capacity);
+}
+
+//==============================
+const char *
+sp_debug_sp_str(const struct sp_str *self)
+{
+  static char buf[256] = {'\0'};
+  if (!self)
+    return "NULL";
+  snprintf(buf, sizeof(buf), "sp_str(%p)[buf[%s]length[%zu]capacity[%zu]]",
+           self, sp_str_c_str(self), self->length, self->capacity);
+  return buf;
 }
 
 //==============================

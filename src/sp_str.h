@@ -98,4 +98,8 @@ void
 sp_str_swap(sp_str *, sp_str *);
 
 //==============================
+const char *
+sp_debug_sp_str(const struct sp_str *in);
+
+//==============================
 #endif
