@@ -64,9 +64,11 @@ sp_hashset_init_int(struct sp_hashset *self,
                     sp_hashset_copy_cb copy,
                     sp_hashset_eq_cb eq)
 {
+  self->bucket = NULL;
+  self->psl    = NULL;
   if (capacity) {
     assert(capacity % 8 == 0);
-    self->bucket = aligned_alloc(align, (capacity + 1) * sz);
+    self->bucket = aligned_alloc(align, (capacity + 2) * sz);
     self->psl    = calloc(capacity, sizeof(*self->psl));
   }
 
@@ -173,7 +175,9 @@ sp_hashset_clear(struct sp_hashset *self)
         --self->length;
       }
     } //for
+    assertx(self->length == 0);
   }
+  self->length = 0;
 }
 
 //==============================
@@ -218,10 +222,10 @@ static void
 sp_hashset_swap(struct sp_hashset *self, sp_hashset_T *f, sp_hashset_T *s)
 {
   /* the last index in self->bucket is used for tmp swap */
-  sp_hashset_T *tmp = sp_hashset_get(self, self->capacity);
-  self->copy(tmp, f, self->sz);
+  sp_hashset_T *scrach = sp_hashset_get(self, self->capacity + 1);
+  self->copy(scrach, f, self->sz);
   self->copy(f, s, self->sz);
-  self->copy(s, tmp, self->sz);
+  self->copy(s, scrach, self->sz);
 }
 
 sp_hashset_T *
@@ -230,6 +234,7 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
   sp_hashset_T *result = NULL;
   size_t it, start;
   PSL_t PSL = PSL_INITIAL;
+  sp_hashset_T *scrach;
 
   assert(self);
   assert(in);
@@ -238,20 +243,23 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
     sp_hashset_rehash(self);
   }
 
-  it = start = self->hash(in) % self->capacity;
+  scrach = sp_hashset_get(self, self->capacity);
+  self->copy(/*dest*/ scrach, in, self->sz);
+
+  it = start = self->hash(scrach) % self->capacity;
   do {
     sp_hashset_T *dest = sp_hashset_get(self, it);
 
     if (self->psl[it] == PSL_EMPTY) {
       result = result ? result : dest;
-      self->copy(dest, in, self->sz);
+      self->copy(/*dest*/ dest, scrach, self->sz);
       self->psl[it] = PSL;
       goto Lout;
     }
 
     if (PSL > self->psl[it]) {
       result = result ? result : dest;
-      sp_hashset_swap(self, in, dest);
+      sp_hashset_swap(self, scrach, dest);
       swap_GENERIC(&self->psl[it], &PSL);
     }
 
@@ -377,17 +385,20 @@ sp_hashset_dump(struct sp_hashset *self)
   for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
       uint32_t h = self->hash(sp_hashset_get(self, i));
-      printf("%zu: %u, ", i, h);
+      fprintf(stderr, "%zu[h:%u, idx[%zu]], ", i, h, h % self->capacity);
       ++a;
     }
   }
-  printf("\n");
+  fprintf(stderr, "\n");
+  fflush(stderr);
 }
 
 //==============================
 void
 sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz)
 {
+  assert(dest);
+  assert(src);
   memcpy(dest, src, sz);
 }
 

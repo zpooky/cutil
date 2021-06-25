@@ -12,11 +12,11 @@ typedef void sp_hashset_T;
 
 //==============================
 typedef uint32_t (*sp_hashset_hash_cb)(const sp_hashset_T *);
-typedef void (*sp_hashset_copy_cb)(sp_hashset_T *,
-                                   const sp_hashset_T *,
+typedef void (*sp_hashset_copy_cb)(sp_hashset_T *dest,
+                                   const sp_hashset_T *src,
                                    size_t sz);
-typedef bool (*sp_hashset_eq_cb)(const sp_hashset_T *,
-                                 const sp_hashset_T *,
+typedef bool (*sp_hashset_eq_cb)(const sp_hashset_T *f,
+                                 const sp_hashset_T *s,
                                  size_t sz);
 
 typedef bool (*sp_hashset_clear_cb)(sp_hashset_T *, size_t sz, void *closure);

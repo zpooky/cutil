@@ -85,9 +85,9 @@ sp_fs_basename_str(const struct sp_str *path)
 int
 sp_fs_mkdirs(const char *path, mode_t mode)
 {
-  size_t plen = strlen(path);
-  char buf[PATH_MAX];
-  char *const b_end = buf + plen;
+  size_t plen        = strlen(path);
+  char buf[PATH_MAX] = {0};
+  char *const b_end  = buf + plen;
   char *b_it;
   struct stat st = {0};
   int res        = 0;

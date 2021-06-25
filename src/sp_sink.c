@@ -80,7 +80,6 @@ sp_sink_write(struct sp_sink *self, const void *in, size_t length)
 
   if (length > sp_cbb_remaining_write(self->buffer)) {
     if ((sp_sink_flush(self)) != 0) {
-
       res = false;
       goto Lout;
     }

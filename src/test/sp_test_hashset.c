@@ -70,8 +70,7 @@ sp_do_test_simple(void)
 
     for (a = 0; a < i; ++a) {
       tmp.hash = tmp.value = data[a];
-      out                  = sp_hashset_lookup(set, &tmp);
-      if (!out) {
+      if (!(out = sp_hashset_lookup(set, &tmp))) {
         printf("i:%d, a:%d\n", i, data[a]);
         /* sp_hashset_dump(set);//TODO bug: duplicate in hashset */
         sp_hashset_lookup(set, &tmp);
@@ -79,6 +78,8 @@ sp_do_test_simple(void)
 
       assert(out);
       assert(out->value == data[a]);
+      assert(out->hash == tmp.hash);
+      assert(out->value == tmp.value);
     }
 
     assert(sp_hashset_length(set) == i);
@@ -87,12 +88,11 @@ sp_do_test_simple(void)
     out                  = sp_hashset_insert(set, &tmp);
     assert(out);
     assert(out->value == data[i]);
-/* sp_hashset_dump(set); */
+    /* sp_hashset_dump(set); */
 
     for (a = i + 1; a < MAX; ++a) {
       tmp.hash = tmp.value = data[a];
-      out                  = sp_hashset_lookup(set, &tmp);
-      if (out) {
+      if ((out = sp_hashset_lookup(set, &tmp))) {
         out = sp_hashset_lookup(set, &tmp);
         printf("data[a]:%u\n", data[1]);
         printf("out:%u\n", out->hash);
