@@ -116,6 +116,7 @@ sp_do_test_simple(void)
   for (i = 0; i < MAX; ++i) {
     struct hashset_test *out = NULL;
     struct hashset_test tmp  = {0};
+    bool b;
 
     /* assert(sp_hashset_length(set) == MAX - i); */
     for (a = 0; a < i; ++a) {
@@ -129,7 +130,8 @@ sp_do_test_simple(void)
     out                  = sp_hashset_lookup(set, &tmp);
     assert(out);
     assert(out->value == data[i]);
-    sp_hashset_remove(set, out);
+    b = sp_hashset_remove(set, out);
+    assert(b);
 
     for (a = i + 1; a < MAX; ++a) {
       tmp.hash = tmp.value = data[a];
@@ -154,6 +156,8 @@ sp_do_test_simple(void)
 int
 sp_test_hashset(void)
 {
+  printf("%s: BEGIN\n", __func__);
   sp_do_test_simple();
+  printf("%s: END\n", __func__);
   return 0;
 }

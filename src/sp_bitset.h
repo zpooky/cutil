@@ -36,7 +36,7 @@ sp_bitset_is_all(const struct sp_bitset *self, int v);
 
 //==============================
 bool
-sp_bitset_write(const struct sp_bitset *self, struct sp_cbb *out);
+sp_bitset_write_BYTES(const struct sp_bitset *self, struct sp_cbb *out);
 
 bool
 sp_bitset_read(struct sp_bitset *self, struct sp_cbb *in, size_t length);

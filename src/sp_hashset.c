@@ -349,8 +349,9 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
 
     while (it != start) {
       if (self->psl[it] > PSL_INITIAL) {
-        sp_hashset_swap(self, sp_hashset_get(self, priv),
-                        sp_hashset_get(self, it));
+        void *p = sp_hashset_get(self, priv);
+        void *s = sp_hashset_get(self, it);
+        sp_hashset_swap(self, p, s);
         swap_GENERIC(&self->psl[priv], &self->psl[it]);
       } else {
         break;
@@ -384,8 +385,10 @@ sp_hashset_dump(struct sp_hashset *self)
   size_t i, a;
   for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
-      uint32_t h = self->hash(sp_hashset_get(self, i));
-      fprintf(stderr, "%zu[h:%u, idx[%zu]], ", i, h, h % self->capacity);
+      void *entry = sp_hashset_get(self, i);
+      uint32_t h  = self->hash(entry);
+      fprintf(stderr, "%zu[h:%u, [%p] idx[%zu]], ", i, h, entry,
+              h % self->capacity);
       ++a;
     }
   }

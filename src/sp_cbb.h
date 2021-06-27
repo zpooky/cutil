@@ -77,7 +77,7 @@ sp_cbb_pop_front(struct sp_cbb *, /*DEST*/ void *, size_t);
 
 //==============================
 bool
-sp_cbb_read(struct sp_cbb *, /*DEST*/ void *, size_t);
+sp_cbb_read(struct sp_cbb *, /*DEST*/ void *dest, size_t dest_len);
 
 //==============================
 uint8_t

@@ -26,6 +26,7 @@ sp_cbb_init(size_t capacity)
   uint8_t *b;
   assert(capacity > 0);
 
+  assert(capacity % 8 == 0);
   //TODO limit capacity to power of 8
   //XXX allocate $buffer together with calloc(cbyte_buffer)
   if ((b = calloc(capacity, sizeof(*b)))) {
@@ -126,7 +127,11 @@ sp_cbb_clear(struct sp_cbb *self)
 static size_t
 sp_cbb_index(size_t in, size_t capacity)
 {
-  return in & (capacity - 1);
+  assert(capacity % 8 == 0);
+  /* return in & (capacity - 1); */
+  /* TODO */
+  /* assert((in & (capacity - 1)) == (in % capacity)); */
+  return in % capacity;
 }
 
 size_t
@@ -376,22 +381,22 @@ sp_cbb_pop_front(struct sp_cbb *self, /*DEST*/ void *draw, size_t len)
 
 //==============================
 bool
-sp_cbb_read(struct sp_cbb *self, /*DEST*/ void *draw, size_t len)
+sp_cbb_read(struct sp_cbb *self, /*DEST*/ void *dest_raw, size_t dest_len)
 {
-  uint8_t *dest = draw;
+  uint8_t *dest = dest_raw;
   size_t peeked;
 
   assert(self);
-  assert(draw);
+  assert(dest_raw);
 
-  if (sp_cbb_remaining_read(self) < len) {
+  if (sp_cbb_remaining_read(self) < dest_len) {
     return false;
   }
 
-  peeked = sp_cbb_peek_front(self, dest, len);
-  assert(peeked == len);
+  peeked = sp_cbb_peek_front(self, dest, dest_len);
+  assert(peeked == dest_len);
 
-  sp_cbb_consume_bytes(self, len);
+  sp_cbb_consume_bytes(self, dest_len);
 
   return true;
 }

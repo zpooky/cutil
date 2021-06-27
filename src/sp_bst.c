@@ -85,10 +85,11 @@ static struct sp_bst_Node *
 sp_bst_voidp_new_cb(sp_bst_voidp_Node *in)
 {
   sp_bst_voidp_Node *result;
-  result = calloc(1, sizeof(*result));
-
-  result->value = in->value;
-  return &result->base;
+  if ((result = calloc(1, sizeof(*result)))) {
+    result->value = in->value;
+    return &result->base;
+  }
+  return NULL;
 }
 
 static int

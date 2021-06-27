@@ -11,6 +11,8 @@ sp_bitset_init(size_t bits)
 {
   struct sp_bitset *result;
 
+  assertx(bits > 0);
+  /* TODO sizeof(*result)+bits_to_capacity(bits) */
   if ((result = calloc(1, sizeof(*result)))) {
     sp_bitset_init_internal(result, bits);
   }
@@ -182,39 +184,43 @@ sp_bitset_is_all(const struct sp_bitset *self, int v)
  *     assert(sp_bitset_test(b, i) == sp_bitset_test(bin, i));
  *   }
  * }
- */
-/*
+ *
  * bit index:
  * [8-0][16-8][24-16][32-24]
  */
 bool
-sp_bitset_write(const struct sp_bitset *self, struct sp_cbb *out)
+sp_bitset_write_BYTES(const struct sp_bitset *self, struct sp_cbb *out)
 {
   bool result = true;
   size_t i;
-  size_t bits     = 0;
-  uint8_t c       = 0;
-  sp_cbb_mark_t m = {0};
+  size_t bits            = 0;
+  uint8_t cur            = 0;
+  sp_cbb_mark_t m        = {0};
+  const size_t MAX_BYTES = (self->bits / 8) + (self->bits % 8 == 0 ? 0 : 1);
+  const size_t MAX_BITS  = MAX_BYTES * 8;
 
   sp_cbb_write_mark(out, &m);
 
-  for (i = 0; i < self->bits; ++i) {
-    c = c | ((sp_bitset_test(self, i) ? 1 : 0) << bits);
+  for (i = 0; i < MAX_BITS; ++i) {
+    /* cur = cur | ((sp_bitset_test(self, i) ? 1 : 0) << bits); */
+    if (sp_bitset_test(self, i)) {
+      cur |= 1;
+    }
     ++bits;
 
     if (bits == 8) {
+      //TODO high bit is low value
       bits = 0;
-      if (!sp_cbb_write(out, &c, 1)) {
+      if (!sp_cbb_write(out, &cur, sizeof(cur))) {
         result = false;
         break;
       }
-      c = 0;
+      cur = 0;
     }
-  } //for
 
-  if (result && bits > 0) {
-    result = sp_cbb_write(out, &c, 1);
-  }
+    cur <<= 1;
+  } //for
+  /* assert(bits == 0); */
 
   m.rollback = !result;
   sp_cbb_write_unmark(out, &m);
@@ -240,18 +246,20 @@ sp_bitset_read(struct sp_bitset *self, struct sp_cbb *in, size_t length)
   }
 
   while (length && result) {
+    uint8_t mask = 1 << 7;
     size_t i;
-    char c;
+    char cur;
 
-    if (!(result = sp_cbb_read(in, &c, 1))) {
+    if (!(result = sp_cbb_read(in, &cur, sizeof(cur)))) {
       break;
     }
-    for (i = 0; i < 8; ++i) {
-      char x = c >> i;
-      sp_bitset_set(self, bidx++, x & 1);
-    }
-
     --length;
+
+    for (i = 0; i < 8; ++i) {
+      /* char x = c >> i; */
+      sp_bitset_set(self, bidx++, cur & mask);
+      mask >>= 1;
+    }
   }
 
   return result;

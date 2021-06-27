@@ -357,7 +357,7 @@ static void inline sp_util_backtrace(FILE *dest, const char *proto)
       } else {
         fprintf(dest, "%s\n", strings[i]);
       }
-    }
+    } //for
 
     free(strings);
   }
