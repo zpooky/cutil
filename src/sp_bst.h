@@ -14,14 +14,37 @@ typedef struct sp_bst_Node {
 
 typedef sp_bst_Node sp_bst_T;
 
+/* static int example_cmp(struct example *f, struct example *s) {
+ *   int res = sp_util_uint32_cmp(f->first, s->first);
+ *   if (res == 0) res = sp_util_uint32_cmp(f->second, s->second);
+ *   return res;
+ * }
+ */
 typedef int (*sp_bst_node_cmp_cb)(sp_bst_T *, sp_bst_T *);
+/* static struct sp_bst_Node *example_new(struct example *in){
+ *   struct example *result;
+ *   if((result = calloc(1, sizeof(*result)))){
+ *     #<{(| init $result based on $in |)}>#
+ *   }
+ *   return &result->base;
+ * }
+ */
 typedef struct sp_bst_Node *(*sp_bst_node_new_cb)(sp_bst_T *);
+/* static int example_free(struct example *in){
+ *   free(in);
+ *   return 0;
+ * }
+ */
 typedef int (*sp_bst_node_free_cb)(sp_bst_T *);
 
 //==============================
 typedef int (*sp_bst_node_it_cb)(sp_bst_T *, void *);
 
 //==============================
+/* struct sp_bst *tree = sp_bst_init((sp_bst_node_cmp_cb)example_cmp,
+ *                                   (sp_bst_node_new_cb)example_new,
+ *                                   (sp_bst_node_free_cb)example_free);
+ */
 struct sp_bst *
   sp_bst_init(sp_bst_node_cmp_cb, sp_bst_node_new_cb, sp_bst_node_free_cb);
 
@@ -126,6 +149,11 @@ void
 sp_bst_next(struct sp_bst_It *);
 
 //TODO break does not work
+/* sp_bst_It it;
+ * sp_bst_for_each (&it, bst) {
+ *   struct example*entry = it.head;
+ * }
+ */
 #define sp_bst_for_each(it, self)                                              \
   for (sp_bst_begin((self), (it)); (it)->head; sp_bst_next((it)))
 

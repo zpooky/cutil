@@ -182,6 +182,40 @@ sp_hashset_clear(struct sp_hashset *self)
 
 //==============================
 static bool
+sp_hashset_validate(struct sp_hashset *self)
+{
+  size_t i;
+  for (i = 0; i < self->capacity; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      size_t idx;
+      sp_hashset_T *entry;
+
+      entry = sp_hashset_get(self, i);
+      idx   = self->hash(entry) % self->capacity;
+
+      if (idx == i) {
+        assertx(self->psl[i] == PSL_INITIAL);
+      } else {
+        size_t a   = i;
+        size_t cnt = self->psl[i] - PSL_INITIAL;
+        while (cnt) {
+          a = a == 0 ? self->capacity - 1 : a - 1;
+          assertx(self->psl[a] != PSL_EMPTY);
+          {
+
+            /* assertx(self->psl[a] <= self->psl[i]); */
+          }
+          --cnt;
+        }
+        assert(((a + (self->psl[i] - PSL_INITIAL)) % self->capacity) == i);
+      }
+    }
+  } //for
+  return true;
+}
+
+//==============================
+static bool
 sp_hashset_is_full(struct sp_hashset *self)
 {
   /* size_t c = sp_min(self->capacity / PSL_MAX, 1); */
@@ -245,7 +279,7 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
 
   scrach = sp_hashset_get(self, self->capacity);
   self->copy(/*dest*/ scrach, in, self->sz);
-
+  assert(self->hash(scrach) == self->hash(in));
   it = start = self->hash(scrach) % self->capacity;
   do {
     sp_hashset_T *dest = sp_hashset_get(self, it);
@@ -273,6 +307,7 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
 Lout:
   if (result) {
     self->length++;
+    assert(sp_hashset_validate(self));
   }
   return result;
 }
@@ -338,9 +373,11 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
   bool result;
 
   if ((result = sp_hashset_do_lookup(self, needle, &it, &start))) {
+    size_t priv;
     --self->length;
 
-    size_t priv;
+    assert(self->eq(sp_hashset_get(self, it), needle, self->sz));
+
     self->copy(needle, sp_hashset_get(self, it), self->sz);
     self->psl[it] = PSL_EMPTY;
 
@@ -353,13 +390,15 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
         void *s = sp_hashset_get(self, it);
         sp_hashset_swap(self, p, s);
         swap_GENERIC(&self->psl[priv], &self->psl[it]);
+        self->psl[priv]--;
       } else {
         break;
       }
 
       priv = it;
       it   = (it + 1) % self->capacity;
-    }
+    } //while
+    assert(sp_hashset_validate(self));
   }
 
   return result;
@@ -385,8 +424,8 @@ sp_hashset_dump(struct sp_hashset *self)
   size_t i, a;
   for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
-      void *entry = sp_hashset_get(self, i);
-      uint32_t h  = self->hash(entry);
+      sp_hashset_T *entry = sp_hashset_get(self, i);
+      uint32_t h          = self->hash(entry);
       fprintf(stderr, "%zu[h:%u, [%p] idx[%zu]], ", i, h, entry,
               h % self->capacity);
       ++a;
@@ -405,4 +444,20 @@ sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz)
   memcpy(dest, src, sz);
 }
 
+//==============================
+void
+sp_hashset_for_each(const struct sp_hashset *self,
+                    sp_hashset_for_each_cb cb,
+                    void *closure)
+{
+  size_t i, a;
+  for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      const sp_hashset_T *entry = sp_hashset_get((struct sp_hashset *)self, i);
+      cb(entry, closure, self->sz);
+
+      ++a;
+    }
+  }
+}
 //==============================
