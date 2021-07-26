@@ -184,6 +184,7 @@ sp_sink_mark(struct sp_sink *self, sp_sink_mark_t *out)
   assert(out);
   /* just to try to ensure that not double marked the same $out */
   assert(out->before == 0);
+  out->l_commit_hooks = 0;
 
   /* TODO: the purpose of this mark is to only allow flush:ing of unmarked bytes */
 
@@ -197,11 +198,18 @@ sp_sink_mark(struct sp_sink *self, sp_sink_mark_t *out)
 int
 sp_sink_unmark(struct sp_sink *self, const sp_sink_mark_t *in)
 {
+  size_t i;
   sp_cbb_mark_t mark = {
-    .before   = in->before,
-    .rollback = in->rollback,
+    .before         = in->before,
+    .rollback       = in->rollback,
+    .l_commit_hooks = in->l_commit_hooks,
   };
+
   assert(self);
+  for (i = 0; i < mark.l_commit_hooks; ++i) {
+    mark.commit_hooks[i]         = in->commit_hooks[i];
+    mark.commit_hooks_closure[i] = in->commit_closure[i];
+  }
   return sp_cbb_write_unmark(self->buffer, &mark);
 }
 

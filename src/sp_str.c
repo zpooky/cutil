@@ -182,21 +182,13 @@ sp_str_c_str(const struct sp_str *self)
 int
 sp_str_append_len(struct sp_str *self, const char *o, size_t len)
 {
-  size_t required;
   char *dest;
 
   assert(self);
   assert(self->capacity > 0);
   assert(o);
 
-  required = self->length + len;
-  if (required > self->capacity) {
-    struct sp_str tmp;
-    sp_str_init(&tmp, sp_max(required, sp_max(16, self->capacity * 2)));
-    sp_str_append_str(&tmp, self);
-    sp_str_swap(&tmp, self);
-    sp_str_free(&tmp);
-  }
+  sp_str_ensure_capacity(self, self->length + len);
 
   dest = sp_str_c_str_mut(self) + self->length;
   memcpy(dest, o, len);
@@ -320,6 +312,19 @@ sp_str_swap(struct sp_str *f, struct sp_str *s)
   sp_util_swap_char_arr(f->sbuf, s->sbuf, sizeof(f->sbuf));
   sp_util_swap_size_t(&f->length, &s->length);
   sp_util_swap_size_t(&f->capacity, &s->capacity);
+}
+
+//==============================
+void
+sp_str_ensure_capacity(sp_str *self, size_t capacity)
+{
+  if (self->capacity < capacity) {
+    struct sp_str tmp = {0};
+    sp_str_init(&tmp, sp_max(capacity, sp_max(16, self->capacity * 2)));
+    sp_str_append_str(&tmp, self);
+    sp_str_swap(&tmp, self);
+    sp_str_free(&tmp);
+  }
 }
 
 //==============================

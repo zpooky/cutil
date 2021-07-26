@@ -91,19 +91,23 @@ sp_cbb_free(struct sp_cbb **);
 typedef struct {
   size_t before;
   bool rollback;
+
+  size_t l_commit_hooks;
+  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  void *commit_hooks_closure[4];
 } sp_cbb_mark_t;
 
 int
 sp_cbb_read_mark(struct sp_cbb *, sp_cbb_mark_t *out);
 
 int
-sp_cbb_read_unmark(struct sp_cbb *, const sp_cbb_mark_t *);
+sp_cbb_read_unmark(struct sp_cbb *, sp_cbb_mark_t *);
 
 int
 sp_cbb_write_mark(struct sp_cbb *, sp_cbb_mark_t *out);
 
 int
-sp_cbb_write_unmark(struct sp_cbb *, const sp_cbb_mark_t *);
+sp_cbb_write_unmark(struct sp_cbb *, sp_cbb_mark_t *);
 
 //==============================
 bool

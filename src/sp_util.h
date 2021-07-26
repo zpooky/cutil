@@ -184,4 +184,8 @@ sp_util_bin_insert_uniq(void *arr,
                         sp_util_sort_cmp_cb cmp);
 
 //==============================
+bool
+sp_util_parse_int(const char *str, const char *str_end, unsigned long *out);
+
+//==============================
 #endif

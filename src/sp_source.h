@@ -38,6 +38,10 @@ sp_source_capacity(const struct sp_source *);
 typedef struct {
   size_t before;
   bool rollback;
+
+  size_t l_commit_hooks;
+  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  void *commit_closure[4];
 } sp_source_mark_t;
 
 int
@@ -45,6 +49,9 @@ sp_source_mark(struct sp_source *, sp_source_mark_t *out);
 
 int
 sp_source_unmark(struct sp_source *, const sp_source_mark_t *);
+
+bool
+sp_source_is_marked(const struct sp_source *);
 
 //==============================
 bool

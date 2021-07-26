@@ -47,6 +47,10 @@ sp_sink_free(struct sp_sink **);
 typedef struct {
   size_t before;
   bool rollback;
+
+  size_t l_commit_hooks;
+  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  void *commit_closure[4];
 } sp_sink_mark_t;
 
 int

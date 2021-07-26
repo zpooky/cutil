@@ -98,6 +98,10 @@ void
 sp_str_swap(sp_str *, sp_str *);
 
 //==============================
+void
+sp_str_ensure_capacity(sp_str *, size_t);
+
+//==============================
 const char *
 sp_debug_sp_str(const struct sp_str *in);
 

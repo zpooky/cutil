@@ -119,6 +119,7 @@ sp_source_mark(struct sp_source *self, sp_source_mark_t *out)
   sp_cbb_mark_t mark = {0};
 
   assert(self);
+  out->l_commit_hooks = 0;
 
   sp_cbb_read_mark(self->buffer, &mark);
   out->before   = mark.before;
@@ -130,12 +131,25 @@ sp_source_mark(struct sp_source *self, sp_source_mark_t *out)
 int
 sp_source_unmark(struct sp_source *self, const sp_source_mark_t *in)
 {
+  size_t i;
   sp_cbb_mark_t mark = {
-    .before   = in->before,
-    .rollback = in->rollback,
+    .before         = in->before,
+    .rollback       = in->rollback,
+    .l_commit_hooks = in->l_commit_hooks,
   };
   assert(self);
+  for (i = 0; i < mark.l_commit_hooks; ++i) {
+    mark.commit_hooks[i]        = in->commit_hooks[i];
+    mark.commit_hooks_closure[i] = in->commit_closure[i];
+  }
+
   return sp_cbb_read_unmark(self->buffer, &mark);
+}
+
+bool
+sp_source_is_marked(const struct sp_source *self)
+{
+  return sp_cbb_is_read_mark(self->buffer);
 }
 
 //==============================

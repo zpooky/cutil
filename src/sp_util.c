@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include <errno.h>
 
 #include <execinfo.h> // backtrace
 
@@ -611,4 +612,26 @@ sp_util_bin_insert_uniq(void *arr,
                                   sp_util_swap_raw);
 }
 
+//==============================
+bool
+sp_util_parse_int(const char *str, const char *str_end, unsigned long *out)
+{
+  char *end = NULL;
+
+  if (str >= str_end) {
+    assertx(false);
+    return false;
+  }
+
+  *out = strtoul(str, &end, 10);
+  if (end != str_end) {
+    return false;
+  }
+
+  if (errno == ERANGE) {
+    return false;
+  }
+
+  return true;
+}
 //==============================
