@@ -634,4 +634,12 @@ sp_util_parse_int(const char *str, const char *str_end, unsigned long *out)
 
   return true;
 }
+
+//==============================
+void
+sp_util_memcopy(void *dest, const void *src, size_t sz)
+{
+  memcpy(dest, src, sz);
+}
+
 //==============================

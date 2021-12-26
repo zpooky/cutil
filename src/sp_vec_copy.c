@@ -6,12 +6,6 @@
 #include <memory.h>
 
 //==============================
-static void
-sp_vec_copy_memcopy(sp_vec_copy_T *dest, const sp_vec_copy_T *src, size_t sz)
-{
-  memcpy(dest, src, sz);
-}
-
 struct sp_vec_copy *
 sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb copy)
 {
@@ -25,7 +19,7 @@ sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb copy)
 struct sp_vec_copy *
 sp_vec_copy_init0(size_t align, size_t sz)
 {
-  return sp_vec_copy_init(align, sz, sp_vec_copy_memcopy);
+  return sp_vec_copy_init(align, sz, sp_util_memcopy);
 }
 
 struct sp_vec_copy *

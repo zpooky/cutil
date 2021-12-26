@@ -188,4 +188,9 @@ bool
 sp_util_parse_int(const char *str, const char *str_end, unsigned long *out);
 
 //==============================
+typedef void (*sp_util_copy_cb)(void *dest, const void *src, size_t);
+void
+sp_util_memcopy(void *dest, const void *src, size_t sz);
+
+//==============================
 #endif
