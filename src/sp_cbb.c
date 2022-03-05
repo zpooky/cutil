@@ -155,7 +155,7 @@ sp_cbb_push_back(struct sp_cbb *self, const void *in, size_t in_len)
 
     memcpy(seg, in, seg_len);
 
-    in = ((const uint8_t *)in) + result;
+    in = ((const uint8_t *)in) + seg_len;
     result += seg_len;
     in_len -= seg_len;
   }

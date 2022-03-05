@@ -15,7 +15,7 @@
 
 //==============================
 void
-sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len);
+sp_util_to_hex(const char *ctx, const void *raw, size_t len);
 
 //==============================
 const uint8_t *

@@ -17,9 +17,10 @@ static const char hex_encode_lookup[] = {
   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
 };
 void
-sp_util_to_hex(const char *ctx, const uint8_t *raw, size_t len)
+sp_util_to_hex(const char *ctx, const void *in, size_t len)
 {
   size_t i;
+  const char *raw = in;
 
   if (ctx) {
     printf("%s ", ctx);
