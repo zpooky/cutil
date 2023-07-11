@@ -27,6 +27,8 @@ cutil_src = [
   'sp_heap_copy.c',
 
   'sp_hashset.c',
+
+  'sp_file_advisory_lock.c',
 ]
 
 cutil_link_options = [
