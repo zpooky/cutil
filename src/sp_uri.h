@@ -58,6 +58,7 @@ const char *
 sp_uri2_path(const struct sp_uri2 *);
 
 //==============================
+/* TODO appendf printf style */
 int
 sp_uri_append(struct sp_URI *, const char *);
 

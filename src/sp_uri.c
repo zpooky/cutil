@@ -10,6 +10,7 @@
 #include "sp_fs.h"
 #include "sp_str.h"
 #include "sp_vec.h"
+#include "sp_util.h"
 
 //==============================
 #define SP_URI_BLOCK_MAX (16)
@@ -135,10 +136,11 @@ sp_uri2_append_all(struct sp_uri2 *self, const char *path)
       next = end;
     }
 
+    assertx(((uintptr_t)next) >= ((uintptr_t)it));
     len = ((uintptr_t)next) - ((uintptr_t)it);
     if (len > 0) {
       if ((res = sp_uri2_append_len(self, it, len)) < 0) {
-        assert(false);
+        assertx(false);
         sp_uri2_clear(self);
         goto Lout;
       }
@@ -161,6 +163,7 @@ sp_uri2_init(struct sp_uri2 *self, const char *path)
   if (!(res = sp_uri2_init0(self))) {
     res = sp_uri2_append_all(self, path);
 
+    assertx(strcmp(self->buf, path) == 0);
     if (strcmp(self->buf, path) != 0) {
       /* printf("==========\n"); */
       /* printf("self->buf: %s\n", self->buf); */
@@ -306,14 +309,19 @@ sp_uri2_append_len(struct sp_uri2 *self, const char *elem, size_t elem_len)
   int res        = -ENOMEM;
   size_t buf_len = strlen(self->buf);
 
-  assert(elem_len > 0);
-  assert(memchr(elem, '/', elem_len) == NULL);
-  assert(memchr(elem, ':', elem_len) == NULL);
+  assertx(elem_len > 0);
+  assertx(memchr(elem, '/', elem_len) == NULL);
+  assertx(memchr(elem, ':', elem_len) == NULL);
 
-  if ((buf_len + elem_len + 1) < sizeof(self->buf)) {
+  if ((buf_len + elem_len + 1) < sizeof(self->buf) && elem_len > 0) {
     res = 0;
-    strcat(self->buf, "/");
-    strncat(self->buf, elem, elem_len);
+    if (buf_len == 0 && elem[0] == '.') {
+      // ./wasd
+      strncat(self->buf, elem, elem_len);
+    } else {
+      strcat(self->buf, "/");
+      strncat(self->buf, elem, elem_len);
+    }
   }
 
   return res;

@@ -241,6 +241,24 @@ sp_str_appends(sp_str *self, ...)
 
 //==============================
 int
+sp_str_replace_char(sp_str *self, char needle, char replace)
+{
+  char *it;
+  assertx(self);
+  assertx(needle != '\0');
+  assertx(replace != '\0');
+
+  for (it = sp_str_c_str_mut(self); *it != '\0'; ++it) {
+    if (*it == needle) {
+      *it = replace;
+    }
+  }
+
+  return 0;
+}
+
+//==============================
+int
 sp_str_cmp(const struct sp_str *self, const char *o)
 {
   assert(self);
@@ -279,11 +297,43 @@ sp_str_prefix_cmp(const sp_str *self, const char *prefix)
 int
 sp_str_prefix_cmp_str(const sp_str *self, const sp_str *prefix)
 {
-  assert(self);
-  assert(prefix);
+  assertx(self);
+  assertx(prefix);
 
   return sp_str_prefix_cmp_len(self, sp_str_c_str(prefix),
                                sp_str_length(prefix));
+}
+
+//==============================
+static int
+sp_str_suffix_cmp_len(const sp_str *self, const char *suffix, size_t slen)
+{
+  size_t offset;
+  if (slen > sp_str_length(self)) {
+    return -1;
+  }
+  offset = sp_str_length(self) - slen;
+
+  return strncmp(sp_str_c_str(self) + offset, suffix, slen);
+}
+
+int
+sp_str_suffix_cmp(const sp_str *self, const char *suffix)
+{
+  assert(self);
+  assert(suffix);
+
+  return sp_str_suffix_cmp_len(self, suffix, strlen(suffix));
+}
+
+int
+sp_str_suffix_cmp_str(const sp_str *self, const sp_str *suffix)
+{
+  assertx(self);
+  assertx(suffix);
+
+  return sp_str_suffix_cmp_len(self, sp_str_c_str(suffix),
+                               sp_str_length(suffix));
 }
 
 //==============================

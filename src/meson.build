@@ -1,17 +1,21 @@
 cutil_src = [
   'sp_svec.c',
   'sp_vec.c',
+
   'sp_sink.c',
   'sp_fs.c',
+  'sp_cbb.c',
+  'sp_buf.c',
+
   'sp_stack.c',
   'sp_bst.c',
   'sp_queue.c',
+  'sp_heap.c',
+
   'sp_uri.c',
   'sp_util.c',
-  'sp_cbb.c',
-  'sp_heap.c',
-  'sp_buf.c',
   'sp_str.c',
+  'sp_str_util.c',
 
   'sp_fnv.c',
   'sp_djb.c',

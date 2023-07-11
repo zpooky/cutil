@@ -77,6 +77,10 @@ sp_str_appends(sp_str *, ...);
 
 //==============================
 int
+sp_str_replace_char(sp_str *, char needle, char replace);
+
+//==============================
+int
 sp_str_cmp(const sp_str *, const char *);
 
 int
@@ -88,6 +92,12 @@ sp_str_prefix_cmp(const sp_str *, const char *);
 
 int
 sp_str_prefix_cmp_str(const sp_str *, const sp_str *);
+
+//==============================
+int
+sp_str_suffix_cmp(const sp_str *, const char *);
+int
+sp_str_suffix_cmp_str(const sp_str *, const sp_str *);
 
 //==============================
 int
