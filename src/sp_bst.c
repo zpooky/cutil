@@ -326,7 +326,7 @@ sp_bst_remove_free_impl(struct sp_bst *self, sp_bst_T *needle)
 
 //==============================
 int
-sp_bst_clear(struct sp_bst *self)
+sp_bst_clear2(struct sp_bst *self, sp_bst_node_free_cb node_free)
 {
   assert(self);
 
@@ -345,7 +345,7 @@ sp_bst_clear(struct sp_bst *self)
       }
 
       current->left = current->right = NULL;
-      self->node_free(current);
+      node_free(current);
     } while (sp_queue_dequeue(stack, &current));
 
     sp_queue_free(&stack);
@@ -354,6 +354,12 @@ sp_bst_clear(struct sp_bst *self)
   self->root = NULL;
 
   return 0;
+}
+
+int
+sp_bst_clear(struct sp_bst *self)
+{
+  return sp_bst_clear2(self, self->node_free);
 }
 
 //==============================

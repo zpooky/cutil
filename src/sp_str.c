@@ -1,5 +1,6 @@
 #include "sp_str.h"
 #include <stdlib.h>
+#include <ctype.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>

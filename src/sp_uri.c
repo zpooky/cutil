@@ -311,7 +311,7 @@ sp_uri2_append_len(struct sp_uri2 *self, const char *elem, size_t elem_len)
 
   assertx(elem_len > 0);
   assertx(memchr(elem, '/', elem_len) == NULL);
-  assertx(memchr(elem, ':', elem_len) == NULL);
+  /* assertx(memchr(elem, ':', elem_len) == NULL); */
 
   if ((buf_len + elem_len + 1) < sizeof(self->buf) && elem_len > 0) {
     res = 0;

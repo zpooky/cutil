@@ -73,6 +73,7 @@ uint64_t
 sp_util_ntohll(uint64_t n);
 
 //==============================
+#define SP_UTIL_NUMERIC_CMP(a, b) ((int)((a) - (b)))
 int sp_util_size_t_cmp(size_t, size_t);
 
 int sp_util_uint16_cmp(uint16_t, uint16_t);

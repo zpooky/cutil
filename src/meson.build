@@ -6,6 +6,7 @@ cutil_src = [
   'sp_fs.c',
   'sp_cbb.c',
   'sp_buf.c',
+  'sp_xdg.c',
 
   'sp_stack.c',
   'sp_bst.c',

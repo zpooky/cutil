@@ -115,6 +115,9 @@ sp_bst_remove_free_impl(struct sp_bst *, sp_bst_T *needle);
 int
 sp_bst_clear(struct sp_bst *);
 
+int
+sp_bst_clear2(struct sp_bst *, sp_bst_node_free_cb);
+
 //==============================
 int
 sp_bst_free(struct sp_bst **);

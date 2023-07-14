@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <fcntl.h>
 
 /*
@@ -21,6 +22,16 @@
  * TODO self->fd = fd+1 so that a 0 init struct is invalid (because 0 is a valid fd)
  */
 
+//==============================
+const char *
+sp_debug_sp_file_advisory_lock(const sp_file_advisory_lock *in)
+{
+  static char buf[1024] = {'\0'};
+  if (!in)
+    return "sp_file_advisory_lock(NULL)";
+  snprintf(buf, sizeof(buf), "sp_file_advisory_lock{fd[%d]}", in->fd);
+  return buf;
+}
 //==============================
 int
 sp_file_advisory_lock_init(sp_file_advisory_lock *self, const char *fpath)
@@ -42,6 +53,21 @@ sp_file_advisory_lock_init(sp_file_advisory_lock *self, const char *fpath)
     assertx(ret == 0);
 
 #endif
+    return self->fd;
+  }
+
+  return 0;
+}
+
+int
+sp_file_advisory_lock_init1(sp_file_advisory_lock *self,
+                            int dir,
+                            const char *file)
+{
+
+  assertx(dir >= 0);
+
+  if ((self->fd = openat(dir, file, O_CREAT | O_EXCL) < 0)) {
     return self->fd;
   }
 

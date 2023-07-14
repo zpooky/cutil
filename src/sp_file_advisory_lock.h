@@ -6,9 +6,16 @@ typedef struct {
   int fd;
 } sp_file_advisory_lock;
 
+const char* sp_debug_sp_file_advisory_lock(const sp_file_advisory_lock *in);
+
 //==============================
 int
 sp_file_advisory_lock_init(sp_file_advisory_lock *self, const char *fpath);
+
+int
+sp_file_advisory_lock_init1(sp_file_advisory_lock *self,
+                           int dir,
+                           const char *file);
 
 int
 sp_file_advisory_lock_free(sp_file_advisory_lock *self);
