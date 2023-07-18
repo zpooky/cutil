@@ -40,7 +40,7 @@ sp_file_advisory_lock_init(sp_file_advisory_lock *self, const char *fpath)
   assertx(fpath);
 
   /* Lretry: */
-  if ((self->fd = open(fpath, O_CREAT | O_EXCL) < 0)) {
+  if ((self->fd = open(fpath, O_CREAT | O_EXCL | O_CLOEXEC) < 0)) {
 #if 0
     struct flock fl = {0};
     int ret;
@@ -67,7 +67,7 @@ sp_file_advisory_lock_init1(sp_file_advisory_lock *self,
 
   assertx(dir >= 0);
 
-  if ((self->fd = openat(dir, file, O_CREAT | O_EXCL) < 0)) {
+  if ((self->fd = openat(dir, file, O_CREAT | O_EXCL | O_CLOEXEC) < 0)) {
     return self->fd;
   }
 

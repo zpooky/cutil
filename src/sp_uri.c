@@ -122,11 +122,12 @@ sp_uri2_init0(struct sp_uri2 *self)
 }
 
 static int
-sp_uri2_append_all(struct sp_uri2 *self, const char *path)
+sp_uri2_append_all(struct sp_uri2 *self, const char *path, size_t l_path)
 {
   int res               = 0;
   const char *it        = path;
-  const char *const end = path + strlen(path);
+  const char *const end = path + l_path;
+  /* fprintf(stderr, "%s:path[%s]l_path[%zu]\n", __func__, path, l_path); */
 
   while (it < end) {
     const char *next;
@@ -153,28 +154,35 @@ Lout:
 }
 
 int
-sp_uri2_init(struct sp_uri2 *self, const char *path)
+sp_uri2_initl(struct sp_uri2 *self, const char *path, size_t l_path)
 {
   int res = -ENOMEM;
 
-  assert(self);
-  assert(path);
+  assertx(self);
+  assertx(path);
 
-  if (!(res = sp_uri2_init0(self))) {
-    res = sp_uri2_append_all(self, path);
+  sp_uri2_init0(self);
+  res = sp_uri2_append_all(self, path, l_path);
 
-    assertx(strcmp(self->buf, path) == 0);
-    if (strcmp(self->buf, path) != 0) {
-      /* printf("==========\n"); */
-      /* printf("self->buf: %s\n", self->buf); */
-      /* printf("path: %s\n", path); */
-      /* fflush(stdout); */
-      /* fflush(stderr); */
-      /* assert(strcmp(self->buf, path) == 0); */
-    }
+  if (strncmp(self->buf, path, l_path) != 0) {
+    /* printf("==========\n"); */
+    printf(" buf: %s\n", self->buf);
+    printf("path: %.*s\n", (int)l_path, path);
+    /* fflush(stdout); */
+    /* fflush(stderr); */
+    /* assert(strcmp(self->buf, path) == 0); */
   }
+  assertx(strncmp(self->buf, path, l_path) == 0);
 
   return res;
+}
+
+int
+sp_uri2_init(struct sp_uri2 *self, const char *path)
+{
+  assertx(self);
+  assertx(path);
+  return sp_uri2_initl(self, path, strlen(path));
 }
 
 int
@@ -227,6 +235,25 @@ sp_uri2_basename(const struct sp_uri2 *self)
   return sp_fs_basename(self->buf);
 }
 
+void
+sp_uri2_dirname(const struct sp_uri2 *self, struct sp_uri2 *out)
+{
+  const char *l = NULL;
+  assertx(self);
+  assertx(out);
+  if ((l = strrchr(self->buf, '/'))) {
+    assertx((uintptr_t)l >= (uintptr_t)self->buf);
+    uintptr_t len = ((uintptr_t)self->buf) - ((uintptr_t)l);
+    if (len > 0) {
+      sp_uri2_initl(out, self->buf, len);
+    } else {
+      sp_uri2_init_cpy(out, self);
+    }
+  } else {
+    sp_uri2_init_cpy(out, self);
+  }
+}
+
 sp_str
 sp_uri_path(const struct sp_URI *self)
 {
@@ -271,6 +298,20 @@ sp_uri2_path(const struct sp_uri2 *self)
 
 //==============================
 int
+sp_uri2_normalize(struct sp_uri2 *self)
+{
+  char tmp[PATH_MAX] = {0};
+  assertx(self);
+  if (!realpath(self->buf, tmp)) {
+    return -1;
+  }
+  sp_uri2_init(self, tmp);
+
+  return 0;
+}
+
+//==============================
+int
 sp_uri_append(struct sp_URI *self, const char *element)
 {
   int res = 0;
@@ -306,6 +347,7 @@ Lout:
 int
 sp_uri2_append_len(struct sp_uri2 *self, const char *elem, size_t elem_len)
 {
+  /* fprintf(stderr, "%s:elem[%s]elem_len[%zu]\n", __func__, elem, elem_len); */
   int res        = -ENOMEM;
   size_t buf_len = strlen(self->buf);
 
@@ -315,7 +357,10 @@ sp_uri2_append_len(struct sp_uri2 *self, const char *elem, size_t elem_len)
 
   if ((buf_len + elem_len + 1) < sizeof(self->buf) && elem_len > 0) {
     res = 0;
-    if (buf_len == 0 && elem[0] == '.') {
+    if (buf_len == 0 && elem[0] == '~') {
+      // ~/wasd
+      strncat(self->buf, elem, elem_len);
+    } else if (buf_len == 0 && elem[0] == '.') {
       // ./wasd
       strncat(self->buf, elem, elem_len);
     } else {
@@ -331,6 +376,7 @@ int
 sp_uri2_append(struct sp_uri2 *self, const char *element)
 {
   size_t elem_len;
+  /* fprintf(stderr, "%s:element[%s]\n", __func__, element); */
 
   assert(self);
   assert(element);
@@ -521,11 +567,13 @@ sp_uri2_clear(sp_uri2 *self)
 int
 sp_uri2_join(sp_uri2 *self, const sp_uri2 *other)
 {
+  const char *o = NULL;
   assert(self);
   assert(other);
   assert(self != other);
 
-  return sp_uri2_append_all(self, sp_uri2_path(other));
+  o = sp_uri2_path(other);
+  return sp_uri2_append_all(self, o, strlen(o));
 }
 
 //==============================

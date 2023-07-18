@@ -33,6 +33,9 @@ int
 sp_uri2_init(struct sp_uri2 *, const char *);
 
 int
+sp_uri2_initl(struct sp_uri2 *, const char *, size_t);
+
+int
 sp_uri2_init_str(struct sp_uri2 *, const sp_str *);
 
 int
@@ -45,17 +48,21 @@ sp_uri_basename(const struct sp_URI *);
 const char *
 sp_uri2_basename(const struct sp_uri2 *);
 
-sp_str
-sp_uri_dirname(const struct sp_URI *);
+/* void */
+/* sp_uri_dirname(const struct sp_URI *self, struct sp_URI *out); */
 
-sp_str
-sp_uri2_dirname(const struct sp_uri2 *);
+void
+sp_uri2_dirname(const struct sp_uri2 *self, struct sp_uri2 *out);
 
 sp_str
 sp_uri_path(const struct sp_URI *);
 
 const char *
 sp_uri2_path(const struct sp_uri2 *);
+
+//==============================
+int
+sp_uri2_normalize(struct sp_uri2 *);
 
 //==============================
 /* TODO appendf printf style */

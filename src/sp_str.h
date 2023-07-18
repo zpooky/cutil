@@ -19,6 +19,9 @@ typedef struct sp_str {
 
 //==============================
 int
+sp_str_init0(sp_str *);
+
+int
 sp_str_init(sp_str *, size_t cap);
 
 int

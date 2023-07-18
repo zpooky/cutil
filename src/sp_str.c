@@ -21,13 +21,24 @@ is_static_alloc(size_t cap)
 }
 
 int
+sp_str_init0(sp_str *self)
+{
+  assertx(self);
+
+  self->length = 0;
+  memset(self->sbuf, '\0', sizeof(self->sbuf));
+  self->capacity = SBUF_MAX;
+
+  return 0;
+}
+
+int
 sp_str_init(struct sp_str *self, size_t cap)
 {
   assert(self);
 
   if (is_static_alloc(cap)) {
-    memset(self->sbuf, '\0', sizeof(self->sbuf));
-    self->capacity = SBUF_MAX;
+    sp_str_init0(self);
   } else {
     self->buf      = calloc(cap + 1, sizeof(char));
     self->capacity = cap;
