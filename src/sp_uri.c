@@ -204,6 +204,17 @@ sp_uri2_init_cpy(struct sp_uri2 *self, const struct sp_uri2 *path)
   return sp_uri2_init(self, sp_uri2_path(path));
 }
 
+int
+sp_uri2_init_cpy_dirname(struct sp_uri2 *self, const struct sp_uri2 *path)
+{
+  assertx(self);
+  assertx(path);
+  assertx(self != path);
+  sp_uri2_init0(self);
+  sp_uri2_dirname(path, self);
+  return 0;
+}
+
 //==============================
 sp_str
 sp_uri_basename(const struct sp_URI *self)
@@ -243,7 +254,7 @@ sp_uri2_dirname(const struct sp_uri2 *self, struct sp_uri2 *out)
   assertx(out);
   if ((l = strrchr(self->buf, '/'))) {
     assertx((uintptr_t)l >= (uintptr_t)self->buf);
-    uintptr_t len = ((uintptr_t)self->buf) - ((uintptr_t)l);
+    uintptr_t len = ((uintptr_t)l) - ((uintptr_t)self->buf);
     if (len > 0) {
       sp_uri2_initl(out, self->buf, len);
     } else {
@@ -288,7 +299,7 @@ sp_uri_path(const struct sp_URI *self)
   return result;
 }
 
-const char *
+char *
 sp_uri2_path(const struct sp_uri2 *self)
 {
   assert(self);
@@ -298,7 +309,7 @@ sp_uri2_path(const struct sp_uri2 *self)
 
 //==============================
 int
-sp_uri2_normalize(struct sp_uri2 *self)
+sp_uri2_realpath(struct sp_uri2 *self)
 {
   char tmp[PATH_MAX] = {0};
   assertx(self);

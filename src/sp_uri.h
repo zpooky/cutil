@@ -41,6 +41,9 @@ sp_uri2_init_str(struct sp_uri2 *, const sp_str *);
 int
 sp_uri2_init_cpy(struct sp_uri2 *, const struct sp_uri2 *);
 
+int
+sp_uri2_init_cpy_dirname(struct sp_uri2 *, const struct sp_uri2 *);
+
 //==============================
 sp_str
 sp_uri_basename(const struct sp_URI *);
@@ -57,12 +60,12 @@ sp_uri2_dirname(const struct sp_uri2 *self, struct sp_uri2 *out);
 sp_str
 sp_uri_path(const struct sp_URI *);
 
-const char *
+char *
 sp_uri2_path(const struct sp_uri2 *);
 
 //==============================
 int
-sp_uri2_normalize(struct sp_uri2 *);
+sp_uri2_realpath(struct sp_uri2 *);
 
 //==============================
 /* TODO appendf printf style */
