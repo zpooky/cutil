@@ -8,6 +8,7 @@
 #include "sp_test_hash.h"
 #include "sp_test_hashset.h"
 #include "sp_test_sort.h"
+#include "sp_test_url.h"
 
 int
 main()
@@ -22,5 +23,6 @@ main()
   sp_test_hash();
   sp_test_heap_copy();
   sp_test_sort();
+  sp_test_url();
   /* sp_test_perfect_hash_map(); */
 }

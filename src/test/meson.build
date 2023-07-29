@@ -8,6 +8,8 @@ cutil_test_src = files([
   'sp_test_hashset.c',
   'sp_test_sort.c',
 
+  'sp_test_url.c',
+
   'test.c',
 ])
 

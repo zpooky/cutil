@@ -16,5 +16,19 @@ sp_str_util_ends_with(const char *str, const char *suffix);
  */
 
 // ========================================
+int
+sp_str_util_append(char *dest,
+                   size_t dest_capacity,
+                   size_t *l_dest,
+                   const char *src,
+                   size_t l_src);
+
+int
+sp_str_util_append_char(char *dest,
+                        size_t dest_capacity,
+                        size_t *l_dest,
+                        char src);
+
+// ========================================
 
 #endif

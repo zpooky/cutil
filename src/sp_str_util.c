@@ -24,3 +24,29 @@ sp_str_util_ends_with(const char *str, const char *suffix)
 }
 
 // ========================================
+int
+sp_str_util_append(char *dest,
+                   size_t dest_capacity,
+                   size_t *l_dest,
+                   const char *src,
+                   size_t l_src)
+{
+  if ((*l_dest + l_src) >= dest_capacity) {
+    return -1;
+  }
+  memcpy(dest + *l_dest, src, l_src);
+  *l_dest += l_src;
+  dest[*l_dest] = '\0';
+  return 0;
+}
+
+int
+sp_str_util_append_char(char *dest,
+                        size_t dest_capacity,
+                        size_t *l_dest,
+                        char src)
+{
+  return sp_str_util_append(dest, dest_capacity, l_dest, &src, 1);
+}
+
+// ========================================

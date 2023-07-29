@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "sp_uri.h"
 
 #include <assert.h>
@@ -6,9 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "sp_fs.h"
 #include "sp_str.h"
+#include "sp_str_util.h"
 #include "sp_vec.h"
 #include "sp_util.h"
 
@@ -24,6 +29,16 @@ struct sp_URI {
   struct sp_vec /*sp_URI_block*/ *path;
   /* char buf[PATH_MAX]; */
 };
+
+const char *
+sp_debug_sp_uri2(const struct sp_uri2 *in)
+{
+  static char buf[1024] = {'\0'};
+  if (!in)
+    return "sp_uri2(NULL)";
+  snprintf(buf, sizeof(buf), "%.*s", 256, in->buf);
+  return buf;
+}
 
 //==============================
 static struct sp_URI_block *
@@ -162,6 +177,7 @@ sp_uri2_initl(struct sp_uri2 *self, const char *path, size_t l_path)
   assertx(path);
 
   sp_uri2_init0(self);
+#if 0
   res = sp_uri2_append_all(self, path, l_path);
 
   if (strncmp(self->buf, path, l_path) != 0) {
@@ -173,6 +189,9 @@ sp_uri2_initl(struct sp_uri2 *self, const char *path, size_t l_path)
     /* assert(strcmp(self->buf, path) == 0); */
   }
   assertx(strncmp(self->buf, path, l_path) == 0);
+#else
+  strncpy(self->buf, path, sizeof(self->buf));
+#endif
 
   return res;
 }
@@ -317,6 +336,115 @@ sp_uri2_realpath(struct sp_uri2 *self)
     return -1;
   }
   sp_uri2_init(self, tmp);
+
+  return 0;
+}
+
+int
+sp_uri2_normalize(struct sp_uri2 *self)
+{
+  sp_uri2 result   = {0};
+  size_t l_result  = 0;
+  const char *next = NULL;
+
+  /* TODO check length in result */
+  /* or maybe use a version of sp_str */
+  /* man 7 string_copying */
+
+  for (const char *it = self->buf; it && *it != '\0';
+       it             = *next == '\0' ? next : next + 1) {
+    uintptr_t length;
+    next   = strchrnul(it, '/');
+    length = ((uintptr_t)next) - ((uintptr_t)it);
+    assertx(((uintptr_t)next) >= ((uintptr_t)it));
+    if (*next == '\0') {
+#if 0
+      if (strlen(result.buf) == 0) {
+        /* $ realpath wasd
+         * /home/user/development/cutil/wasd
+         */
+        char cwd[PATH_MAX] = {0};
+        getcwd(cwd, sizeof(cwd));
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, cwd,
+                           strlen(cwd));
+      }
+#endif
+    }
+
+    if (*it == '/') {
+      assertx(length == 0);
+      if (strlen(result.buf) == 0) {
+        sp_str_util_append_char(result.buf, sizeof(result.buf), &l_result, '/');
+      }
+    } else if (*it == '~' && length == 1) {
+      if (strlen(result.buf) == 0) {
+        uid_t uid         = geteuid();
+        struct passwd *pw = getpwuid(uid);
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result,
+                           pw->pw_dir, strlen(pw->pw_dir));
+      } else {
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, "/~", 2);
+      }
+    } else if (*it == '~' && length > 1) {
+      if (strlen(result.buf) == 0) {
+        /* TODO ~username */
+      } else {
+        sp_str_util_append_char(result.buf, sizeof(result.buf), &l_result, '/');
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, it,
+                           length);
+      }
+    } else if (*it == '.' && length == 1) {
+      if (strlen(result.buf) == 0) {
+        char cwd[PATH_MAX] = {0};
+        getcwd(cwd, sizeof(cwd));
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, cwd,
+                           strlen(cwd));
+      } else {
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, "/.", 2);
+      }
+    } else if (strncmp(it, "..", 2) == 0 && length == 2) {
+      if (strlen(result.buf) == 0) {
+        char cwd[PATH_MAX] = {0};
+        getcwd(cwd, sizeof(cwd));
+        sp_str_util_append(result.buf, sizeof(result.buf), &l_result, cwd,
+                           strlen(cwd));
+      }
+      if (strlen(result.buf) == 1) {
+        assertx(strcmp(result.buf, "/") == 0);
+      } else {
+        char *last = strrchr(result.buf, '/');
+        /* TODO */
+        if (last) {
+          l_result = ((uintptr_t)last) - ((uintptr_t)result.buf);
+          *last    = '\0';
+        } else {
+          assertx(false)
+        }
+
+        if (strlen(result.buf) == 0) {
+          sp_str_util_append_char(result.buf, sizeof(result.buf), &l_result,
+                                  '/');
+        }
+      }
+
+      /* TODO support ...* */
+      // $ pwd
+      // /home/spooky/tmp
+      // $ realpath ...
+      // /home
+      // $ realpath ...
+      // /
+      // $ realpath ..d
+      // /home/spooky/tmp/..d
+      // $ realpath ....d
+      // /home/spooky/tmp/....d
+    } else {
+      sp_str_util_append_char(result.buf, sizeof(result.buf), &l_result, '/');
+      sp_str_util_append(result.buf, sizeof(result.buf), &l_result, it, length);
+    }
+  }
+
+  memcpy(self->buf, result.buf, sizeof(self->buf));
 
   return 0;
 }

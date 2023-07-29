@@ -12,6 +12,9 @@ typedef struct sp_uri2 {
   char buf[PATH_MAX];
 } sp_uri2;
 
+const char *
+sp_debug_sp_uri2(const struct sp_uri2 *in);
+
 //==============================
 struct sp_URI *
 sp_uri_init0(void);
@@ -66,6 +69,9 @@ sp_uri2_path(const struct sp_uri2 *);
 //==============================
 int
 sp_uri2_realpath(struct sp_uri2 *);
+
+int
+sp_uri2_normalize(struct sp_uri2 *);
 
 //==============================
 /* TODO appendf printf style */
