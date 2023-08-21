@@ -1,5 +1,11 @@
 #include "sp_str_util.h"
+
+#include "sp_util.h"
+
 #include <stddef.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 #include <memory.h>
 
 // ========================================
@@ -47,6 +53,105 @@ sp_str_util_append_char(char *dest,
                         char src)
 {
   return sp_str_util_append(dest, dest_capacity, l_dest, &src, 1);
+}
+
+// ========================================
+#define CONVERT(in, out, out_type, out_min, out_max)                           \
+  do {                                                                         \
+    char *endptr      = NULL;                                                  \
+    long long int tmp = strtoll(in, &endptr, 10);                              \
+    if (errno == ERANGE && (tmp == LLONG_MAX || tmp == LLONG_MIN)) {           \
+      return false;                                                            \
+    } else if (tmp == 0 && errno != 0) {                                       \
+      return false;                                                            \
+    } else if (endptr == in) {                                                 \
+      return false;                                                            \
+    }                                                                          \
+    if (tmp > out_max || tmp < out_min) {                                      \
+      return false;                                                            \
+    }                                                                          \
+    *out = (out_type)tmp;                                                      \
+    return true;                                                               \
+  } while (0)
+
+#define CONVERTu(in, out, out_type, out_max)                                   \
+  do {                                                                         \
+    char *endptr      = NULL;                                                  \
+    long long int tmp = strtoll(in, &endptr, 10);                              \
+    if (errno == ERANGE && (tmp == LLONG_MAX || tmp == LLONG_MIN)) {           \
+      return false;                                                            \
+    } else if (tmp == 0 && errno != 0) {                                       \
+      return false;                                                            \
+    } else if (endptr == in) {                                                 \
+      return false;                                                            \
+    }                                                                          \
+    if (tmp < 0) {                                                             \
+      return false;                                                            \
+    }                                                                          \
+    *out = (out_type)tmp;                                                      \
+    if (*out > out_max) {                                                      \
+      *out = 0;                                                                \
+      return false;                                                            \
+    }                                                                          \
+    return true;                                                               \
+  } while (0)
+
+bool
+sp_str_to_ll(const char *in, long long *out)
+{
+  assertx(in);
+  assertx(out);
+  CONVERT(in, out, long long, LLONG_MIN, LLONG_MAX);
+}
+
+bool
+sp_str_to_ull(const char *in, unsigned long long *out)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned long long, ULLONG_MAX);
+}
+
+bool
+sp_str_to_ul(const char *in, unsigned long *out)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned long, ULLONG_MAX);
+}
+
+bool
+sp_str_to_ui(const char *in, unsigned int *out)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned int, UINT_MAX);
+}
+
+bool
+sp_str_to_ull_max(const char *in,
+                  unsigned long long *out,
+                  unsigned long long max)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned long long, max);
+}
+
+bool
+sp_str_to_ul_max(const char *in, unsigned long *out, unsigned long max)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned long, max);
+}
+
+bool
+sp_str_to_ui_max(const char *in, unsigned int *out, unsigned int max)
+{
+  assertx(in);
+  assertx(out);
+  CONVERTu(in, out, unsigned int, max);
 }
 
 // ========================================

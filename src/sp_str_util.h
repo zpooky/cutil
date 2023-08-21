@@ -30,5 +30,36 @@ sp_str_util_append_char(char *dest,
                         char src);
 
 // ========================================
+bool
+sp_str_to_ll(const char *in, long long *out);
+
+bool
+sp_str_to_ull(const char *in, unsigned long long *out);
+
+bool
+sp_str_to_ul(const char *in, unsigned long *out);
+
+bool
+sp_str_to_ui(const char *in, unsigned int *out);
+
+bool
+sp_str_to_ull_max(const char *in,
+                  unsigned long long *out,
+                  unsigned long long max);
+
+bool
+sp_str_to_ul_max(const char *in, unsigned long *out, unsigned long max);
+
+bool
+sp_str_to_ui_max(const char *in, unsigned int *out, unsigned int max);
+
+#if 0
+#define sp_str_to_generic_max(in, out, max)                                    \
+  _Generic((out), unsigned long long                                           \
+           : sp_str_to_ull_max, default                                        \
+           : sp_str_to_ull_max)(in, out, max)
+#endif
+
+// ========================================
 
 #endif
