@@ -358,7 +358,6 @@ sp_uri2_normalize(struct sp_uri2 *self)
     length = ((uintptr_t)next) - ((uintptr_t)it);
     assertx(((uintptr_t)next) >= ((uintptr_t)it));
     if (*next == '\0') {
-#if 0
       if (strlen(result.buf) == 0) {
         /* $ realpath wasd
          * /home/user/development/cutil/wasd
@@ -368,7 +367,6 @@ sp_uri2_normalize(struct sp_uri2 *self)
         sp_str_util_append(result.buf, sizeof(result.buf), &l_result, cwd,
                            strlen(cwd));
       }
-#endif
     }
 
     if (*it == '/') {
