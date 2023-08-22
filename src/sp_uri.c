@@ -190,7 +190,7 @@ sp_uri2_initl(struct sp_uri2 *self, const char *path, size_t l_path)
   }
   assertx(strncmp(self->buf, path, l_path) == 0);
 #else
-  strncpy(self->buf, path, sizeof(self->buf));
+  strncpy(self->buf, path, l_path);
 #endif
 
   return res;
