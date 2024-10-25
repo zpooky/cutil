@@ -41,15 +41,20 @@ sp_sink_is_empty(const struct sp_sink *);
 
 //==============================
 int
+sp_sink_error(const struct sp_sink *);
+
+//==============================
+int
 sp_sink_free(struct sp_sink **);
 
 //==============================
+typedef void (*sp_sink_mark_t_commit_hook)(struct sp_cbb *, void *closure);
 typedef struct {
   size_t before;
   bool rollback;
 
   size_t l_commit_hooks;
-  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  sp_sink_mark_t_commit_hook commit_hooks[4];
   void *commit_closure[4];
 } sp_sink_mark_t;
 

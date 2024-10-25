@@ -32,7 +32,9 @@ sp_bitset_set_all(struct sp_bitset *self, int v);
 
 //==============================
 bool
-sp_bitset_is_all(const struct sp_bitset *self, int v);
+sp_bitset_is_all_true(const struct sp_bitset *self);
+bool
+sp_bitset_is_all_false(const struct sp_bitset *self);
 
 //==============================
 bool

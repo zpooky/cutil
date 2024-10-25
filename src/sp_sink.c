@@ -4,13 +4,14 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <sys/uio.h> //writev
+#include <sys/uio.h>
 
 //==============================
 struct sp_sink {
   sp_sink_write_cb write_cb;
   struct sp_cbb *buffer;
   void *arg;
+  int error;
 };
 
 //==============================
@@ -147,7 +148,8 @@ Lit:
 int
 sp_sink_flush(struct sp_sink *self)
 {
-  return self->write_cb(self->buffer, self->arg);
+  self->error = self->write_cb(self->buffer, self->arg);
+  return self->error;
 }
 
 //==============================
@@ -155,6 +157,12 @@ bool
 sp_sink_is_empty(const struct sp_sink *self)
 {
   return sp_cbb_is_empty(self->buffer);
+}
+
+//==============================
+int
+sp_sink_error(const struct sp_sink *self){
+  return self->error;
 }
 
 //==============================

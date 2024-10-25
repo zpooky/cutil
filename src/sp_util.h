@@ -105,11 +105,16 @@ void
 sp_pair_set(sp_pair *dest, sp_pair *src);
 
 //==============================
+void __sp_dump_stack_impl(void*dest,const char *file, const char *func, unsigned line);
+
+#define sp_dump_stack() __sp_dump_stack_impl(stderr, __FILE__, __func__, __LINE__)
+
+//==============================
 void
-sp_util_std_flush(void);
+__sp_util_std_flush(void);
 
 void
-sp_util_assert(const char *file,
+__sp_util_assert(const char *file,
                unsigned int line,
                const char *proto,
                const char *cond);
@@ -120,13 +125,13 @@ sp_util_assert(const char *file,
 #else
 #define assertx_n(n)                                                           \
   do {                                                                         \
-    sp_util_std_flush();                                                       \
+    __sp_util_std_flush();                                                       \
     assert(n);                                                                 \
   } while (0)
 
 #define assertx(__e)                                                           \
   if (!(__e)) {                                                                \
-    sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
+    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
   }
 #endif
 
@@ -192,6 +197,9 @@ sp_util_parse_int(const char *str, const char *str_end, unsigned long *out);
 typedef void (*sp_util_copy_cb)(void *dest, const void *src, size_t);
 void
 sp_util_memcopy(void *dest, const void *src, size_t sz);
+
+//==============================
+bool sp_util_close(int*fd);
 
 //==============================
 #endif

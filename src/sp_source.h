@@ -28,19 +28,24 @@ sp_source_pop_front(struct sp_source *, void *, size_t);
 
 //==============================
 size_t
-sp_source_peek_front(const struct sp_source *, void *, size_t);
+sp_source_peek_front(struct sp_source *, void *, size_t);
+
+//==============================
+int
+sp_source_error(const struct sp_source *);
 
 //==============================
 size_t
 sp_source_capacity(const struct sp_source *);
 
 //==============================
+typedef void (*sp_source_mark_t_commit_hook)(struct sp_cbb *, void *closure);
 typedef struct {
   size_t before;
   bool rollback;
 
   size_t l_commit_hooks;
-  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  sp_source_mark_t_commit_hook commit_hooks[4];
   void *commit_closure[4];
 } sp_source_mark_t;
 
@@ -66,7 +71,7 @@ sp_source_consume_reaonly_view(struct sp_source *, size_t length);
 
 //==============================
 void
-sp_source_dump_hex(const struct sp_source *);
+sp_source_dump_hex(struct sp_source *);
 
 //==============================
 void

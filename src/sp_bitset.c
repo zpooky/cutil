@@ -144,24 +144,41 @@ sp_bitset_set_all(struct sp_bitset *self, int v)
 
 //==============================
 bool
-sp_bitset_is_all(const struct sp_bitset *self, int v)
+sp_bitset_is_all_true(const struct sp_bitset *self)
 {
   size_t i    = 0;
   size_t bits = self->bits;
+
+  const int cmp = ~((int)0);
+
   while (bits > BS_BITS) {
-    if (self->raw[i++] != v) {
+    if (self->raw[i++] != cmp) {
       return false;
     }
     bits -= BS_BITS;
   } //while
 
-  if (bits > BS_BITS) {
-    v = v & mask_out_multiple(bits);
-    if ((self->raw[i++] & v) != v) {
-      return true;
+  if (bits) {
+    int mask = mask_out_multiple(bits);
+    if ((self->raw[i++] & mask) != mask) {
+      return false;
     }
   }
 
+  for(i=0;i<self->length;++i){
+    assertx(sp_bitset_test(self,i));
+  }
+
+  return true;
+}
+
+bool
+sp_bitset_is_all_false(const struct sp_bitset *self){
+  for(size_t i=0;i<self->length;++i){
+    if(self->raw[i] != 0){
+      return false;
+    }
+  }
   return true;
 }
 

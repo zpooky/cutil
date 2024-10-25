@@ -2,13 +2,13 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
-
+#include <stdio.h>
+#include <unistd.h>
 #include <execinfo.h> // backtrace
 
 //==============================
@@ -331,16 +331,10 @@ sp_pair_set(sp_pair *dest, sp_pair *src)
   dest->second = src->second;
 }
 
+
 //==============================
 #define SP_CL_GREEN "\033[92m"
 #define SP_CL_RESET "\033[0m"
-void
-sp_util_std_flush(void)
-{
-  /* printf("flush\n"); */
-  fflush(stdout);
-  fflush(stderr);
-}
 
 static void inline sp_util_backtrace(FILE *dest, const char *proto)
 {
@@ -350,11 +344,12 @@ static void inline sp_util_backtrace(FILE *dest, const char *proto)
   int nptrs;
 
   nptrs = backtrace(buffer, BT_BUF_SIZE);
+
   if ((strings = backtrace_symbols(buffer, nptrs))) {
     int i;
 
     for (i = 0; i < nptrs; i++) {
-      if (strstr(strings[i], proto)) {
+      if (proto && strstr(strings[i], proto)) {
         fprintf(dest, SP_CL_GREEN "%s" SP_CL_RESET "\n", strings[i]);
       } else {
         fprintf(dest, "%s\n", strings[i]);
@@ -365,8 +360,23 @@ static void inline sp_util_backtrace(FILE *dest, const char *proto)
   }
 }
 
+void __sp_dump_stack_impl(void*dest,const char *file, const char *func, unsigned line) {
+  fprintf(dest,"%s: %s():%u\n", file, func, line);
+  sp_util_backtrace(dest,NULL);
+  fflush(dest);
+}
+
+//==============================
 void
-sp_util_assert(const char *file,
+__sp_util_std_flush(void)
+{
+  /* printf("flush\n"); */
+  fflush(stdout);
+  fflush(stderr);
+}
+
+void
+__sp_util_assert(const char *file,
                unsigned int line,
                const char *proto,
                const char *cond)
@@ -381,7 +391,7 @@ sp_util_assert(const char *file,
           file, proto, line);
 
   sp_util_backtrace(dest, proto);
-  sp_util_std_flush();
+  __sp_util_std_flush();
 
   /* raise(SIGABRT); */
   abort();
@@ -642,5 +652,28 @@ sp_util_memcopy(void *dest, const void *src, size_t sz)
 {
   memcpy(dest, src, sz);
 }
+
+//==============================
+bool
+sp_util_close(int *fd)
+{
+  /* sp_dump_stack(); */
+  bool res = true;
+  assertx(fd);
+  assertx(*fd != 0);
+  if (fd) {
+    if (*fd >= 0) {
+      if (close(*fd) < 0) {
+        fprintf(stderr, "FAIL close(%d):%m\n", *fd);
+        res = false;
+        assertx(res);
+      }
+    }
+    *fd = -1;
+  }
+
+  return res;
+}
+
 
 //==============================
