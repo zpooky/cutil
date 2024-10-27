@@ -265,3 +265,8 @@ sp_sink_set_internal_state(struct sp_sink *self,
 }
 
 //==============================
+size_t sp_sink_debug_in_cbb(const struct sp_sink *self){
+  return sp_cbb_capacity(self->buffer)- sp_cbb_remaining_write(self->buffer);
+}
+
+//==============================

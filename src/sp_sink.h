@@ -81,4 +81,7 @@ sp_sink_set_internal_state(struct sp_sink *self,
                            void *arg);
 
 //==============================
+size_t sp_sink_debug_in_cbb(const struct sp_sink *self);
+
+//==============================
 #endif

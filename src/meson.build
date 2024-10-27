@@ -35,8 +35,8 @@ cutil_src = [
 
   'sp_file_advisory_lock.c',
 ]
-
-cutil_link_options = [
+cutil_c_args = []
+cutil_link_args = [
   '-fsanitize=address',
   '-fno-omit-frame-pointer',
 ]
@@ -47,6 +47,8 @@ cutil_lib = static_library('cutil',
               cutil_src,
               include_directories: cutil_include,
               # cpp_args: cutil_compile_options,
+              link_args: cutil_link_args,
+              c_args: cutil_c_args,
               )
 
 cutil_dep = declare_dependency(

@@ -4,7 +4,7 @@
 #include <sp_uri.h>
 
 //==============================
-int sp_xdg_run_dir(sp_uri2 *path);
+int sp_xdg_runtime_dir(sp_uri2 *path);
 
 //==============================
 

@@ -16,7 +16,8 @@ cutil_test_src = files([
 cutil_test = executable('thetest',
                       cutil_test_src,
                       include_directories: cutil_include,
-                      link_args: cutil_link_options,
+                      link_args: cutil_link_args,
+                      c_args: cutil_c_args,
                       # cpp_args: cutil_compile_options,
                       dependencies: [cutil_dep]
                      )

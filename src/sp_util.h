@@ -122,15 +122,21 @@ __sp_util_assert(const char *file,
 #ifdef NDEBUG
 #define assertx_n(n) (n)
 #define assertx(__e) ((void)0)
+#define assertxs(__e,...)  ((void)0)
 #else
-#define assertx_n(n)                                                           \
+#define assertx_n(__e)                                                           \
   do {                                                                         \
     __sp_util_std_flush();                                                       \
-    assert(n);                                                                 \
+    assertx(__e);                                                                 \
   } while (0)
 
 #define assertx(__e)                                                           \
   if (!(__e)) {                                                                \
+    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
+  }
+#define assertxs(__e,...)                                                           \
+  if (!(__e)) {                                                                \
+    fprintf(stderr,  "\n" __VA_ARGS__);                                        \
     __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
   }
 #endif

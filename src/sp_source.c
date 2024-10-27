@@ -332,3 +332,8 @@ sp_source_ensure_at_least_readable(struct sp_source *self, size_t len)
 }
 
 //==============================
+size_t sp_source_debug_in_cbb(const struct sp_source *self){
+  return sp_cbb_remaining_read(self->buffer);
+}
+
+//==============================
