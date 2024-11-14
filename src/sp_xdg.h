@@ -6,6 +6,8 @@
 //==============================
 int sp_xdg_runtime_dir(sp_uri2 *path);
 
+int sp_xdg_cache_dir(char *path);
+
 //==============================
 
 #endif

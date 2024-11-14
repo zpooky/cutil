@@ -67,6 +67,9 @@ sp_sink_unmark(struct sp_sink *, const sp_sink_mark_t *in);
 bool
 sp_sink_is_marked(const struct sp_sink *);
 
+size_t
+sp_sink_mark_length(const struct sp_sink *, const sp_sink_mark_t *);
+
 //==============================
 void
 sp_sink_get_internal_state(struct sp_sink *self,
@@ -81,7 +84,8 @@ sp_sink_set_internal_state(struct sp_sink *self,
                            void *arg);
 
 //==============================
-size_t sp_sink_debug_in_cbb(const struct sp_sink *self);
+size_t
+sp_sink_debug_in_cbb(const struct sp_sink *self);
 
 //==============================
 #endif

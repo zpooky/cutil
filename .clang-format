@@ -26,8 +26,6 @@ AlignConsecutiveAssignments: true
 MaxEmptyLinesToKeep: 1
 
 
-SpaceBeforeAssignmentOperators: true
-SpaceBeforeParens: ControlStatements
 # }
 
 # cpp {

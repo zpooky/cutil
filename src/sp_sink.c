@@ -161,7 +161,8 @@ sp_sink_is_empty(const struct sp_sink *self)
 
 //==============================
 int
-sp_sink_error(const struct sp_sink *self){
+sp_sink_error(const struct sp_sink *self)
+{
   return self->error;
 }
 
@@ -227,6 +228,17 @@ sp_sink_is_marked(const struct sp_sink *self)
   return sp_cbb_is_write_mark(self->buffer);
 }
 
+size_t
+sp_sink_mark_length(const struct sp_sink *self, const sp_sink_mark_t *m)
+{
+  sp_cbb_mark_t mark = {
+    .before         = m->before,
+    .rollback       = m->rollback,
+    .l_commit_hooks = m->l_commit_hooks,
+  };
+  return sp_cbb_write_mark_length(self->buffer, &mark);
+}
+
 //==============================
 void
 sp_sink_get_internal_state(struct sp_sink *self,
@@ -265,8 +277,10 @@ sp_sink_set_internal_state(struct sp_sink *self,
 }
 
 //==============================
-size_t sp_sink_debug_in_cbb(const struct sp_sink *self){
-  return sp_cbb_capacity(self->buffer)- sp_cbb_remaining_write(self->buffer);
+size_t
+sp_sink_debug_in_cbb(const struct sp_sink *self)
+{
+  return sp_cbb_capacity(self->buffer) - sp_cbb_remaining_write(self->buffer);
 }
 
 //==============================

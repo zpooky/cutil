@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <errno.h>
 
 //==============================
 int
@@ -24,6 +25,26 @@ sp_xdg_runtime_dir(sp_uri2 *path)
   }
 
   sp_uri2_init(path, data);
+  return 0;
+}
+
+int
+sp_xdg_cache_dir(char *path)
+{
+  // read env $XDG_DATA_HOME default to $HOME/.local/share
+  // $XDG_CACHE_HOME default equal to $HOME/.cache
+  const char *data = getenv("XDG_DATA_HOME");
+  if (data == NULL || strcmp(data, "") == 0) {
+    const char *home = getenv("HOME");
+    if (!home) {
+      return ENOENT;
+    }
+
+    sprintf(path, "%s/.local/share", home);
+    return 0;
+  }
+
+  sprintf(path, "%s", data);
   return 0;
 }
 

@@ -450,9 +450,9 @@ sp_cbb_free(struct sp_cbb **pself)
 int
 sp_cbb_read_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 {
-  out->before   = self->r;
-  out->rollback = false;
-  out->l_commit_hooks =0;
+  out->before         = self->r;
+  out->rollback       = false;
+  out->l_commit_hooks = 0;
   if (self->mark_r == 0) {
     self->original_r = self->r;
   }
@@ -473,9 +473,12 @@ sp_cbb_read_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
     self->l_read_commit_hooks = in->l_commit_hooks = 0;
   } else {
     assert((self->l_read_commit_hooks + in->l_commit_hooks) < SP_CBB_HOOKS);
-    for (i = 0; i < in->l_commit_hooks && self->l_read_commit_hooks < SP_CBB_HOOKS; ++i) {
+    for (i = 0;
+         i < in->l_commit_hooks && self->l_read_commit_hooks < SP_CBB_HOOKS;
+         ++i) {
       self->read_commit_hooks[self->l_read_commit_hooks] = in->commit_hooks[i];
-      self->read_commit_hooks_cloures[self->l_read_commit_hooks] = in->commit_hooks_closure[i];
+      self->read_commit_hooks_cloures[self->l_read_commit_hooks] =
+        in->commit_hooks_closure[i];
       ++self->l_read_commit_hooks;
     }
   }
@@ -496,9 +499,9 @@ sp_cbb_read_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
 int
 sp_cbb_write_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 {
-  out->before   = self->w;
-  out->rollback = false;
-  out->l_commit_hooks =0;
+  out->before         = self->w;
+  out->rollback       = false;
+  out->l_commit_hooks = 0;
   self->mark_w++;
 
   return 0;
@@ -516,9 +519,13 @@ sp_cbb_write_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
     self->l_write_commit_hooks = in->l_commit_hooks = 0;
   } else {
     assert((self->l_write_commit_hooks + in->l_commit_hooks) < SP_CBB_HOOKS);
-    for (i = 0; i < in->l_commit_hooks && self->l_write_commit_hooks < SP_CBB_HOOKS; ++i) {
-      self->write_commit_hooks[self->l_write_commit_hooks] = in->commit_hooks[i];
-      self->write_commit_hooks_cloures[self->l_write_commit_hooks] = in->commit_hooks_closure[i];
+    for (i = 0;
+         i < in->l_commit_hooks && self->l_write_commit_hooks < SP_CBB_HOOKS;
+         ++i) {
+      self->write_commit_hooks[self->l_write_commit_hooks] =
+        in->commit_hooks[i];
+      self->write_commit_hooks_cloures[self->l_write_commit_hooks] =
+        in->commit_hooks_closure[i];
       ++self->l_write_commit_hooks;
     }
   }
@@ -547,6 +554,28 @@ bool
 sp_cbb_is_write_mark(const struct sp_cbb *self)
 {
   return self->mark_w > 0;
+}
+
+size_t
+sp_cbb_read_mark_length(const struct sp_cbb *self, const sp_cbb_mark_t *m)
+{
+  size_t mark_rl   = sp_cbb_remaining_read2(self->w, self->r);
+  size_t before_rl = sp_cbb_remaining_read2(self->w, m->before);
+  assert(mark_rl <= before_rl);
+  return before_rl - mark_rl;
+}
+
+size_t
+sp_cbb_write_mark_length(const struct sp_cbb *self, const sp_cbb_mark_t *m)
+{
+
+  size_t r             = self->mark_r ? self->original_r : self->r;
+  size_t b_length      = sp_cbb_remaining_read2(m->before, r);
+  size_t marked_length = sp_cbb_remaining_read2(self->w, r);
+  size_t b_wl          = sp_cbb_remaining_write2(self->capacity, b_length);
+  size_t marked_wl     = sp_cbb_remaining_write2(self->capacity, marked_length);
+  assertxs(marked_wl <= b_wl, "%zu <= %zu", b_wl, marked_wl);
+  return b_wl - marked_wl;
 }
 
 //==============================
