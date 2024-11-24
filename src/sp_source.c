@@ -107,7 +107,8 @@ sp_source_peek_front(struct sp_source *self, void *out, size_t out_len)
 
 //==============================
 int
-sp_source_error(const struct sp_source *self){
+sp_source_error(const struct sp_source *self)
+{
   return self->error;
 }
 
@@ -146,7 +147,7 @@ sp_source_unmark(struct sp_source *self, const sp_source_mark_t *in)
   };
   assert(self);
   for (i = 0; i < mark.l_commit_hooks; ++i) {
-    mark.commit_hooks[i]        = in->commit_hooks[i];
+    mark.commit_hooks[i]         = in->commit_hooks[i];
     mark.commit_hooks_closure[i] = in->commit_closure[i];
   }
 
@@ -174,7 +175,7 @@ sp_source_consume_bytes(struct sp_source *self, size_t bytes)
       return false;
     }
 
-    self->error =self->read_cb(self->buffer, self->arg);
+    self->error = self->read_cb(self->buffer, self->arg);
 
     if (sp_cbb_remaining_read(self->buffer) < bytes) {
       return false;
@@ -205,7 +206,7 @@ sp_source_reaonly_view(struct sp_source *self, size_t length)
       return NULL;
     }
 
-    self->error =self->read_cb(self->buffer, self->arg);
+    self->error = self->read_cb(self->buffer, self->arg);
   }
 
   return sp_cbb_readonly_view(self->buffer, length);
@@ -227,7 +228,7 @@ sp_source_consume_reaonly_view(struct sp_source *self, size_t length)
       return NULL;
     }
 
-    self->error =self->read_cb(self->buffer, self->arg);
+    self->error = self->read_cb(self->buffer, self->arg);
   }
   //}
 
@@ -247,7 +248,7 @@ sp_source_dump_hex(struct sp_source *self)
   if (sp_cbb_remaining_read(self->buffer) == 0) {
     if (!sp_cbb_is_readonly(self->buffer)) {
 
-      self->error =self->read_cb(self->buffer, self->arg);
+      self->error = self->read_cb(self->buffer, self->arg);
     }
   }
 
@@ -255,7 +256,7 @@ sp_source_dump_hex(struct sp_source *self)
 
   alen = sp_cbb_read_buffer(self->buffer, arr);
   for (p = 0; p < alen; ++p) {
-    sp_util_to_hex(NULL, arr[p].base, arr[p].len);
+    sp_util_to_hex(stderr, NULL, arr[p].base, arr[p].len);
   }
 }
 
@@ -265,7 +266,7 @@ sp_source_eager_fill(struct sp_source *self)
 {
   if (!sp_cbb_is_full(self->buffer)) {
     if (!sp_cbb_is_readonly(self->buffer)) {
-      self->error =self->read_cb(self->buffer, self->arg);
+      self->error = self->read_cb(self->buffer, self->arg);
     }
   }
 }
@@ -322,7 +323,7 @@ sp_source_ensure_at_least_readable(struct sp_source *self, size_t len)
   }
 
   if (!sp_cbb_is_readonly(self->buffer)) {
-    self->error =self->read_cb(self->buffer, self->arg);
+    self->error = self->read_cb(self->buffer, self->arg);
     if (sp_cbb_remaining_read(self->buffer) >= len) {
       return true;
     }
@@ -332,7 +333,9 @@ sp_source_ensure_at_least_readable(struct sp_source *self, size_t len)
 }
 
 //==============================
-size_t sp_source_debug_in_cbb(const struct sp_source *self){
+size_t
+sp_source_debug_in_cbb(const struct sp_source *self)
+{
   return sp_cbb_remaining_read(self->buffer);
 }
 

@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "sp_util.h"
 #include "sp_cbb_internal.h"

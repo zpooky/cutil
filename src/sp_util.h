@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <bits/types/FILE.h>
 
 //==============================
 #define sp_max(a, b) (((a) > (b)) ? (a) : (b))
@@ -15,7 +16,7 @@
 
 //==============================
 void
-sp_util_to_hex(const char *ctx, const void *raw, size_t len);
+sp_util_to_hex(FILE *f, const char *ctx, const void *raw, size_t len);
 
 //==============================
 const uint8_t *
@@ -105,9 +106,14 @@ void
 sp_pair_set(sp_pair *dest, sp_pair *src);
 
 //==============================
-void __sp_dump_stack_impl(void*dest,const char *file, const char *func, unsigned line);
+void
+__sp_dump_stack_impl(void *dest,
+                     const char *file,
+                     const char *func,
+                     unsigned line);
 
-#define sp_dump_stack() __sp_dump_stack_impl(stderr, __FILE__, __func__, __LINE__)
+#define sp_dump_stack()                                                        \
+  __sp_dump_stack_impl(stderr, __FILE__, __func__, __LINE__)
 
 //==============================
 void
@@ -115,29 +121,29 @@ __sp_util_std_flush(void);
 
 void
 __sp_util_assert(const char *file,
-               unsigned int line,
-               const char *proto,
-               const char *cond);
+                 unsigned int line,
+                 const char *proto,
+                 const char *cond);
 
 #ifdef NDEBUG
 #define assertx_n(n) (n)
 #define assertx(__e) ((void)0)
-#define assertxs(__e,...)  ((void)0)
+#define assertxs(__e, ...) ((void)0)
 #else
-#define assertx_n(__e)                                                           \
+#define assertx_n(__e)                                                         \
   do {                                                                         \
-    __sp_util_std_flush();                                                       \
-    assertx(__e);                                                                 \
+    __sp_util_std_flush();                                                     \
+    assertx(__e);                                                              \
   } while (0)
 
 #define assertx(__e)                                                           \
   if (!(__e)) {                                                                \
-    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
+    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                      \
   }
-#define assertxs(__e,...)                                                           \
+#define assertxs(__e, ...)                                                     \
   if (!(__e)) {                                                                \
-    fprintf(stderr,  "\n" __VA_ARGS__);                                        \
-    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                        \
+    fprintf(stderr, "\n" __VA_ARGS__);                                         \
+    __sp_util_assert(__FILE__, __LINE__, __func__, #__e);                      \
   }
 #endif
 
@@ -197,7 +203,12 @@ sp_util_bin_insert_uniq(void *arr,
 
 //==============================
 bool
-sp_util_parse_int(const char *str, const char *str_end, unsigned long *out);
+sp_util_parse_uint(const char *str,
+                   const char *str_end,
+                   unsigned long long *out);
+
+bool
+sp_util_parse_int(const char *str, const char *str_end, signed long long *out);
 
 //==============================
 typedef void (*sp_util_copy_cb)(void *dest, const void *src, size_t);
@@ -205,7 +216,8 @@ void
 sp_util_memcopy(void *dest, const void *src, size_t sz);
 
 //==============================
-bool sp_util_close(int*fd);
+bool
+sp_util_close(int *fd);
 
 //==============================
 #endif

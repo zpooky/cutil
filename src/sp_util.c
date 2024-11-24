@@ -17,20 +17,20 @@ static const char hex_encode_lookup[] = {
   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
 };
 void
-sp_util_to_hex(const char *ctx, const void *in, size_t len)
+sp_util_to_hex(FILE *f, const char *ctx, const void *in, size_t len)
 {
   size_t i;
   const char *raw = in;
 
   if (ctx) {
-    printf("%s ", ctx);
+    fprintf(f,"%s ", ctx);
   }
   for (i = 0; i < len; ++i) {
     int first  = (raw[i] >> 4) & 0xf;
     int second = raw[i] & 0xf;
-    printf("%c%c", hex_encode_lookup[first], hex_encode_lookup[second]);
+    fprintf(f,"%c%c", hex_encode_lookup[first], hex_encode_lookup[second]);
   }
-  printf("\n");
+  /* printf("\n"); */
 }
 
 //==============================
@@ -331,7 +331,6 @@ sp_pair_set(sp_pair *dest, sp_pair *src)
   dest->second = src->second;
 }
 
-
 //==============================
 #define SP_CL_GREEN "\033[92m"
 #define SP_CL_RESET "\033[0m"
@@ -360,9 +359,14 @@ static void inline sp_util_backtrace(FILE *dest, const char *proto)
   }
 }
 
-void __sp_dump_stack_impl(void*dest,const char *file, const char *func, unsigned line) {
-  fprintf(dest,"%s: %s():%u\n", file, func, line);
-  sp_util_backtrace(dest,NULL);
+void
+__sp_dump_stack_impl(void *dest,
+                     const char *file,
+                     const char *func,
+                     unsigned line)
+{
+  fprintf(dest, "%s: %s():%u\n", file, func, line);
+  sp_util_backtrace(dest, NULL);
   fflush(dest);
 }
 
@@ -377,9 +381,9 @@ __sp_util_std_flush(void)
 
 void
 __sp_util_assert(const char *file,
-               unsigned int line,
-               const char *proto,
-               const char *cond)
+                 unsigned int line,
+                 const char *proto,
+                 const char *cond)
 {
   FILE *dest = stdout;
 
@@ -625,7 +629,9 @@ sp_util_bin_insert_uniq(void *arr,
 
 //==============================
 bool
-sp_util_parse_int(const char *str, const char *str_end, unsigned long *out)
+sp_util_parse_uint(const char *str,
+                   const char *str_end,
+                   unsigned long long *out)
 {
   char *end = NULL;
 
@@ -634,12 +640,42 @@ sp_util_parse_int(const char *str, const char *str_end, unsigned long *out)
     return false;
   }
 
-  *out = strtoul(str, &end, 10);
+  *out = strtoull(str, &end, 10);
   if (end != str_end) {
+    /* fprintf(stderr, "%s:str[%.*s]\n", __func__, (int)(str_end - str), str); */
+    /* assertx(false); */
     return false;
   }
 
   if (errno == ERANGE) {
+    /* fprintf(stderr, "%s:str[%.*s]\n", __func__, (int)(str_end - str), str); */
+    /* assertx(false); */
+    return false;
+  }
+
+  return true;
+}
+
+bool
+sp_util_parse_int(const char *str, const char *str_end, signed long long *out)
+{
+  char *end = NULL;
+
+  if (str >= str_end) {
+    assertx(false);
+    return false;
+  }
+
+  *out = strtoll(str, &end, 10);
+  if (end != str_end) {
+    /* fprintf(stderr, "%s:str[%.*s]\n", __func__, (int)(str_end - str), str); */
+    /* assertx(false); */
+    return false;
+  }
+
+  if (errno == ERANGE) {
+    /* fprintf(stderr, "%s:str[%.*s]\n", __func__, (int)(str_end - str), str); */
+    /* assertx(false); */
     return false;
   }
 
@@ -674,6 +710,5 @@ sp_util_close(int *fd)
 
   return res;
 }
-
 
 //==============================
