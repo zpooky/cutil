@@ -23,11 +23,11 @@ struct sp_cbb {
   int mark_w;
 
   size_t l_read_commit_hooks;
-  void (*read_commit_hooks[SP_CBB_HOOKS])(struct sp_cbb *, void *closure);
+  int (*read_commit_hooks[SP_CBB_HOOKS])(struct sp_cbb *, void *closure);
   void *read_commit_hooks_cloures[SP_CBB_HOOKS];
 
   size_t l_write_commit_hooks;
-  void (*write_commit_hooks[SP_CBB_HOOKS])(struct sp_cbb *, void *closure);
+  int (*write_commit_hooks[SP_CBB_HOOKS])(struct sp_cbb *, void *closure);
   void *write_commit_hooks_cloures[SP_CBB_HOOKS];
 };
 

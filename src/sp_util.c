@@ -657,7 +657,7 @@ sp_util_parse_uint(const char *str,
 }
 
 bool
-sp_util_parse_int(const char *str, const char *str_end, signed long long *out)
+sp_util_parse_int(const char *str, const char *str_end, long long *out)
 {
   char *end = NULL;
 

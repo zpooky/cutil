@@ -464,6 +464,7 @@ sp_cbb_read_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 int
 sp_cbb_read_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
 {
+  int res = 0;
   size_t i;
   assert(self);
   assert(in);
@@ -489,12 +490,13 @@ sp_cbb_read_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
 
   if (!sp_cbb_is_read_mark(self)) {
     for (i = self->l_read_commit_hooks; i-- > 0;) {
-      self->read_commit_hooks[i](self, self->read_commit_hooks_cloures[i]);
+      res =
+        self->read_commit_hooks[i](self, self->read_commit_hooks_cloures[i]);
     }
     self->l_read_commit_hooks = 0;
   }
 
-  return 0;
+  return res;
 }
 
 int
@@ -511,6 +513,7 @@ sp_cbb_write_mark(struct sp_cbb *self, sp_cbb_mark_t *out)
 int
 sp_cbb_write_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
 {
+  int res  = 0;
   size_t i = 0;
   if (in->rollback) {
     self->w = in->before;
@@ -536,12 +539,13 @@ sp_cbb_write_unmark(struct sp_cbb *self, sp_cbb_mark_t *in)
 
   if (!sp_cbb_is_write_mark(self)) {
     for (i = self->l_write_commit_hooks; i-- > 0;) {
-      self->write_commit_hooks[i](self, self->write_commit_hooks_cloures[i]);
+      res =
+        self->write_commit_hooks[i](self, self->write_commit_hooks_cloures[i]);
     }
     self->l_write_commit_hooks = 0;
   }
 
-  return 0;
+  return res;
 }
 
 //==============================

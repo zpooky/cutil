@@ -39,7 +39,7 @@ size_t
 sp_source_capacity(const struct sp_source *);
 
 //==============================
-typedef void (*sp_source_mark_t_commit_hook)(struct sp_cbb *, void *closure);
+typedef int (*sp_source_mark_t_commit_hook)(struct sp_cbb *, void *closure);
 typedef struct {
   size_t before;
   bool rollback;

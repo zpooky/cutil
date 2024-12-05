@@ -1,7 +1,5 @@
 #include "sp_bitset.h"
 
-#include <assert.h>
-
 #include "sp_bitset_internal.h"
 #include "sp_cbb.h"
 
@@ -25,9 +23,9 @@ sp_bitset_init_cbb(struct sp_cbb *in, size_t length)
 {
   struct sp_bitset *result;
 
-  assert(in);
+  assertx(in);
   if (length > sp_cbb_remaining_read(in)) {
-    assert(false);
+    assertx(false);
     return NULL;
   }
 
@@ -41,7 +39,7 @@ sp_bitset_init_cbb(struct sp_cbb *in, size_t length)
 int
 sp_bitset_free(struct sp_bitset **pself)
 {
-  assert(pself);
+  assertx(pself);
 
   if (*pself) {
     struct sp_bitset *self = *pself;
@@ -67,7 +65,7 @@ mask_out_multiple(size_t bits)
 {
   int result = 0;
   size_t i;
-  assert(bits < BS_BITS);
+  assertx(bits < BS_BITS);
   for (i = 0; i < bits; ++i) {
     result |= mask_out(i);
   }
@@ -98,7 +96,7 @@ bool
 sp_bitset_test(const struct sp_bitset *self, size_t idx)
 {
   size_t wIdx = word_index(idx);
-  assert(wIdx < self->length);
+  assertx(wIdx < self->length);
 
   size_t bIdx = bit_index(idx);
   int word    = self->raw[wIdx];
@@ -122,7 +120,7 @@ bool
 sp_bitset_set(struct sp_bitset *self, size_t idx, bool v)
 {
   size_t wIdx = word_index(idx);
-  assert(wIdx < self->length);
+  assertx(wIdx < self->length);
 
   const int old_word = self->raw[wIdx];
   const size_t bIdx  = bit_index(idx);
@@ -151,7 +149,7 @@ sp_bitset_is_all_true(const struct sp_bitset *self)
 
   const int cmp = ~((int)0);
 
-  while (bits > BS_BITS) {
+  while (bits >= BS_BITS) {
     if (self->raw[i++] != cmp) {
       return false;
     }
@@ -165,17 +163,18 @@ sp_bitset_is_all_true(const struct sp_bitset *self)
     }
   }
 
-  for(i=0;i<self->length;++i){
-    assertx(sp_bitset_test(self,i));
+  for (i = 0; i < self->length; ++i) {
+    assertx(sp_bitset_test(self, i));
   }
 
   return true;
 }
 
 bool
-sp_bitset_is_all_false(const struct sp_bitset *self){
-  for(size_t i=0;i<self->length;++i){
-    if(self->raw[i] != 0){
+sp_bitset_is_all_false(const struct sp_bitset *self)
+{
+  for (size_t i = 0; i < self->length; ++i) {
+    if (self->raw[i] != 0) {
       return false;
     }
   }
@@ -198,7 +197,7 @@ sp_bitset_is_all_false(const struct sp_bitset *self){
  *   sp_util_to_hex(r, rl);
  *   bin = sp_bitset_init_cbb(out, sp_cbb_remaining_read(out));
  *   for (i = 0; i < 64; ++i) {
- *     assert(sp_bitset_test(b, i) == sp_bitset_test(bin, i));
+ *     assertx(sp_bitset_test(b, i) == sp_bitset_test(bin, i));
  *   }
  * }
  *
@@ -237,7 +236,7 @@ sp_bitset_write_BYTES(const struct sp_bitset *self, struct sp_cbb *out)
 
     cur <<= 1;
   } //for
-  /* assert(bits == 0); */
+  /* assertx(bits == 0); */
 
   m.rollback = !result;
   sp_cbb_write_unmark(out, &m);
@@ -248,17 +247,17 @@ bool
 sp_bitset_read(struct sp_bitset *self, struct sp_cbb *in, size_t length)
 {
   size_t bidx = 0;
-  assert(self);
-  assert(in);
+  assertx(self);
+  assertx(in);
 
   bool result = true;
   if (length > sp_cbb_remaining_read(in)) {
-    assert(false);
+    assertx(false);
     return false;
   }
 
   if (length > (self->length * BS_BITS)) {
-    assert(false);
+    assertx(false);
     return false;
   }
 

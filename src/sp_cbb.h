@@ -93,7 +93,7 @@ typedef struct {
   bool rollback;
 
   size_t l_commit_hooks;
-  void (*commit_hooks[4])(struct sp_cbb *, void *closure);
+  int (*commit_hooks[4])(struct sp_cbb *, void *closure);
   void *commit_hooks_closure[4];
 } sp_cbb_mark_t;
 
