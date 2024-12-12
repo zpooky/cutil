@@ -1,10 +1,14 @@
 #define _GNU_SOURCE
 #include "sp_fs.h"
+#include "sp_util.h"
+
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-#include <libgen.h> //dirname&basename
+#include <libgen.h>
 
 #include <linux/limits.h> //PATH_MAX
 #include <errno.h>
@@ -163,6 +167,60 @@ Lmkdir:
   } while (res != 0);
 
   return res;
+}
+
+int
+sp_fs_mkdirs2(const char *path, mode_t mode)
+{
+  int ret            = -1;
+  size_t l_path      = strlen(path);
+  char buf[PATH_MAX] = {0};
+  char *rest         = buf;
+  char *token;
+  int dir_fd      = -1;
+  const int flags = O_PATH | O_DIRECTORY | O_CLOEXEC;
+  if (l_path > PATH_MAX) {
+    return -1;
+  }
+  strcpy(buf, path);
+  /* TODO cannonize */
+
+  if ((dir_fd = open("/", flags)) < 0) {
+    if (errno == EEXIST) {
+    }
+    return -1;
+  }
+
+  while ((token = strtok_r(rest, "/", &rest))) {
+    int child_fd = -1;
+  Lretry:
+    if ((child_fd = openat(dir_fd, token, flags)) < 0) {
+      if (errno == ENOTDIR) {
+        goto Lerr;
+      } else if (errno == ENOENT) {
+        errno = 0;
+        if (mkdirat(dir_fd, token, mode) < 0) {
+          goto Lerr;
+        }
+        goto Lretry;
+      } else {
+        goto Lerr;
+      }
+    }
+
+    if (dir_fd >= 0) {
+      sp_util_close(&dir_fd);
+    }
+    dir_fd = child_fd;
+  } //while
+
+  ret = 0;
+Lerr:
+  if (dir_fd >= 0) {
+    sp_util_close(&dir_fd);
+  }
+
+  return ret;
 }
 
 //==============================

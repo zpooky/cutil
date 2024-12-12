@@ -63,7 +63,7 @@ sp_uri2_dirname(const struct sp_uri2 *self, struct sp_uri2 *out);
 sp_str
 sp_uri_path(const struct sp_URI *);
 
-char *
+const char *
 sp_uri2_path(const struct sp_uri2 *);
 
 //==============================

@@ -318,7 +318,7 @@ sp_uri_path(const struct sp_URI *self)
   return result;
 }
 
-char *
+const char *
 sp_uri2_path(const struct sp_uri2 *self)
 {
   assert(self);
@@ -353,6 +353,7 @@ sp_uri2_normalize(struct sp_uri2 *self)
 
   for (const char *it = self->buf; it && *it != '\0';
        it             = *next == '\0' ? next : next + 1) {
+
     uintptr_t length;
     next   = strchrnul(it, '/');
     length = ((uintptr_t)next) - ((uintptr_t)it);

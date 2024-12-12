@@ -25,6 +25,9 @@ sp_fs_parent_str(const struct sp_str *);
 int
 sp_fs_mkdirs(const char *path, mode_t mode);
 
+int
+sp_fs_mkdirs2(const char *path, mode_t mode);
+
 //==============================
 
 #endif
