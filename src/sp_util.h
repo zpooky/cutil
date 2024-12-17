@@ -11,6 +11,8 @@
 
 #define sp_min(a, b) (((a) < (b)) ? (a) : (b))
 
+#define SP_ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
+
 //==============================
 #define SP_KB 1024
 
