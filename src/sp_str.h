@@ -8,7 +8,14 @@
  */
 
 //==============================
+typedef struct {
+  char *raw;
+  size_t len;
+} sp_str_view;
+
+//==============================
 typedef struct sp_str {
+  /* TODO use internal_ prefix */
   union {
     char *buf;
     char sbuf[16];
@@ -32,6 +39,9 @@ sp_str_init_cstr(sp_str *, const char *);
 
 int
 sp_str_init_str(sp_str *, const sp_str *);
+
+int
+sp_str_init_str_view(sp_str *, sp_str_view);
 
 //==============================
 sp_str *
@@ -113,6 +123,11 @@ sp_str_swap(sp_str *, sp_str *);
 //==============================
 void
 sp_str_ensure_capacity(sp_str *, size_t);
+
+//==============================
+bool sp_str_is_printable(const sp_str*str);
+
+bool sp_str_view_is_printable(const sp_str_view str);
 
 //==============================
 const char *

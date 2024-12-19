@@ -637,3 +637,18 @@ sp_cbb_consume_readonly_view(struct sp_cbb *self, size_t length)
 }
 
 //==============================
+void
+sp_cbb_debug_print_hex(void *stream, struct sp_cbb *self)
+{
+  uint8_t raw     = 0;
+  sp_cbb_mark_t m = {0};
+  sp_cbb_read_mark(self, &m);
+  while (sp_cbb_read(self, &raw, sizeof(raw))) {
+    sp_util_to_hex(stream, NULL, &raw, sizeof(raw));
+  }
+  fprintf(stream, "\n");
+  m.rollback = true;
+  sp_cbb_read_unmark(self, &m);
+}
+
+//==============================

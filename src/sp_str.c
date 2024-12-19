@@ -1,7 +1,6 @@
 #include "sp_str.h"
 #include <stdlib.h>
 #include <ctype.h>
-#include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
@@ -35,7 +34,7 @@ sp_str_init0(sp_str *self)
 int
 sp_str_init(struct sp_str *self, size_t cap)
 {
-  assert(self);
+  assertx(self);
 
   if (is_static_alloc(cap)) {
     sp_str_init0(self);
@@ -62,8 +61,8 @@ sp_str_init_cstr_len(struct sp_str *self, const char *o, size_t len)
 int
 sp_str_init_cstr(struct sp_str *self, const char *o)
 {
-  assert(self);
-  assert(o);
+  assertx(self);
+  assertx(o);
 
   return sp_str_init_cstr_len(self, o, strlen(o));
 }
@@ -74,8 +73,8 @@ sp_str_init_str(sp_str *self, const sp_str *o)
   int res;
   size_t o_len;
 
-  assert(self);
-  assert(o);
+  assertx(self);
+  assertx(o);
 
   o_len = sp_str_length(o);
   if ((res = sp_str_init(self, o_len)) == 0) {
@@ -83,6 +82,12 @@ sp_str_init_str(sp_str *self, const sp_str *o)
   }
 
   return res;
+}
+
+int
+sp_str_init_str_view(sp_str *self, sp_str_view o)
+{
+  return sp_str_init_cstr_len(self, o.raw, o.len);
 }
 
 //==============================
@@ -112,7 +117,7 @@ sp_str_new_cstr_len(const char *str, size_t len)
 sp_str *
 sp_str_new_cstr(const char *str)
 {
-  assert(str);
+  assertx(str);
 
   return sp_str_new_cstr_len(str, strlen(str));
 }
@@ -132,7 +137,7 @@ sp_str_new_str(const sp_str *str)
 size_t
 sp_str_length(const struct sp_str *self)
 {
-  assert(self);
+  assertx(self);
 
   return self->length;
 }
@@ -148,7 +153,7 @@ sp_str_is_empty(const sp_str *self)
 int
 sp_str_free(struct sp_str *self)
 {
-  assert(self);
+  assertx(self);
 
   if (!is_static_alloc(self->capacity)) {
     free(self->buf);
@@ -167,8 +172,8 @@ sp_str_free(struct sp_str *self)
 static char *
 sp_str_c_str_mut(struct sp_str *self)
 {
-  assert(self);
-  assert(self->capacity > 0);
+  assertx(self);
+  assertx(self->capacity > 0);
 
   if (is_static_alloc(self->capacity)) {
     return self->sbuf;
@@ -180,8 +185,8 @@ sp_str_c_str_mut(struct sp_str *self)
 const char *
 sp_str_c_str(const struct sp_str *self)
 {
-  assert(self);
-  assert(self->capacity > 0);
+  assertx(self);
+  assertx(self->capacity > 0);
 
   if (is_static_alloc(self->capacity)) {
     return self->sbuf;
@@ -196,11 +201,12 @@ sp_str_append_len(struct sp_str *self, const char *o, size_t len)
 {
   char *dest;
 
-  assert(self);
-  assert(self->capacity > 0);
-  assert(o);
+  assertx(self);
+  assertx(self->capacity > 0);
+  assertx(o);
 
   sp_str_ensure_capacity(self, self->length + len);
+  assertx((self->length + len) <= self->capacity);
 
   dest = sp_str_c_str_mut(self) + self->length;
   memcpy(dest, o, len);
@@ -212,9 +218,9 @@ sp_str_append_len(struct sp_str *self, const char *o, size_t len)
 int
 sp_str_append(struct sp_str *self, const char *o)
 {
-  assert(self);
-  assert(self->capacity > 0);
-  assert(o);
+  assertx(self);
+  assertx(self->capacity > 0);
+  assertx(o);
 
   return sp_str_append_len(self, o, strlen(o));
 }
@@ -222,9 +228,9 @@ sp_str_append(struct sp_str *self, const char *o)
 int
 sp_str_append_str(struct sp_str *self, const struct sp_str *o)
 {
-  assert(self);
-  assert(self->capacity > 0);
-  assert(o);
+  assertx(self);
+  assertx(self->capacity > 0);
+  assertx(o);
 
   return sp_str_append_len(self, sp_str_c_str(o), sp_str_length(o));
 }
@@ -273,7 +279,7 @@ sp_str_replace_char(sp_str *self, char needle, char replace)
 int
 sp_str_cmp(const struct sp_str *self, const char *o)
 {
-  assert(self);
+  assertx(self);
 
   return strcmp(sp_str_c_str(self), o);
 }
@@ -281,7 +287,7 @@ sp_str_cmp(const struct sp_str *self, const char *o)
 int
 sp_str_cmp_str(const struct sp_str *self, const struct sp_str *other)
 {
-  assert(other);
+  assertx(other);
 
   return sp_str_cmp(self, sp_str_c_str(other));
 }
@@ -300,8 +306,8 @@ sp_str_prefix_cmp_len(const sp_str *self, const char *prefix, size_t plen)
 int
 sp_str_prefix_cmp(const sp_str *self, const char *prefix)
 {
-  assert(self);
-  assert(prefix);
+  assertx(self);
+  assertx(prefix);
 
   return sp_str_prefix_cmp_len(self, prefix, strlen(prefix));
 }
@@ -332,8 +338,8 @@ sp_str_suffix_cmp_len(const sp_str *self, const char *suffix, size_t slen)
 int
 sp_str_suffix_cmp(const sp_str *self, const char *suffix)
 {
-  assert(self);
-  assert(suffix);
+  assertx(self);
+  assertx(suffix);
 
   return sp_str_suffix_cmp_len(self, suffix, strlen(suffix));
 }
@@ -355,7 +361,7 @@ sp_str_clear(sp_str *self)
   char *raw;
 
   raw = sp_str_c_str_mut(self);
-  assert(raw);
+  assertx(raw);
 
   memset(raw, '\0', self->capacity);
   self->length = 0;
@@ -367,8 +373,8 @@ sp_str_clear(sp_str *self)
 void
 sp_str_swap(struct sp_str *f, struct sp_str *s)
 {
-  assert(f);
-  assert(s);
+  assertx(f);
+  assertx(s);
 
   /*this will memcpy $buf as well*/
   sp_util_swap_char_arr(f->sbuf, s->sbuf, sizeof(f->sbuf));
@@ -387,6 +393,19 @@ sp_str_ensure_capacity(sp_str *self, size_t capacity)
     sp_str_swap(&tmp, self);
     sp_str_free(&tmp);
   }
+}
+
+//==============================
+bool
+sp_str_is_printable(const sp_str *str)
+{
+  return sp_util_is_printable(sp_str_c_str(str), str->length);
+}
+
+bool
+sp_str_view_is_printable(const sp_str_view str)
+{
+  return sp_util_is_printable(str.raw, str.len);
 }
 
 //==============================
