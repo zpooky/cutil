@@ -9,6 +9,14 @@
 #include "sp_util.h"
 
 //==============================
+void
+sp_str_view_init_str(sp_str_view *self, struct sp_str *str)
+{
+  self->raw = sp_str_c_str(str);
+  self->len = str->length;
+}
+
+//==============================
 #define SBUF_MAX 15
 #define SBUF_CAP (SBUF_MAX + 1)
 
