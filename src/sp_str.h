@@ -85,6 +85,10 @@ sp_str_append(sp_str *, const char *);
 int
 sp_str_append_str(sp_str *, const sp_str *);
 
+
+int
+sp_str_append_str_view(sp_str *, sp_str_view);
+
 int
 sp_str_append_char(sp_str *, char);
 

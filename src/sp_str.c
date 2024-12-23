@@ -244,6 +244,15 @@ sp_str_append_str(struct sp_str *self, const struct sp_str *o)
 }
 
 int
+sp_str_append_str_view(sp_str *self, sp_str_view o)
+{
+  assertx(self);
+  assertx(self->capacity > 0);
+
+  return sp_str_append_len(self, o.raw, o.len);
+}
+
+int
 sp_str_append_char(sp_str *self, char c)
 {
   return sp_str_append_len(self, &c, 1);

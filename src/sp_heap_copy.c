@@ -55,6 +55,9 @@ sp_heap_copy_free(struct sp_heap_copy **pself)
   if (*pself) {
     struct sp_heap_copy *self = *pself;
     sp_vec_copy_free(&self->vec);
+    self->sz   = 0;
+    self->copy = NULL;
+    self->cmp  = NULL;
 
     free(self);
     *pself = NULL;
