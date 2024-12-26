@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "sp_util.h"
 #include "sp_queue.h"
 #include "sp_vec.h"
 #include "sp_stack.h"
@@ -12,6 +13,7 @@
 //==============================
 struct sp_bst {
   struct sp_bst_Node *root;
+  size_t length;
 
   sp_bst_node_cmp_cb node_cmp;
   sp_bst_node_new_cb node_new;
@@ -42,6 +44,8 @@ sp_bst_init(sp_bst_node_cmp_cb node_cmp,
 struct sp_bst_Node *
 sp_bst_identity_new_cb(struct sp_bst_Node *in)
 {
+  assertx(!in->left);
+  assertx(!in->right);
   return in;
 }
 
@@ -141,7 +145,8 @@ sp_bst_node_length(const struct sp_bst_Node *self)
 size_t
 sp_bst_length(const struct sp_bst *self)
 {
-  return sp_bst_node_length(self->root);
+  assertx(self->length == sp_bst_node_length(self->root));
+  return self->length;
 }
 
 //==============================
@@ -177,6 +182,7 @@ sp_bst_insert2_impl(struct sp_bst *self,
         goto Lit;
       }
       res = it->right = node_new(in);
+      self->length++;
       assert(res);
     } else if (in_cmp < 0) {
       if (it->left) {
@@ -184,6 +190,7 @@ sp_bst_insert2_impl(struct sp_bst *self,
         goto Lit;
       }
       res = it->left = node_new(in);
+      self->length++;
       assert(res);
     }
     /* else duplicate */
@@ -304,6 +311,11 @@ sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
     }
   } //while
 
+  if (res) {
+    assertx(self->length > 0);
+    self->length--;
+  }
+
   return res;
 }
 
@@ -346,6 +358,8 @@ sp_bst_clear2(struct sp_bst *self, sp_bst_node_free_cb node_free)
 
       current->left = current->right = NULL;
       node_free(current);
+      assertx(self->length > 0);
+      self->length--;
     } while (sp_queue_dequeue(stack, &current));
 
     sp_queue_free(&stack);
