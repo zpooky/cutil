@@ -151,6 +151,53 @@ sp_bst_length(const struct sp_bst *self)
 }
 
 //==============================
+static sp_bst_T *
+__sp_bst_insert2_impl(struct sp_bst *self,
+                    sp_bst_T *in,
+                    sp_bst_node_new_cb node_new)
+{
+  struct sp_bst_Node *res = NULL;
+
+  assert(self);
+  assert(in);
+  assert(node_new);
+
+  if (!self->root) {
+    res = self->root = node_new(in);
+    assert(res);
+  } else {
+    struct sp_bst_Node *it = self->root;
+    int in_cmp;
+
+  Lit:
+    in_cmp = self->node_cmp(in, it);
+    if (in_cmp > 0) {
+      if (it->right) {
+        it = it->right;
+        goto Lit;
+      }
+      res = it->right = node_new(in);
+      assert(res);
+    } else if (in_cmp < 0) {
+      if (it->left) {
+        it = it->left;
+        goto Lit;
+      }
+      res = it->left = node_new(in);
+      assert(res);
+    }
+    /* else duplicate */
+  }
+
+  if (res) {
+    res->left  = NULL;
+    res->right = NULL;
+    self->length++;
+  }
+
+  return res;
+}
+
 sp_bst_T *
 sp_bst_insert_impl(struct sp_bst *self, sp_bst_T *in)
 {
@@ -245,19 +292,10 @@ sp_bst_find_impl(struct sp_bst *self, sp_bst_T *needle)
 
 //==============================
 static sp_bst_T *
-remove_min(struct sp_bst *self, struct sp_bst_Node *in)
-{
-  //TODO We have to refind the $in node parent in the remove operation, create
-  //     specialized remove with support for parent,child.
-  while (in->left) {
-    in = in->left;
-  }
+remove_min(struct sp_bst *self, struct sp_bst_Node *in);
 
-  return sp_bst_remove_impl(self, in);
-}
-
-sp_bst_T *
-sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
+static sp_bst_T *
+__sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
 {
   struct sp_bst_Node *res    = NULL;
   struct sp_bst_Node *parent = NULL;
@@ -313,10 +351,31 @@ sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
 
   if (res) {
     assertx(self->length > 0);
-    self->length--;
   }
 
   return res;
+}
+
+static sp_bst_T *
+remove_min(struct sp_bst *self, struct sp_bst_Node *in)
+{
+  //TODO We have to refind the $in node parent in the remove operation, create
+  //     specialized remove with support for parent,child.
+  while (in->left) {
+    in = in->left;
+  }
+
+  return __sp_bst_remove_impl(self, in);
+}
+
+sp_bst_T *
+sp_bst_remove_impl(struct sp_bst *self, sp_bst_T *needle)
+{
+  sp_bst_T *result;
+  if ((result = __sp_bst_remove_impl(self, needle))){
+    self->length--;
+  }
+  return result;
 }
 
 bool

@@ -330,7 +330,7 @@ sp_do_test_simple(void)
     assert(out);
     assert(out->data == data[i]);
     assert(sp_bst_length(bst) == MAX-i);
-    sp_bst_remove(bst, out);
+    assert(sp_bst_remove_free(bst, out));
     assert(sp_bst_length(bst) == (MAX-i-1));
 
     for (a = i + 1; a < MAX; ++a) {
