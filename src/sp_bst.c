@@ -182,7 +182,6 @@ sp_bst_insert2_impl(struct sp_bst *self,
         goto Lit;
       }
       res = it->right = node_new(in);
-      self->length++;
       assert(res);
     } else if (in_cmp < 0) {
       if (it->left) {
@@ -190,7 +189,6 @@ sp_bst_insert2_impl(struct sp_bst *self,
         goto Lit;
       }
       res = it->left = node_new(in);
-      self->length++;
       assert(res);
     }
     /* else duplicate */
@@ -199,6 +197,7 @@ sp_bst_insert2_impl(struct sp_bst *self,
   if (res) {
     res->left  = NULL;
     res->right = NULL;
+    self->length++;
   }
 
   return res;
