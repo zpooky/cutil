@@ -17,8 +17,9 @@ static const char hex_encode_lookup[] = {
   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
 };
 void
-sp_util_to_hex(FILE *f, const char *ctx, const void *in, size_t len)
+sp_util_to_hex(void *stream, const char *ctx, const void *in, size_t len)
 {
+  FILE *f = stream;
   size_t i;
   const char *raw = in;
 

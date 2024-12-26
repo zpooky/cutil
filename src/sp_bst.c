@@ -145,7 +145,8 @@ sp_bst_node_length(const struct sp_bst_Node *self)
 size_t
 sp_bst_length(const struct sp_bst *self)
 {
-  assertx(self->length == sp_bst_node_length(self->root));
+  assertxs(self->length == sp_bst_node_length(self->root), "%zu,%zu",
+           self->length, sp_bst_node_length(self->root));
   return self->length;
 }
 

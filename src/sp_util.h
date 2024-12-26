@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <bits/types/FILE.h>
 
 //==============================
 #define sp_max(a, b) (((a) > (b)) ? (a) : (b))
@@ -18,7 +17,7 @@
 
 //==============================
 void
-sp_util_to_hex(FILE *f, const char *ctx, const void *raw, size_t len);
+sp_util_to_hex(void *stream, const char *ctx, const void *raw, size_t len);
 
 //==============================
 const uint8_t *

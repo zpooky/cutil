@@ -293,6 +293,7 @@ sp_do_test_simple(void)
     out      = sp_bst_insert(bst, &tmp);
     assert(out);
     assert(out->data == data[i]);
+    assert(sp_bst_length(bst) == i+1);
 
     for (a = i + 1; a < MAX; ++a) {
       tmp.data = data[a];
@@ -328,7 +329,9 @@ sp_do_test_simple(void)
     out      = sp_bst_find(bst, &tmp);
     assert(out);
     assert(out->data == data[i]);
+    assert(sp_bst_length(bst) == MAX-i);
     sp_bst_remove(bst, out);
+    assert(sp_bst_length(bst) == (MAX-i-1));
 
     for (a = i + 1; a < MAX; ++a) {
       tmp.data = data[a];
