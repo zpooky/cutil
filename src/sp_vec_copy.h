@@ -21,6 +21,9 @@ struct sp_vec_copy *
 sp_vec_copy_init0(size_t align, size_t sz);
 
 struct sp_vec_copy *
+sp_vec_copy_init0_cap(size_t capacity, size_t align, size_t sz);
+
+struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
                      size_t align,
                      size_t sz,
@@ -107,7 +110,7 @@ sp_vec_copy_end(struct sp_vec_copy *);
 sp_vec_copy_T *
 sp_vec_copy_next(struct sp_vec_copy *, sp_vec_copy_T *);
 
-#define sp_vec_copy_for_each2(it, self)                                        \
+#define sp_vec_copy_for_each2(self, it)                                        \
   for (it = (typeof(it))sp_vec_copy_begin(self);                               \
        (sp_vec_copy_T *)it != sp_vec_copy_end(self);                           \
        it = (typeof(it))sp_vec_copy_next(self, it))

@@ -1,13 +1,28 @@
 #include "sp_test_hashset.h"
-#include "sp_hashset.h"
+#include <sp_hashset.h>
+#include <sp_djb.h>
+#include <sp_vec_copy.h>
 
 #include <stdalign.h>
 #include <memory.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <sp_util.h>
+static void
+sp_vec_copy_shuffle(struct sp_vec_copy *vec)
+{
+  size_t length = sp_vec_copy_length(vec);
+  for (size_t i = 0; i < length; ++i) {
+    size_t next = rand() % length;
+    if (i != next) {
+      sp_vec_copy_swap(vec, i, next);
+    }
+  }
+}
 
 struct hashset_test {
   uint32_t hash;
@@ -153,11 +168,106 @@ sp_do_test_simple(void)
   return 0;
 }
 
+struct hashset_test_str_val {
+  char key[128];
+  int value;
+};
+
+static uint32_t
+hashset_test_str_val_hash(const struct hashset_test_str_val *in)
+{
+  return sp_djb2_hash(in->key, strlen(in->key));
+}
+static bool
+hashset_test_str_val_eq(const struct hashset_test_str_val *f,
+                        const struct hashset_test_str_val *s,
+                        size_t sz)
+{
+  size_t f_l = strlen(f->key);
+  size_t s_l = strlen(s->key);
+
+  return f_l == s_l && strncmp(f->key, s->key, f_l) == 0;
+}
+
+static void
+sp_do_test_str_val(void)
+{
+  struct sp_hashset *set;
+  struct sp_vec_copy /*int*/ *pool;
+  const int max = 11 * 1024;
+  int *it;
+
+  pool = sp_vec_copy_init0_cap(max, alignof(int), sizeof(int));
+  set  = sp_hashset_init(alignof(struct hashset_test_str_val), //
+                         sizeof(struct hashset_test_str_val), //
+                         (sp_hashset_hash_cb)hashset_test_str_val_hash, //
+                         sp_hashset_memcpy,
+                         (sp_hashset_eq_cb)hashset_test_str_val_eq);
+
+  for (int i = 0; i < max; ++i) {
+    assert(sp_vec_copy_length(pool) == i);
+    sp_vec_copy_append(pool, &i);
+  }
+  assert(sp_vec_copy_length(pool) == max);
+  sp_vec_copy_shuffle(pool);
+
+  fprintf(stderr, "%s:1\n", __func__);
+  sp_vec_copy_for_each2(pool, it)
+  {
+    struct hashset_test_str_val val  = {.value = *it};
+    struct hashset_test_str_val *res = NULL;
+    /* fprintf(stderr, "%s:i[%d]\n", __func__, *it); */
+    sprintf(val.key, "%d", *it);
+    res = sp_hashset_insert(set, &val);
+    assert(res);
+    assert(res->value == *it);
+    assert(strcmp(res->key, val.key) == 0);
+  }
+
+  sp_vec_copy_shuffle(pool);
+  assert(sp_hashset_length(set) == max);
+
+  fprintf(stderr, "%s:2\n", __func__);
+  sp_vec_copy_for_each2(pool, it)
+  {
+    struct hashset_test_str_val needle = {0};
+    struct hashset_test_str_val *res   = NULL;
+    sprintf(needle.key, "%d", *it);
+    res = sp_hashset_lookup(set, &needle);
+    assert(res);
+    assert(res->value == *it);
+    assert(strcmp(res->key, needle.key) == 0);
+  }
+  fprintf(stderr, "%s:3\n", __func__);
+  assert(sp_hashset_length(set) == max);
+  sp_vec_copy_shuffle(pool);
+
+  sp_vec_copy_for_each2(pool, it)
+  {
+    bool rem;
+    struct hashset_test_str_val needle = {0};
+    struct hashset_test_str_val *res   = NULL;
+    sprintf(needle.key, "%d", *it);
+    rem = sp_hashset_remove(set, &needle);
+    assert(rem);
+    res = sp_hashset_lookup(set, &needle);
+    assert(!res);
+  }
+  assert(sp_hashset_length(set) == 0);
+
+  fprintf(stderr, "%s:4\n", __func__);
+  sp_hashset_free(&set);
+  sp_vec_copy_free(&pool);
+}
+
 int
 sp_test_hashset(void)
 {
   printf("%s: BEGIN\n", __func__);
   sp_do_test_simple();
+
+  printf("%s: ==\n", __func__);
+  sp_do_test_str_val();
   printf("%s: END\n", __func__);
   return 0;
 }

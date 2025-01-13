@@ -23,6 +23,13 @@ sp_vec_copy_init0(size_t align, size_t sz)
 }
 
 struct sp_vec_copy *
+sp_vec_copy_init0_cap(size_t capacity, size_t align, size_t sz)
+{
+
+  return sp_vec_copy_init_cap(capacity, align, sz, sp_util_memcopy);
+}
+
+struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
                      size_t align,
                      size_t sz,
