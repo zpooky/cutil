@@ -71,7 +71,7 @@ sp_uri_init0(void)
   struct sp_URI *result = NULL;
   struct sp_vec *path;
 
-  if ((path = sp_vec_init())) {
+  if ((path = sp_vec_new())) {
     if ((result = calloc(1, sizeof(*result)))) {
       result->path = path;
     } else {
@@ -596,7 +596,7 @@ sp_uri_path_elements(const struct sp_URI *self)
 
   assert(self);
 
-  if (!(result = sp_vec_init())) {
+  if (!(result = sp_vec_new())) {
     return NULL;
   }
 
@@ -625,7 +625,7 @@ sp_uri2_path_elements(const struct sp_uri2 *self)
   const char *it         = path;
   const char *const end  = path + strlen(path);
 
-  if (!(result = sp_vec_init())) {
+  if (!(result = sp_vec_new())) {
     return NULL;
   }
 

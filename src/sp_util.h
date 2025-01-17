@@ -60,6 +60,12 @@ void
 sp_util_swap_int32_t(int32_t *, int32_t *);
 
 void
+sp_util_swap_uint64_t(uint64_t *, uint64_t *);
+
+void
+sp_util_swap_int64_t(int64_t *, int64_t *);
+
+void
 sp_util_swap_char(char *, char *);
 
 void

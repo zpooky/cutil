@@ -39,7 +39,7 @@ struct sp_hashset {
   size_t capacity;
 
   sp_hashset_hash_cb hash;
-  sp_hashset_copy_cb copy;
+  sp_hashset_move_cb move;
   sp_hashset_eq_cb eq;
 
   sp_hashset_clear_cb clear;
@@ -61,15 +61,17 @@ sp_hashset_init_int(struct sp_hashset *self,
                     size_t align,
                     size_t sz,
                     sp_hashset_hash_cb hash,
-                    sp_hashset_copy_cb copy,
+                    sp_hashset_move_cb move,
                     sp_hashset_eq_cb eq)
 {
   self->bucket = NULL;
   self->psl    = NULL;
   if (capacity) {
+    size_t alloc_sz = (capacity + 2) * sz;
     assert(capacity % 8 == 0);
-    self->bucket = aligned_alloc(align, (capacity + 2) * sz);
-    self->psl    = calloc(capacity, sizeof(*self->psl));
+    self->bucket = aligned_alloc(align, alloc_sz);
+    memset(self->bucket, 0, alloc_sz);
+    self->psl = calloc(capacity, sizeof(*self->psl));
   }
 
   self->sz    = sz;
@@ -79,7 +81,7 @@ sp_hashset_init_int(struct sp_hashset *self,
   self->capacity = capacity;
 
   self->hash = hash;
-  self->copy = copy;
+  self->move = move;
   self->eq   = eq;
 }
 
@@ -95,21 +97,21 @@ sp_hashset_swap_self(struct sp_hashset *f, struct sp_hashset *s)
   sp_util_swap_size_t(&f->capacity, &s->capacity);
 
   sp_util_swap_voidp(&f->hash, &s->hash);
-  sp_util_swap_voidp(&f->copy, &s->copy);
+  sp_util_swap_voidp(&f->move, &s->move);
   sp_util_swap_voidp(&f->eq, &s->eq);
 }
 
 struct sp_hashset *
-sp_hashset_init(size_t align,
-                size_t sz,
-                sp_hashset_hash_cb hash,
-                sp_hashset_copy_cb copy,
-                sp_hashset_eq_cb eq)
+sp_hashset_new(size_t align,
+               size_t sz,
+               sp_hashset_hash_cb hash,
+               sp_hashset_move_cb move,
+               sp_hashset_eq_cb eq)
 {
   struct sp_hashset *self;
 
   if ((self = calloc(1, sizeof(*self)))) {
-    sp_hashset_init_int(self, 0, align, sz, hash, copy, eq);
+    sp_hashset_init_int(self, 0, align, sz, hash, move, eq);
   }
 
   return self;
@@ -154,6 +156,59 @@ sp_hashset_get(struct sp_hashset *self, size_t idx)
   return self->bucket + (idx * self->sz);
 }
 
+static size_t
+sp_hashset_is_full_length(size_t length, const struct sp_hashset *self)
+{
+  return length + sp_max(self->capacity / 10, 1);
+}
+
+static bool
+sp_hashset_is_full(struct sp_hashset *self)
+{
+  /* size_t c = sp_min(self->capacity / PSL_MAX, 1); */
+  size_t length = sp_hashset_is_full_length(self->length, self);
+  if (sp_hashset_is_empty(self)) {
+    return true;
+  }
+  if (length >= self->capacity) {
+    return true;
+  }
+  return false;
+}
+
+static void
+sp_hashset_rehash(struct sp_hashset *self, size_t in_cap)
+{
+  struct sp_hashset tmp = {0};
+  size_t new_cap;
+  size_t i;
+
+  new_cap = sp_max(sp_max(8, self->capacity * 2), in_cap);
+  sp_hashset_init_int(&tmp, new_cap, self->align, self->sz, self->hash,
+                      self->move, self->eq);
+
+  for (i = 0; i < self->capacity && tmp.length < self->length; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      sp_hashset_T *res;
+      res = sp_hashset_insert_move(&tmp, sp_hashset_get(self, i));
+      assert(res);
+    }
+  }
+
+  sp_hashset_swap_self(self, &tmp);
+  sp_hashset_free_int(&tmp);
+}
+
+void
+sp_hashset_ensure_capacity(struct sp_hashset *self, size_t capacity)
+{
+  size_t length = sp_hashset_is_full_length(capacity, self);
+  if (length < self->capacity) {
+    sp_hashset_rehash(self, length);
+  }
+}
+
+//==============================
 void
 sp_hashset_set_clear_cb(struct sp_hashset *self,
                         sp_hashset_clear_cb cb,
@@ -215,55 +270,19 @@ sp_hashset_validate(struct sp_hashset *self)
 }
 
 //==============================
-static bool
-sp_hashset_is_full(struct sp_hashset *self)
-{
-  /* size_t c = sp_min(self->capacity / PSL_MAX, 1); */
-  size_t length = self->length + sp_max(self->capacity / 10, 1);
-  if (sp_hashset_is_empty(self)) {
-    return true;
-  }
-  if (length >= self->capacity) {
-    return true;
-  }
-  return false;
-}
-
-static void
-sp_hashset_rehash(struct sp_hashset *self)
-{
-  struct sp_hashset tmp = {0};
-  size_t new_cap;
-  size_t i;
-
-  new_cap = sp_max(8, self->capacity * 2);
-  sp_hashset_init_int(&tmp, new_cap, self->align, self->sz, self->hash,
-                      self->copy, self->eq);
-
-  for (i = 0; i < self->capacity && tmp.length < self->length; ++i) {
-    if (self->psl[i] != PSL_EMPTY) {
-      sp_hashset_T *res;
-      res = sp_hashset_insert(&tmp, sp_hashset_get(self, i));
-      assert(res);
-    }
-  }
-
-  sp_hashset_swap_self(self, &tmp);
-  sp_hashset_free_int(&tmp);
-}
 
 static void
 sp_hashset_swap(struct sp_hashset *self, sp_hashset_T *f, sp_hashset_T *s)
 {
   /* the last index in self->bucket is used for tmp swap */
   sp_hashset_T *scrach = sp_hashset_get(self, self->capacity + 1);
-  self->copy(scrach, f, self->sz);
-  self->copy(f, s, self->sz);
-  self->copy(s, scrach, self->sz);
+  self->move(/*dest*/ scrach, f, self->sz);
+  self->move /*dest*/ (f, s, self->sz);
+  self->move /*dest*/ (s, scrach, self->sz);
 }
 
 sp_hashset_T *
-sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
+sp_hashset_insert_move(struct sp_hashset *self, sp_hashset_T *in)
 {
   sp_hashset_T *result = NULL;
   size_t it, start;
@@ -274,19 +293,18 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
   assert(in);
 
   if (sp_hashset_is_full(self)) {
-    sp_hashset_rehash(self);
+    sp_hashset_rehash(self, 0);
   }
 
   scrach = sp_hashset_get(self, self->capacity);
-  self->copy(/*dest*/ scrach, in, self->sz);
-  assert(self->hash(scrach) == self->hash(in));
+  self->move(/*dest*/ scrach, in, self->sz);
   it = start = self->hash(scrach) % self->capacity;
   do {
     sp_hashset_T *dest = sp_hashset_get(self, it);
 
     if (self->psl[it] == PSL_EMPTY) {
       result = result ? result : dest;
-      self->copy(/*dest*/ dest, scrach, self->sz);
+      self->move(/*dest*/ dest, scrach, self->sz);
       self->psl[it] = PSL;
       goto Lout;
     }
@@ -307,7 +325,7 @@ sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *in)
 Lout:
   if (result) {
     self->length++;
-    assert(sp_hashset_validate(self));
+    /* assert(sp_hashset_validate(self)); */
   }
   return result;
 }
@@ -378,7 +396,7 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
 
     assert(self->eq(sp_hashset_get(self, it), needle, self->sz));
 
-    self->copy(needle, sp_hashset_get(self, it), self->sz);
+    self->move(/*dest*/ needle, sp_hashset_get(self, it), self->sz);
     self->psl[it] = PSL_EMPTY;
 
     priv = start = it;
@@ -398,7 +416,7 @@ sp_hashset_remove(struct sp_hashset *self, sp_hashset_T *needle)
       priv = it;
       it   = (it + 1) % self->capacity;
     } //while
-    assert(sp_hashset_validate(self));
+    /* assert(sp_hashset_validate(self)); */
   }
 
   return result;
@@ -445,19 +463,22 @@ sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz)
 }
 
 //==============================
-void
+int
 sp_hashset_for_each(const struct sp_hashset *self,
                     sp_hashset_for_each_cb cb,
                     void *closure)
 {
+  int res = 0;
   size_t i, a;
-  for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
+  for (i = 0, a = 0; i < self->capacity && a < self->length && res == 0; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
       const sp_hashset_T *entry = sp_hashset_get((struct sp_hashset *)self, i);
-      cb(entry, closure, self->sz);
 
+      res = cb(entry, closure, self->sz);
       ++a;
     }
   }
+
+  return res;
 }
 //==============================

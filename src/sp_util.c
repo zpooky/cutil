@@ -24,12 +24,12 @@ sp_util_to_hex(void *stream, const char *ctx, const void *in, size_t len)
   const char *raw = in;
 
   if (ctx) {
-    fprintf(f,"%s ", ctx);
+    fprintf(f, "%s ", ctx);
   }
   for (i = 0; i < len; ++i) {
     int first  = (raw[i] >> 4) & 0xf;
     int second = raw[i] & 0xf;
-    fprintf(f,"%c%c", hex_encode_lookup[first], hex_encode_lookup[second]);
+    fprintf(f, "%c%c", hex_encode_lookup[first], hex_encode_lookup[second]);
   }
   /* printf("\n"); */
 }
@@ -170,6 +170,23 @@ void
 sp_util_swap_int32_t(int32_t *f, int32_t *s)
 {
   int32_t tmp = *f;
+  *f          = *s;
+  *s          = tmp;
+}
+
+void
+sp_util_swap_uint64_t(uint64_t *f, uint64_t *s)
+{
+  uint64_t tmp = *f;
+  *f           = *s;
+  *s           = tmp;
+}
+
+void
+sp_util_swap_int64_t(int64_t *f, int64_t *s)
+{
+
+  int64_t tmp = *f;
   *f          = *s;
   *s          = tmp;
 }

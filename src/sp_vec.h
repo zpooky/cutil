@@ -11,10 +11,10 @@ typedef void sp_vec_T;
 
 //==============================
 struct sp_vec *
-sp_vec_init(void);
+sp_vec_new(void);
 
 struct sp_vec *
-sp_vec_init_cap(size_t capacity);
+sp_vec_new_cap(size_t capacity);
 
 int
 sp_vec_free(struct sp_vec **);

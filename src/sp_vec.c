@@ -17,17 +17,17 @@ struct sp_vec {
 
 //==============================
 struct sp_vec *
-sp_vec_init(void)
+sp_vec_new(void)
 {
   return calloc(1, sizeof(struct sp_vec));
 }
 
 struct sp_vec *
-sp_vec_init_cap(size_t capacity)
+sp_vec_new_cap(size_t capacity)
 {
   struct sp_vec *result;
 
-  if ((result = sp_vec_init())) {
+  if ((result = sp_vec_new())) {
     result->entries  = calloc(capacity, sizeof(sp_vec_T *));
     result->capacity = capacity;
   }
@@ -171,7 +171,7 @@ sp_vec_append_impl(struct sp_vec *self, sp_vec_T *in)
   if (self->length == self->capacity) {
     struct sp_vec *tmp;
 
-    tmp = sp_vec_init_cap(sp_max(16, self->capacity * 2));
+    tmp = sp_vec_new_cap(sp_max(16, self->capacity * 2));
     if (!tmp) {
       return NULL;
     }
@@ -273,7 +273,7 @@ int
 sp_vec_sort(struct sp_vec *self, sp_vec_cmp_cb cmp)
 {
   assert(self);
-  sp_util_sort_ptr_arr(self->entries, self->length,(sp_util_sort_cmp_cb) cmp);
+  sp_util_sort_ptr_arr(self->entries, self->length, (sp_util_sort_cmp_cb)cmp);
   return 0;
 }
 

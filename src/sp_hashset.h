@@ -12,8 +12,8 @@ typedef void sp_hashset_T;
 
 //==============================
 typedef uint32_t (*sp_hashset_hash_cb)(const sp_hashset_T *);
-typedef void (*sp_hashset_copy_cb)(sp_hashset_T *dest,
-                                   const sp_hashset_T *src,
+typedef void (*sp_hashset_move_cb)(sp_hashset_T *dest,
+                                   sp_hashset_T *src,
                                    size_t sz);
 typedef bool (*sp_hashset_eq_cb)(const sp_hashset_T *f,
                                  const sp_hashset_T *s,
@@ -21,19 +21,23 @@ typedef bool (*sp_hashset_eq_cb)(const sp_hashset_T *f,
 
 typedef bool (*sp_hashset_clear_cb)(sp_hashset_T *, size_t sz, void *closure);
 
-typedef void (*sp_hashset_for_each_cb)(const sp_hashset_T *,
-                                       void *closure,
-                                       size_t sz);
+typedef int (*sp_hashset_for_each_cb)(const sp_hashset_T *,
+                                      void *closure,
+                                      size_t sz);
 
 struct sp_hashset *
-sp_hashset_init(size_t align,
-                size_t sz,
-                sp_hashset_hash_cb hash,
-                sp_hashset_copy_cb copy,
-                sp_hashset_eq_cb cmp);
+sp_hashset_new(size_t align,
+               size_t sz,
+               sp_hashset_hash_cb hash,
+               sp_hashset_move_cb move,
+               sp_hashset_eq_cb cmp);
 
 int
 sp_hashset_free(struct sp_hashset **);
+
+//==============================
+void
+sp_hashset_ensure_capacity(struct sp_hashset *self, size_t capacity);
 
 //==============================
 void
@@ -46,7 +50,7 @@ sp_hashset_clear(struct sp_hashset *self);
 
 //==============================
 sp_hashset_T *
-sp_hashset_insert(struct sp_hashset *self, sp_hashset_T *needle);
+sp_hashset_insert_move(struct sp_hashset *self, sp_hashset_T *needle);
 
 //==============================
 sp_hashset_T *
@@ -72,7 +76,7 @@ void
 sp_hashset_memcpy(sp_hashset_T *dest, const sp_hashset_T *src, size_t sz);
 
 //==============================
-void
+int
 sp_hashset_for_each(const struct sp_hashset *self,
                     sp_hashset_for_each_cb,
                     void *closure);

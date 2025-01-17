@@ -564,7 +564,7 @@ sp_bst_rebalance(struct sp_bst *self)
   assert(self);
 
   size_t length            = sp_bst_length(self);
-  struct sp_vec *vec       = sp_vec_init_cap(length);
+  struct sp_vec *vec       = sp_vec_new_cap(length);
   struct sp_bst_Node **arr = NULL;
 
   sp_bst_in_order(self, vec, sp_bst_balance_it_cb);

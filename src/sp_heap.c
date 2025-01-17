@@ -19,7 +19,7 @@ sp_heap_init(sp_heap_cmp_cb cmp)
   struct sp_heap *result;
 
   if ((result = calloc(1, sizeof(*result)))) {
-    result->vec = sp_vec_init();
+    result->vec = sp_vec_new();
     result->cmp = cmp;
   }
 

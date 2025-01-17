@@ -43,7 +43,7 @@ ix(struct sp_phash_map *self, struct sp_pair *entries, size_t len)
     ind_idx  = ind_hash % len;
 
     if (!cluster[ind_idx]) {
-      cluster[ind_idx] = sp_vec_init();
+      cluster[ind_idx] = sp_vec_new();
     }
     sp_vec_append(cluster[ind_idx], &entries[i]);
   }

@@ -35,9 +35,7 @@ sp_test_hash(const struct hashset_test *in)
   return in->hash;
 }
 static void
-sp_test_copy(struct hashset_test *dest,
-             const struct hashset_test *src,
-             size_t sz)
+sp_test_move(struct hashset_test *dest, struct hashset_test *src, size_t sz)
 {
   memcpy(dest, src, sz);
 }
@@ -69,9 +67,9 @@ sp_do_test_simple(void)
   int a;
   uint32_t data[MAX];
 
-  set = sp_hashset_init(
+  set = sp_hashset_new(
     alignof(struct hashset_test), sizeof(struct hashset_test),
-    (sp_hashset_hash_cb)sp_test_hash, (sp_hashset_copy_cb)sp_test_copy,
+    (sp_hashset_hash_cb)sp_test_hash, (sp_hashset_move_cb)sp_test_move,
     (sp_hashset_eq_cb)sp_test_eq);
 
   for (i = 0; i < MAX; ++i) {
@@ -100,7 +98,7 @@ sp_do_test_simple(void)
     assert(sp_hashset_length(set) == i);
 
     tmp.hash = tmp.value = data[i];
-    out                  = sp_hashset_insert(set, &tmp);
+    out                  = sp_hashset_insert_move(set, &tmp);
     assert(out);
     assert(out->value == data[i]);
     /* sp_hashset_dump(set); */

@@ -6,13 +6,14 @@
 
 /* TODO sp_str_append_printf();
  */
+#define SP_STR_SBUF_SIZE 32
 
 //==============================
 typedef struct sp_str {
   union {
     /* TODO use internal_ prefix */
     char *buf;
-    char sbuf[16];
+    char sbuf[SP_STR_SBUF_SIZE];
   };
   size_t length;
   size_t capacity;

@@ -194,7 +194,7 @@ const char *
 sp_str_c_str(const struct sp_str *self)
 {
   assertx(self);
-  assertx(self->capacity > 0);
+  assertx(self->capacity == 0 ? self->sbuf[0] == '\0' : 1);
 
   if (is_static_alloc(self->capacity)) {
     return self->sbuf;
@@ -298,6 +298,7 @@ sp_str_cmp(const struct sp_str *self, const char *o)
 {
   assertx(self);
 
+  //TODO does this take into account of length of strength?
   return strcmp(sp_str_c_str(self), o);
 }
 
@@ -390,11 +391,14 @@ sp_str_clear(sp_str *self)
 void
 sp_str_swap(struct sp_str *f, struct sp_str *s)
 {
+  char tmp[SP_STR_SBUF_SIZE] = {0};
   assertx(f);
   assertx(s);
-
   /*this will memcpy $buf as well*/
-  sp_util_swap_char_arr(f->sbuf, s->sbuf, sizeof(f->sbuf));
+  memcpy(tmp, f->sbuf, sizeof(tmp));
+  memcpy(f->sbuf, s->sbuf, sizeof(tmp));
+  memcpy(s->sbuf, tmp, sizeof(tmp));
+
   sp_util_swap_size_t(&f->length, &s->length);
   sp_util_swap_size_t(&f->capacity, &s->capacity);
 }
