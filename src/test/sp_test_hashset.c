@@ -196,11 +196,11 @@ sp_do_test_str_val(void)
   int *it;
 
   pool = sp_vec_copy_init0_cap(max, alignof(int), sizeof(int));
-  set  = sp_hashset_init(alignof(struct hashset_test_str_val), //
-                         sizeof(struct hashset_test_str_val), //
-                         (sp_hashset_hash_cb)hashset_test_str_val_hash, //
-                         sp_hashset_memcpy,
-                         (sp_hashset_eq_cb)hashset_test_str_val_eq);
+  set  = sp_hashset_new(alignof(struct hashset_test_str_val), //
+                        sizeof(struct hashset_test_str_val), //
+                        (sp_hashset_hash_cb)hashset_test_str_val_hash, //
+                        sp_hashset_memcpy,
+                        (sp_hashset_eq_cb)hashset_test_str_val_eq);
 
   for (int i = 0; i < max; ++i) {
     assert(sp_vec_copy_length(pool) == i);
@@ -216,7 +216,7 @@ sp_do_test_str_val(void)
     struct hashset_test_str_val *res = NULL;
     /* fprintf(stderr, "%s:i[%d]\n", __func__, *it); */
     sprintf(val.key, "%d", *it);
-    res = sp_hashset_insert(set, &val);
+    res = sp_hashset_insert_move(set, &val);
     assert(res);
     assert(res->value == *it);
     assert(strcmp(res->key, val.key) == 0);
