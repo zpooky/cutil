@@ -15,18 +15,21 @@ typedef void (*sp_vec_copy_copy_cb)(sp_vec_copy_T *dest,
                                     size_t);
 
 struct sp_vec_copy *
-sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb);
+sp_vec_copy_init(size_t element_align, size_t element_sz, sp_vec_copy_copy_cb);
 
 struct sp_vec_copy *
-sp_vec_copy_init0(size_t align, size_t sz);
+sp_vec_copy_init_copy(const struct sp_vec_copy *);
 
 struct sp_vec_copy *
-sp_vec_copy_init0_cap(size_t capacity, size_t align, size_t sz);
+sp_vec_copy_init0(size_t element_align, size_t element_sz);
+
+struct sp_vec_copy *
+sp_vec_copy_init0_cap(size_t capacity, size_t element_align, size_t element_sz);
 
 struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
-                     size_t align,
-                     size_t sz,
+                     size_t element_align,
+                     size_t element_sz,
                      sp_vec_copy_copy_cb);
 
 int

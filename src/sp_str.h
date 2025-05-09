@@ -6,7 +6,7 @@
 
 /* TODO sp_str_append_printf();
  */
-#define SP_STR_SBUF_SIZE 32
+#define SP_STR_SBUF_SIZE 31
 
 //==============================
 typedef struct sp_str {

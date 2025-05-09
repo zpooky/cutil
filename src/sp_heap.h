@@ -16,6 +16,8 @@ typedef int (*sp_heap_cmp_cb)(sp_heap_T *, sp_heap_T *);
 //==============================
 struct sp_heap *sp_heap_init(sp_heap_cmp_cb);
 
+struct sp_heap *sp_heap_init_copy(const struct sp_heap *o);
+
 //==============================
 sp_heap_T *
 sp_heap_enqueue_impl(struct sp_heap *, sp_heap_T *);

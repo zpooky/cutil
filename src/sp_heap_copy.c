@@ -6,12 +6,12 @@
 #include <assert.h>
 
 #include "sp_vec_copy.h"
+#include "sp_vec_copy_internal.h"
 #include "sp_heap_internal.h"
 
 //==============================
 struct sp_heap_copy {
   struct sp_vec_copy *vec;
-  size_t sz;
 
   sp_heap_copy_cmp_cb cmp;
   sp_heap_copy_copy_cb copy;
@@ -21,21 +21,16 @@ struct sp_heap_copy {
 static void
 sp_heap_copy_copy_memcopy(sp_heap_copy_T *dest,
                           const sp_heap_copy_T *src,
-                          size_t sz)
+                          size_t element_sz)
 {
-  memcpy(dest, src, sz);
+  memcpy(dest, src, element_sz);
 }
 
 struct sp_heap_copy *
-sp_heap_copy_init(size_t align,
-                  size_t sz,
-                  sp_heap_copy_cmp_cb cmp,
-                  sp_heap_copy_copy_cb copy)
-{
+sp_heap_copy_init(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb cmp, sp_heap_copy_copy_cb copy) {
   struct sp_heap_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
-    result->vec  = sp_vec_copy_init(align, sz, (sp_vec_copy_copy_cb)copy);
-    result->sz   = sz;
+    result->vec  = sp_vec_copy_init(element_align, element_sz, (sp_vec_copy_copy_cb)copy);
     result->copy = copy;
     result->cmp  = cmp;
   }
@@ -43,9 +38,20 @@ sp_heap_copy_init(size_t align,
 }
 
 struct sp_heap_copy *
-sp_heap_copy_init2(size_t align, size_t sz, sp_heap_copy_cmp_cb cmp)
+sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb cmp)
 {
-  return sp_heap_copy_init(align, sz, cmp, sp_heap_copy_copy_memcopy);
+  return sp_heap_copy_init(element_align, element_sz, cmp, sp_heap_copy_copy_memcopy);
+}
+
+struct sp_heap_copy *
+sp_heap_copy_init_copy(const struct sp_heap_copy *o){
+  struct sp_heap_copy *result;
+  if ((result = calloc(1, sizeof(*result)))) {
+    result->vec  = sp_vec_copy_init_copy(o->vec);
+    result->copy = o->copy;
+    result->cmp  = o->cmp;
+  }
+  return result;
 }
 
 int
@@ -55,7 +61,6 @@ sp_heap_copy_free(struct sp_heap_copy **pself)
   if (*pself) {
     struct sp_heap_copy *self = *pself;
     sp_vec_copy_free(&self->vec);
-    self->sz   = 0;
     self->copy = NULL;
     self->cmp  = NULL;
 
@@ -178,7 +183,7 @@ sp_heap_copy_dequeue(struct sp_heap_copy *self, sp_heap_copy_T *dest)
 
     src = sp_vec_copy_get(self->vec, head);
     assert(src);
-    self->copy(dest, src, self->sz);
+    self->copy(dest, src, self->vec->element_sz);
     sp_vec_copy_swap(self->vec, head, last);
 
     sp_vec_copy_remove(self->vec, last);

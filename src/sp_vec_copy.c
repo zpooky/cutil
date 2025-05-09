@@ -5,40 +5,52 @@
 #include <stdlib.h>
 #include <memory.h>
 
+static void
+sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src);
+
 //==============================
 struct sp_vec_copy *
-sp_vec_copy_init(size_t align, size_t sz, sp_vec_copy_copy_cb copy)
+sp_vec_copy_init(size_t element_align, size_t element_sz, sp_vec_copy_copy_cb copy)
 {
   struct sp_vec_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
-    sp_vec_copy_internal_init(result, 0, align, sz, copy);
+    sp_vec_copy_internal_init(result, 0, element_align, element_sz, copy);
   }
   return result;
 }
 
 struct sp_vec_copy *
-sp_vec_copy_init0(size_t align, size_t sz)
-{
-  return sp_vec_copy_init(align, sz, sp_util_memcopy);
+sp_vec_copy_init_copy(const struct sp_vec_copy *o){
+  struct sp_vec_copy *result;
+  if ((result = sp_vec_copy_init(o->element_align, o->element_sz, o->copy))) {
+    sp_vec_copy_copy(result, o);
+  }
+  return result;
 }
 
 struct sp_vec_copy *
-sp_vec_copy_init0_cap(size_t capacity, size_t align, size_t sz)
+sp_vec_copy_init0(size_t element_align, size_t element_sz)
+{
+  return sp_vec_copy_init(element_align, element_sz, sp_util_memcopy);
+}
+
+struct sp_vec_copy *
+sp_vec_copy_init0_cap(size_t capacity, size_t element_align, size_t element_sz)
 {
 
-  return sp_vec_copy_init_cap(capacity, align, sz, sp_util_memcopy);
+  return sp_vec_copy_init_cap(capacity, element_align, element_sz, sp_util_memcopy);
 }
 
 struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
-                     size_t align,
-                     size_t sz,
+                     size_t element_align,
+                     size_t element_sz,
                      sp_vec_copy_copy_cb copy)
 {
   struct sp_vec_copy *result;
 
-  if ((result = sp_vec_copy_init(align, sz, copy))) {
-    sp_vec_copy_internal_init(result, capacity, align, sz, copy);
+  if ((result = sp_vec_copy_init(element_align, element_sz, copy))) {
+    sp_vec_copy_internal_init(result, capacity, element_align, element_sz, copy);
   }
   return result;
 }
@@ -81,7 +93,7 @@ sp_vec_copy_T *
 sp_vec_copy_get(struct sp_vec_copy *self, size_t idx)
 {
   if (idx < self->length) {
-    return self->raw + (idx * self->sz);
+    return self->raw + (idx * self->element_sz);
   }
   return NULL;
 }
@@ -90,7 +102,7 @@ const sp_vec_copy_T *
 sp_vec_copy_get_c(const struct sp_vec_copy *self, size_t idx)
 {
   if (idx < self->length) {
-    return self->raw + (idx * self->sz);
+    return self->raw + (idx * self->element_sz);
   }
   return NULL;
 }
@@ -109,16 +121,16 @@ sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src)
   assertx(dest);
   assertx(src);
   assertx(src->length <= (dest->capacity - dest->length));
-  assertx(src->sz == dest->sz);
-  assertx(src->align == dest->align);
+  assertx(src->element_sz == dest->element_sz);
+  assertx(src->element_align == dest->element_align);
 
   for (i = 0; i < src->length; ++i) {
     sp_vec_copy_T *s, *d;
 
-    s = src->raw + (i * src->sz);
-    d = dest->raw + (dest->length++ * dest->sz);
+    s = src->raw + (i * src->element_sz);
+    d = dest->raw + (dest->length++ * dest->element_sz);
 
-    dest->copy(d, s, dest->sz);
+    dest->copy(d, s, dest->element_sz);
   }
 }
 
@@ -137,7 +149,7 @@ sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
     struct sp_vec_copy *tmp;
     size_t capacity = sp_max(16, self->capacity * 2);
 
-    tmp = sp_vec_copy_init_cap(capacity, self->align, self->sz, self->copy);
+    tmp = sp_vec_copy_init_cap(capacity, self->element_align, self->element_sz, self->copy);
     if (!tmp) {
       return NULL;
     }
@@ -148,8 +160,8 @@ sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
   }
 
   idx    = self->length++;
-  result = self->raw + (idx * self->sz);
-  self->copy(result, in, self->sz);
+  result = self->raw + (idx * self->element_sz);
+  self->copy(result, in, self->element_sz);
   assertx(idx == sp_vec_copy_index_of(self, result));
 
   return result;
@@ -185,13 +197,13 @@ sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)
 
   if (f < self->length && s < self->length) {
     //TODO improve (maybe use a free slot in self->raw instead of $tmp)
-    void *tmp = aligned_alloc(self->align, self->sz);
-    void *fp  = self->raw + (f * self->sz);
-    void *sp  = self->raw + (s * self->sz);
+    void *tmp = aligned_alloc(self->element_align, self->element_sz);
+    void *fp  = self->raw + (f * self->element_sz);
+    void *sp  = self->raw + (s * self->element_sz);
 
-    self->copy(tmp, fp, self->sz);
-    self->copy(fp, sp, self->sz);
-    self->copy(sp, tmp, self->sz);
+    self->copy(tmp, fp, self->element_sz);
+    self->copy(fp, sp, self->element_sz);
+    self->copy(sp, tmp, self->element_sz);
 
     free(tmp);
     return true;
@@ -207,13 +219,13 @@ sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_vec_copy_T *n)
 {
   uintptr_t n_idx     = (uintptr_t)n;
   uintptr_t r_idx     = (uintptr_t)self->raw;
-  uintptr_t r_idx_end = r_idx + (self->sz * self->capacity);
+  uintptr_t r_idx_end = r_idx + (self->element_sz * self->capacity);
   assertx(n_idx >= r_idx);
   assertx(n_idx < r_idx_end);
-  assertx(n_idx % self->align == 0);
-  assertx((n_idx - r_idx) % self->sz == 0);
+  assertx(n_idx % self->element_align == 0);
+  assertx((n_idx - r_idx) % self->element_sz == 0);
 
-  return (n_idx - r_idx) / self->sz;
+  return (n_idx - r_idx) / self->element_sz;
 }
 
 //==============================
@@ -256,13 +268,13 @@ sp_vec_copy_begin(struct sp_vec_copy *self)
 sp_vec_copy_T *
 sp_vec_copy_end(struct sp_vec_copy *self)
 {
-  return self->raw + (self->length * self->sz);
+  return self->raw + (self->length * self->element_sz);
 }
 
 sp_vec_copy_T *
 sp_vec_copy_next(struct sp_vec_copy *self, sp_vec_copy_T *it)
 {
-  return it + self->sz;
+  return it + self->element_sz;
 }
 
 //==============================

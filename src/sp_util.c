@@ -64,7 +64,7 @@ sp_util_hex_decode(const char *it, size_t lhex, uint8_t *out, size_t lout)
   //TODO add indicate out length
   // TODO lowercase parse
 
-  uint8_t lookup[('F' - '0') + 1];
+  uint8_t lookup[('f' - '0') + 1];
   lookup['0' - '0'] = 0x0;
   lookup['1' - '0'] = 0x1;
   lookup['2' - '0'] = 0x2;
@@ -75,12 +75,12 @@ sp_util_hex_decode(const char *it, size_t lhex, uint8_t *out, size_t lout)
   lookup['7' - '0'] = 0x7;
   lookup['8' - '0'] = 0x8;
   lookup['9' - '0'] = 0x9;
-  lookup['A' - '0'] = 0xA;
-  lookup['B' - '0'] = 0xB;
-  lookup['C' - '0'] = 0xC;
-  lookup['D' - '0'] = 0xD;
-  lookup['E' - '0'] = 0xE;
-  lookup['F' - '0'] = 0xF;
+  lookup['A' - '0'] = lookup['a' - '0'] = 0xA;
+  lookup['B' - '0'] = lookup['b' - '0'] = 0xB;
+  lookup['C' - '0'] = lookup['c' - '0'] = 0xC;
+  lookup['D' - '0'] = lookup['d' - '0'] = 0xD;
+  lookup['E' - '0'] = lookup['e' - '0'] = 0xE;
+  lookup['F' - '0'] = lookup['f' - '0'] = 0xF;
 
   assert(lhex % 2 == 0);
 

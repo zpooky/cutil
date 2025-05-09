@@ -17,8 +17,7 @@ sp_str_view_init_str(sp_str_view *self, struct sp_str *str)
 }
 
 //==============================
-#define SBUF_MAX 15
-#define SBUF_CAP (SBUF_MAX + 1)
+#define SBUF_CAP (SP_STR_SBUF_SIZE + 1)
 
 //==============================
 static inline bool
@@ -34,7 +33,7 @@ sp_str_init0(sp_str *self)
 
   self->length = 0;
   memset(self->sbuf, '\0', sizeof(self->sbuf));
-  self->capacity = SBUF_MAX;
+  self->capacity = SP_STR_SBUF_SIZE;
 
   return 0;
 }

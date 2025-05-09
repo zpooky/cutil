@@ -16,13 +16,16 @@ typedef void (*sp_heap_copy_copy_cb)(sp_heap_copy_T *dest,
 
 //==============================
 struct sp_heap_copy *
-sp_heap_copy_init(size_t align,
-                  size_t sz,
+sp_heap_copy_init(size_t element_align,
+                  size_t element_sz,
                   sp_heap_copy_cmp_cb,
                   sp_heap_copy_copy_cb);
 
 struct sp_heap_copy *
-sp_heap_copy_init2(size_t align, size_t sz, sp_heap_copy_cmp_cb);
+sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb);
+
+struct sp_heap_copy *
+sp_heap_copy_init_copy(const struct sp_heap_copy *);
 
 int
 sp_heap_copy_free(struct sp_heap_copy **);

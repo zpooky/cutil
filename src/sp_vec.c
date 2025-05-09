@@ -23,6 +23,18 @@ sp_vec_new(void)
 }
 
 struct sp_vec *
+sp_vec_new_copy(const struct sp_vec *o){
+  struct sp_vec *result;
+
+  assertx(o);
+  if ((result = sp_vec_new_cap(o->capacity))) {
+    memcpy(result->entries, o->entries, sizeof(sp_vec_T*)*o->length);
+    result->length = o->length;
+  }
+  return result;
+}
+
+struct sp_vec *
 sp_vec_new_cap(size_t capacity)
 {
   struct sp_vec *result;

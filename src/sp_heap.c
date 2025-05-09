@@ -26,6 +26,17 @@ sp_heap_init(sp_heap_cmp_cb cmp)
   return result;
 }
 
+struct sp_heap *sp_heap_init_copy(const struct sp_heap *o){
+  struct sp_heap *result;
+
+  if ((result = calloc(1, sizeof(*result)))) {
+    result->vec = sp_vec_new_copy(o->vec);
+    result->cmp = o->cmp;
+  }
+
+  return result;
+}
+
 //==============================
 static void
 sp_heap_internal_swap(struct sp_heap *self, size_t idx0, size_t idx1)

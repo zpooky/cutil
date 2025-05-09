@@ -14,8 +14,8 @@ struct sp_vec_copy {
   size_t length;
   size_t capacity;
 
-  size_t align;
-  size_t sz;
+  size_t element_align;
+  size_t element_sz;
 
   void (*copy)(void *dest, const void *src, size_t);
 };
@@ -23,8 +23,8 @@ struct sp_vec_copy {
 static inline void
 sp_vec_copy_internal_init(struct sp_vec_copy *self,
                           size_t capacity,
-                          size_t align,
-                          size_t sz,
+                          size_t element_align,
+                          size_t element_sz,
                           void (*copy)(void *dest, const void *src, size_t))
 {
   assert(self);
@@ -32,11 +32,11 @@ sp_vec_copy_internal_init(struct sp_vec_copy *self,
   self->raw                     = NULL;
 
   if (capacity) {
-    self->raw      = aligned_alloc(align, capacity * sz);
+    self->raw      = aligned_alloc(element_align, capacity * element_sz);
     self->capacity = capacity;
   }
-  self->sz    = sz;
-  self->align = align;
+  self->element_sz    = element_sz;
+  self->element_align = element_align;
   self->copy  = copy;
 }
 
@@ -48,7 +48,7 @@ sp_vec_copy_internal_free(struct sp_vec_copy *self)
     free(self->raw);
   }
   self->raw    = NULL;
-  self->length = self->sz = 0;
+  self->length = self->element_sz = 0;
 }
 
 //==============================
@@ -60,8 +60,8 @@ sp_vec_copy_swap_self(struct sp_vec_copy *f, struct sp_vec_copy *s)
   sp_util_swap_size_t(&f->length, &s->length);
   sp_util_swap_size_t(&f->capacity, &s->capacity);
 
-  sp_util_swap_size_t(&f->align, &s->align);
-  sp_util_swap_size_t(&f->sz, &s->sz);
+  sp_util_swap_size_t(&f->element_align, &s->element_align);
+  sp_util_swap_size_t(&f->element_sz, &s->element_sz);
 
   sp_util_swap_voidp(&f->copy, &s->copy);
 }

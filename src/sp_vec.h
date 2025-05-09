@@ -14,6 +14,9 @@ struct sp_vec *
 sp_vec_new(void);
 
 struct sp_vec *
+sp_vec_new_copy(const struct sp_vec *);
+
+struct sp_vec *
 sp_vec_new_cap(size_t capacity);
 
 int
