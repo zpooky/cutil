@@ -9,7 +9,8 @@ struct sp_heap_copy;
 
 typedef void sp_heap_copy_T;
 
-typedef int (*sp_heap_copy_cmp_cb)(sp_heap_copy_T *f, sp_heap_copy_T *s);
+typedef int (*sp_heap_copy_cmp_cb)(const sp_heap_copy_T *f, const sp_heap_copy_T *s);
+typedef bool (*sp_heap_copy_eq_cb)(const sp_heap_copy_T *f, const sp_heap_copy_T *s);
 typedef void (*sp_heap_copy_copy_cb)(sp_heap_copy_T *dest,
                                      const sp_heap_copy_T *src,
                                      size_t);
@@ -60,6 +61,10 @@ sp_heap_copy_length(const struct sp_heap_copy *);
 
 size_t
 sp_heap_copy_capacity(const struct sp_heap_copy *);
+
+//==============================
+bool
+sp_heap_copy_eq(const struct sp_heap_copy *, const struct sp_heap_copy *, sp_heap_copy_eq_cb eq);
 
 //==============================
 bool

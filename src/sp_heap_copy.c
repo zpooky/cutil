@@ -255,6 +255,26 @@ sp_heap_copy_capacity(const struct sp_heap_copy *);
 
 //==============================
 bool
+sp_heap_copy_eq(const struct sp_heap_copy *f, const struct sp_heap_copy *s, sp_heap_copy_eq_cb eq) {
+  assertx(f->cmp == s->cmp);
+  size_t len = sp_heap_copy_length(f);
+  if (len != sp_heap_copy_length(s)) {
+    return false;
+  }
+
+  for (size_t i=0; i<len; ++i){
+    const sp_vec_copy_T *f0 = sp_vec_copy_get_c(f->vec, i);
+    const sp_vec_copy_T *s0 = sp_vec_copy_get_c(s->vec, i);
+    if (!eq(f0,s0)){
+      return false;
+    }
+  }
+
+  return true;
+}
+
+//==============================
+bool
 sp_heap_copy_is_empty(const struct sp_heap_copy *self)
 {
   return sp_vec_copy_is_empty(self->vec);

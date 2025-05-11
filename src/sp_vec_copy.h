@@ -82,7 +82,7 @@ size_t
 sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_vec_copy_T *);
 
 //==============================
-typedef int (*sp_vec_copy_cmp_cb)(sp_vec_copy_T *, sp_vec_copy_T *);
+typedef int (*sp_vec_copy_cmp_cb)(const sp_vec_copy_T *,const sp_vec_copy_T *);
 
 int
 sp_vec_copy_sort(struct sp_vec_copy *self, sp_vec_copy_cmp_cb);
