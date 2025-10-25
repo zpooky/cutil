@@ -25,7 +25,7 @@ shuffle(uint32_t *arr, size_t len)
 }
 
 static void
-test_quicksort(sp_util_sort_cmp_cb cmp)
+test_quicksort(sp_cb_cmp cmp)
 {
   const size_t max = 1024;
   uint32_t arr[max];
@@ -48,7 +48,7 @@ test_quicksort(sp_util_sort_cmp_cb cmp)
 }
 
 static void
-test_bin_insert(sp_util_sort_cmp_cb cmp)
+test_bin_insert(sp_cb_cmp cmp)
 {
   const size_t max = 1024;
   uint32_t arr[max];
@@ -98,10 +98,10 @@ void
 sp_test_sort(void)
 {
   /* while(1){ */
-  test_quicksort((sp_util_sort_cmp_cb)sp_util_uint32p_cmp);
-  test_quicksort((sp_util_sort_cmp_cb)sp_util_uint32p_cmp_inv);
-  test_bin_insert((sp_util_sort_cmp_cb)sp_util_uint32p_cmp);
-  test_bin_insert((sp_util_sort_cmp_cb)sp_util_uint32p_cmp_inv);
+  test_quicksort((sp_cb_cmp)sp_util_uint32p_cmp);
+  test_quicksort((sp_cb_cmp)sp_util_uint32p_cmp_inv);
+  test_bin_insert((sp_cb_cmp)sp_util_uint32p_cmp);
+  test_bin_insert((sp_cb_cmp)sp_util_uint32p_cmp_inv);
   /* printf("==\n"); */
   /* } */
 }

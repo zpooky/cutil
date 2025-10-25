@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sp_callbacks.h>
 
 //==============================
 #define sp_max(a, b) (((a) > (b)) ? (a) : (b))
@@ -155,27 +156,21 @@ __sp_util_assert(const char *file,
 #endif
 
 //==============================
-typedef int (*sp_util_sort_cmp_cb)(const void *, const void *);
-typedef void (*sp_util_sort_swap_cb)(void *, void *, size_t sz);
-
 bool
-sp_util_is_sorted(const void *arr,
-                  size_t arr_len,
-                  size_t entry_sz,
-                  sp_util_sort_cmp_cb);
+sp_util_is_sorted(const void *arr, size_t arr_len, size_t entry_sz, sp_cb_cmp);
 
 void
 sp_util_sort0(void *arr,
               size_t arr_len,
               size_t entry_sz,
-              sp_util_sort_cmp_cb,
-              sp_util_sort_swap_cb swap);
+              sp_cb_cmp,
+              sp_cb_swap swap);
 
 void
-sp_util_sort(void *arr, size_t arr_len, size_t entry_sz, sp_util_sort_cmp_cb);
+sp_util_sort(void *arr, size_t arr_len, size_t entry_sz, sp_cb_cmp);
 
 void
-sp_util_sort_ptr_arr(void **, size_t, sp_util_sort_cmp_cb);
+sp_util_sort_ptr_arr(void **, size_t, sp_cb_cmp);
 
 //==============================
 bool
@@ -191,7 +186,7 @@ sp_util_bin_search(void *arr,
                    size_t arr_len,
                    void *needle,
                    size_t needle_sz,
-                   sp_util_sort_cmp_cb cmp);
+                   sp_cb_cmp cmp);
 
 //==============================
 size_t
@@ -199,14 +194,14 @@ sp_util_bin_insert_uniq0(void *arr,
                          size_t *arr_len,
                          const void *in,
                          size_t in_size,
-                         sp_util_sort_cmp_cb cmp,
-                         sp_util_sort_swap_cb swap);
+                         sp_cb_cmp cmp,
+                         sp_cb_swap swap);
 size_t
 sp_util_bin_insert_uniq(void *arr,
                         size_t *arr_len,
                         const void *in,
                         size_t in_size,
-                        sp_util_sort_cmp_cb cmp);
+                        sp_cb_cmp cmp);
 
 //==============================
 bool

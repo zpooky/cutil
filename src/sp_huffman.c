@@ -181,7 +181,7 @@ huffman_build_heap(const char *plaintext, size_t plen)
   struct sp_heap * /*HufDecodeInfo*/ result = NULL;
   struct sp_bst * /*HufBST*/ tree           = sp_bst_hufBST_init();
 
-  if (!(result = sp_heap_init((sp_heap_cmp_cb)hn_min_weight_cmp))) {
+  if (!(result = sp_heap_init((sp_cb_cmp)hn_min_weight_cmp))) {
     goto Lout;
   }
 

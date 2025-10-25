@@ -49,7 +49,7 @@ ix(struct sp_phash_map *self, struct sp_pair *entries, size_t len)
   }
 
   sp_util_sort_ptr_arr((void **)&cluster, len,
-                       (sp_util_sort_cmp_cb)sp_phash_map_vec_max_cmp);
+                       (sp_cb_cmp)sp_phash_map_vec_max_cmp);
 
   for (i = 0; i < len; ++i) {
     size_t a;

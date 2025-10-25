@@ -45,7 +45,7 @@ sp_test_heap_sequence(void)
   struct sp_heap /*THNode*/ *heap;
 
   pool = sp_vec_new();
-  heap = sp_heap_init((sp_heap_cmp_cb)sp_test_size_MIN_cmp);
+  heap = sp_heap_init((sp_cb_cmp)sp_test_size_MIN_cmp);
 
   {
     size_t i;
@@ -114,7 +114,7 @@ sp_test_heap_update(void)
   THNode *out;
   struct sp_heap /*THNode*/ *heap;
   const size_t min = 256;
-  heap             = sp_heap_init((sp_heap_cmp_cb)sp_test_size_MIN_cmp);
+  heap             = sp_heap_init((sp_cb_cmp)sp_test_size_MIN_cmp);
 
   for (i = 512; i-- > min;) {
     THNode *in;
@@ -156,7 +156,7 @@ sp_test_heap_update2(void)
   struct sp_heap /*THNode*/ *heap;
   struct sp_vec /*THNode*/ *vec;
   const size_t max = 1024;
-  heap             = sp_heap_init((sp_heap_cmp_cb)sp_test_size_MAX_cmp);
+  heap             = sp_heap_init((sp_cb_cmp)sp_test_size_MAX_cmp);
   vec              = sp_vec_new();
 
   for (i = 0; i < max; ++i) {

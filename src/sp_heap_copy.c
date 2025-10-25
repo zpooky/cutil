@@ -13,24 +13,20 @@
 struct sp_heap_copy {
   struct sp_vec_copy *vec;
 
-  sp_heap_copy_cmp_cb cmp;
-  sp_heap_copy_copy_cb copy;
+  sp_cb_cmp cmp;
+  sp_cb_copy copy;
 };
 
 //==============================
-static void
-sp_heap_copy_copy_memcopy(sp_heap_copy_T *dest,
-                          const sp_heap_copy_T *src,
-                          size_t element_sz)
-{
-  memcpy(dest, src, element_sz);
-}
-
 struct sp_heap_copy *
-sp_heap_copy_init(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb cmp, sp_heap_copy_copy_cb copy) {
+sp_heap_copy_init(size_t element_align,
+                  size_t element_sz,
+                  sp_cb_cmp cmp,
+                  sp_cb_copy copy)
+{
   struct sp_heap_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
-    result->vec  = sp_vec_copy_init(element_align, element_sz, (sp_vec_copy_copy_cb)copy);
+    result->vec  = sp_vec_copy_init(element_align, element_sz, copy);
     result->copy = copy;
     result->cmp  = cmp;
   }
@@ -38,13 +34,14 @@ sp_heap_copy_init(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb c
 }
 
 struct sp_heap_copy *
-sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb cmp)
+sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_cb_cmp cmp)
 {
-  return sp_heap_copy_init(element_align, element_sz, cmp, sp_heap_copy_copy_memcopy);
+  return sp_heap_copy_init(element_align, element_sz, cmp, sp_cb_copy_memcopy);
 }
 
 struct sp_heap_copy *
-sp_heap_copy_init_copy(const struct sp_heap_copy *o){
+sp_heap_copy_init_copy(const struct sp_heap_copy *o)
+{
   struct sp_heap_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
     result->vec  = sp_vec_copy_init_copy(o->vec);
@@ -77,8 +74,8 @@ sp_heap_copy_shift_up(struct sp_heap_copy *self, size_t idx)
 {
 
   while (true) {
-    sp_vec_copy_T *parent;
-    sp_vec_copy_T *me;
+    sp_T *parent;
+    sp_T *me;
     size_t par_idx;
 
     if (idx == 0) {
@@ -101,10 +98,10 @@ sp_heap_copy_shift_up(struct sp_heap_copy *self, size_t idx)
   return idx;
 }
 
-sp_heap_copy_T *
-sp_heap_copy_enqueue(struct sp_heap_copy *self, const sp_heap_copy_T *in)
+sp_T *
+sp_heap_copy_enqueue(struct sp_heap_copy *self, const sp_T *in)
 {
-  sp_heap_copy_T *res;
+  sp_T *res;
 
   if ((res = sp_vec_copy_append(self->vec, in))) {
     size_t idx;
@@ -122,7 +119,7 @@ sp_heap_copy_enqueue(struct sp_heap_copy *self, const sp_heap_copy_T *in)
 static size_t
 sp_heap_copy_extreme(struct sp_heap_copy *self, size_t first, size_t second)
 {
-  sp_heap_copy_T *f, *s;
+  sp_T *f, *s;
 
   f = sp_vec_copy_get(self->vec, first);
   s = sp_vec_copy_get(self->vec, second);
@@ -155,7 +152,7 @@ Lit:
   }
 
   if (extreme_idx < sp_heap_copy_length(self)) {
-    sp_heap_copy_T *f, *s;
+    sp_T *f, *s;
 
     f = sp_vec_copy_get(self->vec, extreme_idx);
     s = sp_vec_copy_get(self->vec, idx);
@@ -171,13 +168,13 @@ Lit:
   return idx;
 }
 bool
-sp_heap_copy_dequeue(struct sp_heap_copy *self, sp_heap_copy_T *dest)
+sp_heap_copy_dequeue(struct sp_heap_copy *self, sp_T *dest)
 {
   assert(self);
   assert(dest);
 
   if (!sp_heap_copy_is_empty(self)) {
-    sp_heap_copy_T *src;
+    sp_T *src;
     const size_t head = 0;
     const size_t last = sp_vec_copy_length(self->vec) - 1;
 
@@ -197,7 +194,7 @@ sp_heap_copy_dequeue(struct sp_heap_copy *self, sp_heap_copy_T *dest)
 }
 
 //==============================
-sp_heap_copy_T *
+sp_T *
 sp_heap_copy_head(struct sp_heap_copy *self)
 {
   assert(self);
@@ -228,11 +225,11 @@ sp_heap_copy_drop_head(struct sp_heap_copy *self)
 
 //==============================
 bool
-sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
+sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_T *);
 
 //==============================
-sp_heap_copy_T *
-sp_heap_copy_update_key(struct sp_heap_copy *self, sp_heap_copy_T *subject)
+sp_T *
+sp_heap_copy_update_key(struct sp_heap_copy *self, sp_T *subject)
 {
   size_t idx = sp_vec_copy_index_of(self->vec, subject);
 
@@ -255,17 +252,20 @@ sp_heap_copy_capacity(const struct sp_heap_copy *);
 
 //==============================
 bool
-sp_heap_copy_eq(const struct sp_heap_copy *f, const struct sp_heap_copy *s, sp_heap_copy_eq_cb eq) {
+sp_heap_copy_eq(const struct sp_heap_copy *f,
+                const struct sp_heap_copy *s,
+                sp_cb_eq eq)
+{
   assertx(f->cmp == s->cmp);
   size_t len = sp_heap_copy_length(f);
   if (len != sp_heap_copy_length(s)) {
     return false;
   }
 
-  for (size_t i=0; i<len; ++i){
-    const sp_vec_copy_T *f0 = sp_vec_copy_get_c(f->vec, i);
-    const sp_vec_copy_T *s0 = sp_vec_copy_get_c(s->vec, i);
-    if (!eq(f0,s0)){
+  for (size_t i = 0; i < len; ++i) {
+    const sp_T *f0 = sp_vec_copy_get_c(f->vec, i);
+    const sp_T *s0 = sp_vec_copy_get_c(s->vec, i);
+    if (!eq(f0, s0, f->vec->element_sz)) {
       return false;
     }
   }
@@ -281,7 +281,7 @@ sp_heap_copy_is_empty(const struct sp_heap_copy *self)
 }
 
 //==============================
-sp_heap_copy_T *
+sp_T *
 sp_heap_copy_array(struct sp_heap_copy *self)
 {
   return sp_vec_copy_array(self->vec);

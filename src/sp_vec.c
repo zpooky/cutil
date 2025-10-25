@@ -10,7 +10,7 @@
 
 //==============================
 struct sp_vec {
-  sp_vec_T **entries;
+  sp_T **entries;
   size_t length;
   size_t capacity;
 };
@@ -23,12 +23,13 @@ sp_vec_new(void)
 }
 
 struct sp_vec *
-sp_vec_new_copy(const struct sp_vec *o){
+sp_vec_new_copy(const struct sp_vec *o)
+{
   struct sp_vec *result;
 
   assertx(o);
   if ((result = sp_vec_new_cap(o->capacity))) {
-    memcpy(result->entries, o->entries, sizeof(sp_vec_T*)*o->length);
+    memcpy(result->entries, o->entries, sizeof(sp_T *) * o->length);
     result->length = o->length;
   }
   return result;
@@ -40,7 +41,7 @@ sp_vec_new_cap(size_t capacity)
   struct sp_vec *result;
 
   if ((result = sp_vec_new())) {
-    result->entries  = calloc(capacity, sizeof(sp_vec_T *));
+    result->entries  = calloc(capacity, sizeof(sp_T *));
     result->capacity = capacity;
   }
 
@@ -93,7 +94,7 @@ sp_vec_is_empty(const struct sp_vec *self)
 }
 
 //==============================
-sp_vec_T *
+sp_T *
 sp_vec_get(struct sp_vec *self, size_t idx)
 {
   assert(self);
@@ -105,7 +106,7 @@ sp_vec_get(struct sp_vec *self, size_t idx)
   return NULL;
 }
 
-const sp_vec_T *
+const sp_T *
 sp_vec_get_c(const struct sp_vec *self, size_t idx)
 {
   assert(self);
@@ -117,7 +118,7 @@ sp_vec_get_c(const struct sp_vec *self, size_t idx)
   return NULL;
 }
 
-sp_vec_T *
+sp_T *
 sp_vec_get_last(struct sp_vec *self)
 {
   assert(self);
@@ -129,7 +130,7 @@ sp_vec_get_last(struct sp_vec *self)
   return NULL;
 }
 
-const sp_vec_T *
+const sp_T *
 sp_vec_get_last_c(const struct sp_vec *self)
 {
   assert(self);
@@ -159,19 +160,19 @@ sp_vec_swap_self(struct sp_vec *f, struct sp_vec *s)
 static void
 sp_vec_copy(struct sp_vec *dest, struct sp_vec *src)
 {
-  sp_vec_T **raw_dest;
+  sp_T **raw_dest;
 
   assert(dest);
   assert(src);
   assert(src->length <= (dest->capacity - dest->length));
 
   raw_dest = &dest->entries[dest->length];
-  memcpy(raw_dest, src->entries, sizeof(sp_vec_T *) * src->length);
+  memcpy(raw_dest, src->entries, sizeof(sp_T *) * src->length);
   dest->length += src->length;
 }
 
-sp_vec_T **
-sp_vec_append_impl(struct sp_vec *self, sp_vec_T *in)
+sp_T **
+sp_vec_append_impl(struct sp_vec *self, sp_T *in)
 {
   size_t idx;
 
@@ -202,7 +203,7 @@ sp_vec_append_impl(struct sp_vec *self, sp_vec_T *in)
 int
 sp_vec_append_vec(struct sp_vec *self, struct sp_vec *appends)
 {
-  sp_vec_T **it = NULL;
+  sp_T **it = NULL;
 
   assert(self);
   assert(appends);
@@ -215,10 +216,10 @@ sp_vec_append_vec(struct sp_vec *self, struct sp_vec *appends)
 }
 
 //==============================
-sp_vec_T *
+sp_T *
 sp_vec_remove(struct sp_vec *self, size_t idx)
 {
-  sp_vec_T *result = NULL;
+  sp_T *result = NULL;
 
   assert(self);
 
@@ -256,7 +257,7 @@ sp_vec_swap(struct sp_vec *self, size_t f, size_t s)
 
 //==============================
 size_t
-sp_vec_index_of_impl(const struct sp_vec *self, sp_vec_T **data)
+sp_vec_index_of_impl(const struct sp_vec *self, sp_T **data)
 {
   uintptr_t dptr = (uintptr_t)data, sptr;
   size_t index;
@@ -282,10 +283,10 @@ sp_vec_index_of_impl(const struct sp_vec *self, sp_vec_T **data)
 
 //==============================
 int
-sp_vec_sort(struct sp_vec *self, sp_vec_cmp_cb cmp)
+sp_vec_sort(struct sp_vec *self, sp_cb_cmp cmp)
 {
   assert(self);
-  sp_util_sort_ptr_arr(self->entries, self->length, (sp_util_sort_cmp_cb)cmp);
+  sp_util_sort_ptr_arr(self->entries, self->length, cmp);
   return 0;
 }
 
@@ -321,7 +322,7 @@ sp_vec_clear(struct sp_vec *self)
 }
 
 //==============================
-sp_vec_T **
+sp_T **
 sp_vec_array(struct sp_vec *self)
 {
   assert(self);
@@ -330,7 +331,7 @@ sp_vec_array(struct sp_vec *self)
 }
 
 //==============================
-sp_vec_T **
+sp_T **
 sp_vec_begin(struct sp_vec *self)
 {
   if (self) {
@@ -342,7 +343,7 @@ sp_vec_begin(struct sp_vec *self)
   return NULL;
 }
 
-sp_vec_T **
+sp_T **
 sp_vec_end(struct sp_vec *self)
 {
   if (self) {

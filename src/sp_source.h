@@ -69,9 +69,6 @@ sp_source_reaonly_view(struct sp_source *, size_t length);
 struct sp_cbb *
 sp_source_consume_reaonly_view(struct sp_source *, size_t length);
 
-//==============================
-void
-sp_source_dump_hex(struct sp_source *);
 
 //==============================
 void
@@ -96,6 +93,9 @@ sp_source_ensure_at_least_readable(struct sp_source *self, size_t len);
 
 //==============================
 size_t sp_source_debug_in_cbb(const struct sp_source *self);
+
+void
+sp_source_dump_hex(struct sp_source *);
 
 //==============================
 #endif

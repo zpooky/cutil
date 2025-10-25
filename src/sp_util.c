@@ -427,7 +427,7 @@ bool
 sp_util_is_sorted(const void *arr,
                   size_t arr_len,
                   size_t entry_sz,
-                  sp_util_sort_cmp_cb cmp)
+                  sp_cb_cmp cmp)
 {
   if (arr_len > 0) {
     size_t i;
@@ -448,8 +448,8 @@ static size_t
 partition(void *arr,
           size_t arr_len,
           size_t entry_sz,
-          sp_util_sort_cmp_cb cmp,
-          sp_util_sort_swap_cb swap)
+          sp_cb_cmp cmp,
+          sp_cb_swap swap)
 {
   void *head = arr;
   void *tail = arr + ((arr_len - 1) * entry_sz);
@@ -500,8 +500,8 @@ static void
 quicksort(void *arr,
           size_t arr_len,
           size_t entry_sz,
-          sp_util_sort_cmp_cb cmp,
-          sp_util_sort_swap_cb swap)
+          sp_cb_cmp cmp,
+          sp_cb_swap swap)
 {
   if (arr_len > 1) {
     assert(arr);
@@ -517,24 +517,21 @@ void
 sp_util_sort0(void *arr,
               size_t arr_len,
               size_t entry_sz,
-              sp_util_sort_cmp_cb cmp,
-              sp_util_sort_swap_cb swap)
+              sp_cb_cmp cmp,
+              sp_cb_swap swap)
 {
 
   quicksort(arr, arr_len, entry_sz, cmp, swap);
 }
 
 void
-sp_util_sort(void *arr,
-             size_t arr_len,
-             size_t entry_sz,
-             sp_util_sort_cmp_cb cmp)
+sp_util_sort(void *arr, size_t arr_len, size_t entry_sz, sp_cb_cmp cmp)
 {
   sp_util_sort0(arr, arr_len, entry_sz, cmp, sp_util_swap_raw);
 }
 
 void
-sp_util_sort_ptr_arr(void **arr, size_t arr_len, sp_util_sort_cmp_cb cmp)
+sp_util_sort_ptr_arr(void **arr, size_t arr_len, sp_cb_cmp cmp)
 {
   sp_util_sort(arr, arr_len, sizeof(*arr), cmp);
 }
@@ -567,7 +564,7 @@ sp_util_bin_search(void *arr,
                    size_t arr_len,
                    void *needle,
                    size_t needle_sz,
-                   sp_util_sort_cmp_cb cmp)
+                   sp_cb_cmp cmp)
 {
   while (arr_len > 0) {
     size_t mid_idx = arr_len / 2;
@@ -596,8 +593,8 @@ sp_util_bin_insert_uniq0(void *arr,
                          size_t *arr_len,
                          const void *in,
                          size_t in_size,
-                         sp_util_sort_cmp_cb cmp,
-                         sp_util_sort_swap_cb swap)
+                         sp_cb_cmp cmp,
+                         sp_cb_swap swap)
 {
   size_t right = *arr_len;
   size_t left  = 0;
@@ -639,7 +636,7 @@ sp_util_bin_insert_uniq(void *arr,
                         size_t *arr_len,
                         const void *in,
                         size_t in_size,
-                        sp_util_sort_cmp_cb cmp)
+                        sp_cb_cmp cmp)
 {
   return sp_util_bin_insert_uniq0(arr, arr_len, in, in_size, cmp,
                                   sp_util_swap_raw);

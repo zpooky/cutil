@@ -34,6 +34,9 @@ cutil_src = [
   'sp_hashset.c',
 
   'sp_file_advisory_lock.c',
+
+  'sp_callbacks.c',
+  'sp_heap_array.c',
 ]
 cutil_c_args = []
 cutil_link_args = [

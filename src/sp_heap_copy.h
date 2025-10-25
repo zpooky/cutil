@@ -4,26 +4,20 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include <sp_callbacks.h>
+
 //==============================
 struct sp_heap_copy;
-
-typedef void sp_heap_copy_T;
-
-typedef int (*sp_heap_copy_cmp_cb)(const sp_heap_copy_T *f, const sp_heap_copy_T *s);
-typedef bool (*sp_heap_copy_eq_cb)(const sp_heap_copy_T *f, const sp_heap_copy_T *s);
-typedef void (*sp_heap_copy_copy_cb)(sp_heap_copy_T *dest,
-                                     const sp_heap_copy_T *src,
-                                     size_t);
 
 //==============================
 struct sp_heap_copy *
 sp_heap_copy_init(size_t element_align,
                   size_t element_sz,
-                  sp_heap_copy_cmp_cb,
-                  sp_heap_copy_copy_cb);
+                  sp_cb_cmp,
+                  sp_cb_copy);
 
 struct sp_heap_copy *
-sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_heap_copy_cmp_cb);
+sp_heap_copy_init2(size_t element_align, size_t element_sz, sp_cb_cmp);
 
 struct sp_heap_copy *
 sp_heap_copy_init_copy(const struct sp_heap_copy *);
@@ -32,15 +26,15 @@ int
 sp_heap_copy_free(struct sp_heap_copy **);
 
 //==============================
-sp_heap_copy_T *
-sp_heap_copy_enqueue(struct sp_heap_copy *, const sp_heap_copy_T *in);
+sp_T *
+sp_heap_copy_enqueue(struct sp_heap_copy *, const sp_T *in);
 
 //==============================
 bool
-sp_heap_copy_dequeue(struct sp_heap_copy *, sp_heap_copy_T *dest);
+sp_heap_copy_dequeue(struct sp_heap_copy *, sp_T *dest);
 
 //==============================
-sp_heap_copy_T *
+sp_T *
 sp_heap_copy_head(struct sp_heap_copy *);
 
 //==============================
@@ -49,11 +43,11 @@ sp_heap_copy_drop_head(struct sp_heap_copy *);
 
 //==============================
 bool
-sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_heap_copy_T *);
+sp_heap_copy_remove_impl(struct sp_heap_copy *, sp_T *);
 
 //==============================
-sp_heap_copy_T *
-sp_heap_copy_update_key(struct sp_heap_copy *, sp_heap_copy_T *);
+sp_T *
+sp_heap_copy_update_key(struct sp_heap_copy *, sp_T *);
 
 //==============================
 size_t
@@ -64,14 +58,16 @@ sp_heap_copy_capacity(const struct sp_heap_copy *);
 
 //==============================
 bool
-sp_heap_copy_eq(const struct sp_heap_copy *, const struct sp_heap_copy *, sp_heap_copy_eq_cb eq);
+sp_heap_copy_eq(const struct sp_heap_copy *,
+                const struct sp_heap_copy *,
+                sp_cb_eq eq);
 
 //==============================
 bool
 sp_heap_copy_is_empty(const struct sp_heap_copy *);
 
 //==============================
-sp_heap_copy_T *
+sp_T *
 sp_heap_copy_array(struct sp_heap_copy *);
 
 //==============================

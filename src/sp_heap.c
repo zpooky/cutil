@@ -9,12 +9,12 @@
 //==============================
 struct sp_heap {
   struct sp_vec *vec;
-  sp_heap_cmp_cb cmp;
+  sp_cb_cmp cmp;
 };
 
 //==============================
 struct sp_heap *
-sp_heap_init(sp_heap_cmp_cb cmp)
+sp_heap_init(sp_cb_cmp cmp)
 {
   struct sp_heap *result;
 
@@ -26,7 +26,9 @@ sp_heap_init(sp_heap_cmp_cb cmp)
   return result;
 }
 
-struct sp_heap *sp_heap_init_copy(const struct sp_heap *o){
+struct sp_heap *
+sp_heap_init_copy(const struct sp_heap *o)
+{
   struct sp_heap *result;
 
   if ((result = calloc(1, sizeof(*result)))) {
@@ -63,9 +65,9 @@ static size_t
 sp_heap_shift_up(struct sp_heap *self, size_t idx)
 {
   while (true) {
-    sp_vec_T *parent;
+    sp_T *parent;
     size_t par_idx;
-    sp_vec_T *me;
+    sp_T *me;
 
     if (idx == 0) {
       /* we are root, we can not shift up further */
@@ -170,7 +172,7 @@ sp_heap_dequeue_impl(struct sp_heap *self, sp_heap_T **out, sp_heap_T *dummy)
   assert(out);
 
   if (!sp_heap_is_empty(self)) {
-    sp_vec_T *res;
+    sp_T *res;
     const size_t head = 0;
     const size_t last = sp_vec_length(self->vec) - 1;
 

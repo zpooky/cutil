@@ -237,31 +237,6 @@ sp_source_consume_reaonly_view(struct sp_source *self, size_t length)
 
 //==============================
 void
-sp_source_dump_hex(struct sp_source *self)
-{
-  struct sp_cbb_Arr arr[2] = {0};
-  size_t alen              = 0;
-  size_t p;
-
-  assert(self);
-
-  if (sp_cbb_remaining_read(self->buffer) == 0) {
-    if (!sp_cbb_is_readonly(self->buffer)) {
-
-      self->error = self->read_cb(self->buffer, self->arg);
-    }
-  }
-
-  /* printf("%s: read:%zu\n", __func__, sp_cbb_remaining_read(self->buffer)); */
-
-  alen = sp_cbb_read_buffer(self->buffer, arr);
-  for (p = 0; p < alen; ++p) {
-    sp_util_to_hex(stderr, NULL, arr[p].base, arr[p].len);
-  }
-}
-
-//==============================
-void
 sp_source_eager_fill(struct sp_source *self)
 {
   if (!sp_cbb_is_full(self->buffer)) {
@@ -337,6 +312,31 @@ size_t
 sp_source_debug_in_cbb(const struct sp_source *self)
 {
   return sp_cbb_remaining_read(self->buffer);
+}
+
+//==============================
+void
+sp_source_dump_hex(struct sp_source *self)
+{
+  struct sp_cbb_Arr arr[2] = {0};
+  size_t alen              = 0;
+  size_t p;
+
+  assert(self);
+
+  if (sp_cbb_remaining_read(self->buffer) == 0) {
+    if (!sp_cbb_is_readonly(self->buffer)) {
+
+      self->error = self->read_cb(self->buffer, self->arg);
+    }
+  }
+
+  /* printf("%s: read:%zu\n", __func__, sp_cbb_remaining_read(self->buffer)); */
+
+  alen = sp_cbb_read_buffer(self->buffer, arr);
+  for (p = 0; p < alen; ++p) {
+    sp_util_to_hex(stderr, NULL, arr[p].base, arr[p].len);
+  }
 }
 
 //==============================

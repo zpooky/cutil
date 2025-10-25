@@ -34,7 +34,7 @@ test_update(void)
   const size_t min = 1024;
 
   heap = sp_heap_copy_init2(alignof(THNode), sizeof(THNode),
-                            (sp_heap_copy_cmp_cb)sp_test_size_MIN_cmp);
+                            (sp_cb_cmp)sp_test_size_MIN_cmp);
 
   for (i = min; i-- > min;) {
     THNode in = {.value = i};
@@ -68,35 +68,41 @@ struct sp_bt_BEP09_Heap {
   bool have;
   size_t requested;
 };
-static inline const char* sp_debug_sp_bt_BEP09_Heap(const struct sp_bt_BEP09_Heap *in) {
+static inline const char *
+sp_debug_sp_bt_BEP09_Heap(const struct sp_bt_BEP09_Heap *in)
+{
   static char buf[1024] = {'\0'};
-  if (!in) return "sp_bt_BEP09_Heap(NULL)";
-  snprintf(buf, sizeof(buf), "{h[%s]req[%zu]}", in->have ? "TRUE" : "FALSE", in->requested);
+  if (!in)
+    return "sp_bt_BEP09_Heap(NULL)";
+  snprintf(buf, sizeof(buf), "{h[%s]req[%zu]}", in->have ? "TRUE" : "FALSE",
+           in->requested);
   return buf;
 }
 
 static int
-sp_bt_BEP09_Heap_have_cmp(const struct sp_bt_BEP09_Heap *f, const struct sp_bt_BEP09_Heap *s)
+sp_bt_BEP09_Heap_have_cmp(const struct sp_bt_BEP09_Heap *f,
+                          const struct sp_bt_BEP09_Heap *s)
 {
   /* TODO secondary sort order requested must work */
   /* TODO mabye redisgn with individual heaps */
   assertx(f);
   assertx(s);
-  if(f->have == s->have) {
+  if (f->have == s->have) {
     return 0;
   }
   if (!s->have) {
-  /* return sp_util_size_t_cmp(f->requested, s->requested); */
+    /* return sp_util_size_t_cmp(f->requested, s->requested); */
     return -1;
   }
   return 1;
 }
 
 static int
-sp_bt_BEP09_Heap_cmp(const struct sp_bt_BEP09_Heap *f, const struct sp_bt_BEP09_Heap *s)
+sp_bt_BEP09_Heap_cmp(const struct sp_bt_BEP09_Heap *f,
+                     const struct sp_bt_BEP09_Heap *s)
 {
   int ret = sp_bt_BEP09_Heap_have_cmp(f, s);
-  if(ret == 0){
+  if (ret == 0) {
     return sp_util_size_t_cmp(s->requested, f->requested);
   }
   return ret;
@@ -116,10 +122,12 @@ static int
 test_update2()
 {
   struct sp_bt_BEP09_Heap tmp = {0};
-  const size_t max = 1024;
+  const size_t max            = 1024;
   uint32_t arr[max];
   uint32_t i;
-  struct sp_heap_copy* heap= sp_heap_copy_init2( alignof(struct sp_bt_BEP09_Heap), sizeof(struct sp_bt_BEP09_Heap), (sp_heap_copy_cmp_cb)sp_bt_BEP09_Heap_cmp);
+  struct sp_heap_copy *heap = sp_heap_copy_init2(
+    alignof(struct sp_bt_BEP09_Heap), sizeof(struct sp_bt_BEP09_Heap),
+    (sp_cb_cmp)sp_bt_BEP09_Heap_cmp);
   struct sp_bt_BEP09_Heap tmp_head = {0};
 
   for (i = 0; i < max; ++i) {
@@ -127,21 +135,21 @@ test_update2()
   }
   shuffle(arr, max);
   for (i = 0; i < max; ++i) {
-    struct sp_bt_BEP09_Heap tmp={
+    struct sp_bt_BEP09_Heap tmp = {
       .requested = arr[i],
-      .have = rand() < (RAND_MAX/2),
+      .have      = rand() < (RAND_MAX / 2),
     };
     sp_heap_copy_enqueue(heap, &tmp);
   }
   assert(sp_heap_copy_length(heap) == max);
-  i=0;
-  sp_heap_copy_dequeue(heap,&tmp_head);
+  i = 0;
+  sp_heap_copy_dequeue(heap, &tmp_head);
   ++i;
-  while (sp_heap_copy_dequeue(heap,&tmp)) {
-  fprintf(stderr, "tmp[%s]\n", sp_debug_sp_bt_BEP09_Heap(&tmp));
+  while (sp_heap_copy_dequeue(heap, &tmp)) {
+    fprintf(stderr, "tmp[%s]\n", sp_debug_sp_bt_BEP09_Heap(&tmp));
     ++i;
-    assertx(tmp_head.have ? tmp.have ==true :true);
-    if (tmp_head.have == tmp.have){
+    assertx(tmp_head.have ? tmp.have == true : true);
+    if (tmp_head.have == tmp.have) {
       assertx(tmp_head.requested <= tmp.requested);
     }
     tmp_head = tmp;

@@ -14,7 +14,7 @@ __sp_vec_copy_ensure_capacity(struct sp_vec_copy *self, size_t capacity);
 
 //==============================
 struct sp_vec_copy *
-sp_vec_copy_init(size_t element_align, size_t element_sz, sp_vec_copy_copy_cb copy)
+sp_vec_copy_init(size_t element_align, size_t element_sz, sp_cb_copy copy)
 {
   struct sp_vec_copy *result;
   if ((result = calloc(1, sizeof(*result)))) {
@@ -24,18 +24,21 @@ sp_vec_copy_init(size_t element_align, size_t element_sz, sp_vec_copy_copy_cb co
 }
 
 struct sp_vec_copy *
-sp_vec_copy_init_copy(const struct sp_vec_copy *o){
+sp_vec_copy_init_copy(const struct sp_vec_copy *o)
+{
   struct sp_vec_copy *result;
   if ((result = sp_vec_copy_init(o->element_align, o->element_sz, o->copy))) {
-    assertxs(result->element_sz == o->element_sz, "%zu:%zu",result->element_sz, o->element_sz);
-    assertxs(result->element_align == o->element_align, "%zu:%zu",result->element_align, o->element_align);
+    assertxs(result->element_sz == o->element_sz, "%zu:%zu", result->element_sz,
+             o->element_sz);
+    assertxs(result->element_align == o->element_align, "%zu:%zu",
+             result->element_align, o->element_align);
     /* assertxs(result->capacity == o->capacity, "%zu:%zu",result->capacity, o->capacity); */
     assertx(result->copy == o->copy);
 
     __sp_vec_copy_ensure_capacity(result, o->capacity);
 
     __sp_vec_copy_copy(result, o);
-    assertxs(result->length == o->length, "%zu:%zu",result->length, o->length);
+    assertxs(result->length == o->length, "%zu:%zu", result->length, o->length);
   }
   return result;
 }
@@ -50,19 +53,21 @@ struct sp_vec_copy *
 sp_vec_copy_init0_cap(size_t capacity, size_t element_align, size_t element_sz)
 {
 
-  return sp_vec_copy_init_cap(capacity, element_align, element_sz, sp_util_memcopy);
+  return sp_vec_copy_init_cap(capacity, element_align, element_sz,
+                              sp_util_memcopy);
 }
 
 struct sp_vec_copy *
 sp_vec_copy_init_cap(size_t capacity,
                      size_t element_align,
                      size_t element_sz,
-                     sp_vec_copy_copy_cb copy)
+                     sp_cb_copy copy)
 {
   struct sp_vec_copy *result;
 
   if ((result = sp_vec_copy_init(element_align, element_sz, copy))) {
-    sp_vec_copy_internal_init(result, capacity, element_align, element_sz, copy);
+    sp_vec_copy_internal_init(result, capacity, element_align, element_sz,
+                              copy);
   }
   return result;
 }
@@ -101,7 +106,7 @@ sp_vec_copy_is_empty(const struct sp_vec_copy *self)
 }
 
 //==============================
-sp_vec_copy_T *
+sp_T *
 sp_vec_copy_get(struct sp_vec_copy *self, size_t idx)
 {
   if (idx < self->length) {
@@ -110,7 +115,7 @@ sp_vec_copy_get(struct sp_vec_copy *self, size_t idx)
   return NULL;
 }
 
-const sp_vec_copy_T *
+const sp_T *
 sp_vec_copy_get_c(const struct sp_vec_copy *self, size_t idx)
 {
   if (idx < self->length) {
@@ -119,20 +124,22 @@ sp_vec_copy_get_c(const struct sp_vec_copy *self, size_t idx)
   return NULL;
 }
 
-sp_vec_copy_T *
+sp_T *
 sp_vec_copy_get_last(struct sp_vec_copy *self);
 
-const sp_vec_copy_T *
+const sp_T *
 sp_vec_copy_get_last_c(const struct sp_vec_copy *self);
 
 //==============================
 static bool
-__sp_vec_copy_ensure_capacity(struct sp_vec_copy *self, size_t capacity){
+__sp_vec_copy_ensure_capacity(struct sp_vec_copy *self, size_t capacity)
+{
   if (capacity > self->capacity) {
     struct sp_vec_copy *tmp;
     size_t new_capacity = sp_max(sp_max(16, self->capacity * 2), capacity);
 
-    tmp = sp_vec_copy_init_cap(new_capacity, self->element_align, self->element_sz, self->copy);
+    tmp = sp_vec_copy_init_cap(new_capacity, self->element_align,
+                               self->element_sz, self->copy);
     if (!tmp) {
       return false;
     }
@@ -152,11 +159,13 @@ __sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src)
   assertx(src);
   assertx(src->copy == dest->copy);
   assertx(src->length <= (dest->capacity - dest->length));
-  assertxs(src->element_sz == dest->element_sz, "%zu:%zu",src->element_sz, dest->element_sz);
-  assertxs(src->element_align == dest->element_align, "%zu:%zu",src->element_align, dest->element_align);
+  assertxs(src->element_sz == dest->element_sz, "%zu:%zu", src->element_sz,
+           dest->element_sz);
+  assertxs(src->element_align == dest->element_align, "%zu:%zu",
+           src->element_align, dest->element_align);
 
   for (i = 0; i < src->length; ++i) {
-    sp_vec_copy_T *s, *d;
+    sp_T *s, *d;
 
     s = src->raw + (i * src->element_sz);
     d = dest->raw + (dest->length++ * dest->element_sz);
@@ -165,10 +174,10 @@ __sp_vec_copy_copy(struct sp_vec_copy *dest, const struct sp_vec_copy *src)
   }
 }
 
-sp_vec_copy_T *
-sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
+sp_T *
+sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_T *in)
 {
-  sp_vec_copy_T *result;
+  sp_T *result;
   size_t idx;
 
   assertx(self);
@@ -176,7 +185,7 @@ sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_vec_copy_T *in)
 
   assertx(self->length <= self->capacity);
 
-  if (!__sp_vec_copy_ensure_capacity(self, self->length+1)){
+  if (!__sp_vec_copy_ensure_capacity(self, self->length + 1)) {
     return NULL;
   }
 
@@ -236,7 +245,7 @@ sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)
 
 //==============================
 size_t
-sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_vec_copy_T *n)
+sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_T *n)
 {
   uintptr_t n_idx     = (uintptr_t)n;
   uintptr_t r_idx     = (uintptr_t)self->raw;
@@ -251,15 +260,13 @@ sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_vec_copy_T *n)
 
 //==============================
 int
-sp_vec_copy_sort(struct sp_vec_copy *self, sp_vec_copy_cmp_cb);
+sp_vec_copy_sort(struct sp_vec_copy *self, sp_cb_cmp);
 
 //==============================
-typedef int (*sp_vec_copy_it_cb)(sp_vec_copy_T *, void *closure);
-
 int
 sp_vec_copy_for_each(struct sp_vec_copy *self,
                      void *closure,
-                     sp_vec_copy_it_cb);
+                     sp_cb_it);
 
 //==============================
 int
@@ -271,27 +278,27 @@ sp_vec_copy_clear(struct sp_vec_copy *self)
 }
 
 //==============================
-sp_vec_copy_T *
+sp_T *
 sp_vec_copy_array(struct sp_vec_copy *self)
 {
   return self->raw;
 }
 
 //==============================
-sp_vec_copy_T *
+sp_T *
 sp_vec_copy_begin(struct sp_vec_copy *self)
 {
   return self->raw;
 }
 
-sp_vec_copy_T *
+sp_T *
 sp_vec_copy_end(struct sp_vec_copy *self)
 {
   return self->raw + (self->length * self->element_sz);
 }
 
-sp_vec_copy_T *
-sp_vec_copy_next(struct sp_vec_copy *self, sp_vec_copy_T *it)
+sp_T *
+sp_vec_copy_next(struct sp_vec_copy *self, sp_T *it)
 {
   return it + self->element_sz;
 }
