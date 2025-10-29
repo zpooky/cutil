@@ -9,11 +9,20 @@
 #include "sp_util.h"
 
 //==============================
-void
+sp_str_view *
 sp_str_view_init_str(sp_str_view *self, struct sp_str *str)
 {
   self->raw = sp_str_c_str(str);
   self->len = str->length;
+  return self;
+}
+
+sp_str_view *
+sp_str_view_init(sp_str_view *self, const char *str)
+{
+  self->raw = str;
+  self->len = strlen(str);
+  return self;
 }
 
 //==============================
@@ -419,13 +428,14 @@ sp_str_ensure_capacity(sp_str *self, size_t capacity)
 bool
 sp_str_is_printable(const sp_str *str)
 {
-  return sp_util_is_printable(sp_str_c_str(str), str->length);
+  const char *tmp = sp_str_c_str(str);
+  return sp_util_is_printable((const uint8_t *)tmp, str->length);
 }
 
 bool
 sp_str_view_is_printable(const sp_str_view str)
 {
-  return sp_util_is_printable(str.raw, str.len);
+  return sp_util_is_printable((const uint8_t *)str.raw, str.len);
 }
 
 //==============================

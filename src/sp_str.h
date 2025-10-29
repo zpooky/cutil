@@ -25,8 +25,11 @@ typedef struct {
   size_t len;
 } sp_str_view;
 
-void
+sp_str_view *
 sp_str_view_init_str(sp_str_view *self, struct sp_str *str);
+
+sp_str_view *
+sp_str_view_init(sp_str_view *self, const char *str);
 
 //==============================
 int
@@ -85,7 +88,6 @@ sp_str_append(sp_str *, const char *);
 
 int
 sp_str_append_str(sp_str *, const sp_str *);
-
 
 int
 sp_str_append_str_view(sp_str *, sp_str_view);
