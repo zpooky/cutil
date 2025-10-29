@@ -39,7 +39,7 @@ struct sp_hashset {
   size_t capacity;
 
   sp_cb_hash hash;
-  sp_hashset_move_cb move;
+  sp_cb_move move;
   sp_cb_eq eq;
 
   sp_hashset_clear_cb clear;
@@ -53,7 +53,7 @@ sp_hashset_init_int(struct sp_hashset *self,
                     size_t align,
                     size_t sz,
                     sp_cb_hash hash,
-                    sp_hashset_move_cb move,
+                    sp_cb_move move,
                     sp_cb_eq eq)
 {
   self->bucket = NULL;
@@ -97,7 +97,7 @@ struct sp_hashset *
 sp_hashset_new(size_t align,
                size_t sz,
                sp_cb_hash hash,
-               sp_hashset_move_cb move,
+               sp_cb_move move,
                sp_cb_eq eq)
 {
   struct sp_hashset *self;
@@ -457,15 +457,6 @@ sp_hashset_dump(struct sp_hashset *self)
   }
   fprintf(stderr, "\n");
   fflush(stderr);
-}
-
-//==============================
-void
-sp_hashset_memcpy(sp_T *dest, const sp_T *src, size_t sz)
-{
-  assert(dest);
-  assert(src);
-  memcpy(dest, src, sz);
 }
 
 //==============================

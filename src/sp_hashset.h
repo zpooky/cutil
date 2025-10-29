@@ -12,8 +12,6 @@ struct sp_hashset;
 typedef void sp_T;
 
 //==============================
-typedef void (*sp_hashset_move_cb)(sp_T *dest, sp_T *src, size_t sz);
-
 typedef bool (*sp_hashset_clear_cb)(sp_T *, size_t sz, void *closure);
 
 typedef int (*sp_hashset_for_each_cb)(const sp_T *, void *closure, size_t sz);
@@ -22,7 +20,7 @@ struct sp_hashset *
 sp_hashset_new(size_t align,
                size_t sz,
                sp_cb_hash hash,
-               sp_hashset_move_cb move,
+               sp_cb_move move,
                sp_cb_eq cmp);
 
 int
@@ -67,10 +65,6 @@ sp_hashset_length(const struct sp_hashset *self);
 //==============================
 void
 sp_hashset_dump(struct sp_hashset *self);
-
-//==============================
-void
-sp_hashset_memcpy(sp_T *dest, const sp_T *src, size_t sz);
 
 //==============================
 int

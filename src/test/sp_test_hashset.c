@@ -69,7 +69,7 @@ sp_do_test_simple(void)
 
   set = sp_hashset_new(alignof(struct hashset_test),
                        sizeof(struct hashset_test), (sp_cb_hash)sp_test_hash,
-                       (sp_hashset_move_cb)sp_test_move, (sp_cb_eq)sp_test_eq);
+                       (sp_cb_move)sp_test_move, (sp_cb_eq)sp_test_eq);
 
   for (i = 0; i < MAX; ++i) {
     data[i] = i;
@@ -198,7 +198,7 @@ sp_do_test_str_val(void)
   set  = sp_hashset_new(alignof(struct hashset_test_str_val), //
                         sizeof(struct hashset_test_str_val), //
                         (sp_cb_hash)hashset_test_str_val_hash, //
-                        sp_hashset_memcpy, (sp_cb_eq)hashset_test_str_val_eq);
+                        sp_cb_move_memcopy, (sp_cb_eq)hashset_test_str_val_eq);
 
   for (int i = 0; i < max; ++i) {
     assert(sp_vec_copy_length(pool) == i);
