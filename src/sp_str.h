@@ -31,6 +31,12 @@ sp_str_view_init_str(sp_str_view *self, struct sp_str *str);
 sp_str_view *
 sp_str_view_init(sp_str_view *self, const char *str);
 
+bool
+sp_str_view_eq(sp_str_view a, sp_str_view b);
+
+bool
+sp_str_view_eq_str(sp_str_view a, const struct sp_str *b);
+
 //==============================
 int
 sp_str_init0(sp_str *);

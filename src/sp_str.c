@@ -25,6 +25,18 @@ sp_str_view_init(sp_str_view *self, const char *str)
   return self;
 }
 
+bool
+sp_str_view_eq(sp_str_view a, sp_str_view b)
+{
+  return a.len == b.len && strncmp(a.raw, b.raw, a.len) == 0;
+}
+
+bool
+sp_str_view_eq_str(sp_str_view a, const struct sp_str *b)
+{
+  return a.len == b->length && strncmp(a.raw, sp_str_c_str(b), a.len) == 0;
+}
+
 //==============================
 #define SBUF_CAP (SP_STR_SBUF_SIZE + 1)
 
