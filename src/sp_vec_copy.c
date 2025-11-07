@@ -1,5 +1,6 @@
-#include "sp_vec_copy.h"
+#define _GNU_SOURCE
 
+#include "sp_vec_copy.h"
 #include "sp_vec_copy_internal.h"
 
 #include <stdlib.h>
@@ -264,9 +265,7 @@ sp_vec_copy_sort(struct sp_vec_copy *self, sp_cb_cmp);
 
 //==============================
 int
-sp_vec_copy_for_each(struct sp_vec_copy *self,
-                     void *closure,
-                     sp_cb_it);
+sp_vec_copy_for_each(struct sp_vec_copy *self, void *closure, sp_cb_it);
 
 //==============================
 int

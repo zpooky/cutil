@@ -1,9 +1,12 @@
 #ifndef _SP_VECTOR_COPY_INTERNAL_H
 #define _SP_VECTOR_COPY_INTERNAL_H
 
+#define _GNU_SOURCE
+
 #include <stdint.h>
-#include <stddef.h>
 #include <stdlib.h>
+#include <stdalign.h>
+#include <stddef.h>
 #include <assert.h>
 
 #include "sp_util.h"
