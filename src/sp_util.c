@@ -314,7 +314,7 @@ sp_util_void_cmp(const void *f, const void *s)
 
 //==============================
 struct sp_pair *
-sp_pair_init(void *first, void *second)
+sp_pair_new(void *first, void *second)
 {
   struct sp_pair *result;
 

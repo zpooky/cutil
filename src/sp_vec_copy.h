@@ -59,7 +59,7 @@ sp_T *
 sp_vec_copy_append_impl(struct sp_vec_copy *self, const sp_T *);
 
 #define sp_vec_copy_append(self, in)                                           \
-  ((typeof(in) *)sp_vec_copy_append_impl((self), (in)))
+  ((typeof(in))sp_vec_copy_append_impl((self), (in)))
 
 int
 sp_vec_copy_append_vec(struct sp_vec_copy *self, struct sp_vec_copy *);

@@ -30,6 +30,7 @@ cutil_src = [
 
   'sp_vec_copy.c',
   'sp_heap_copy.c',
+  'sp_queue_copy.c',
 
   'sp_hashset.c',
 

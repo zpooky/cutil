@@ -105,7 +105,7 @@ typedef struct sp_pair {
 } sp_pair;
 
 struct sp_pair *
-sp_pair_init(void *, void *);
+sp_pair_new(void *, void *);
 
 int
 sp_pair_free(struct sp_pair **);

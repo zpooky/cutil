@@ -261,7 +261,11 @@ sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_T *n)
 
 //==============================
 int
-sp_vec_copy_sort(struct sp_vec_copy *self, sp_cb_cmp);
+sp_vec_copy_sort(struct sp_vec_copy *self, sp_cb_cmp cmp)
+{
+  sp_util_sort(self->raw, self->length, self->element_sz, cmp);
+  return 0;
+}
 
 //==============================
 int
