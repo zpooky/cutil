@@ -48,6 +48,38 @@ test_quicksort(sp_cb_cmp cmp)
 }
 
 static void
+test_quicksort_min(void)
+{
+  const size_t max = 1024;
+  uint32_t arr[max];
+  for (uint32_t i = 0; i < max; ++i) {
+    arr[i] = i;
+  }
+  shuffle(arr, max);
+
+  sp_util_sort(arr, max, sizeof(arr[0]), (sp_cb_cmp)sp_util_uint32_min_cmp);
+  for (uint32_t i = 0; i < max; ++i) {
+    assert(arr[i] == i);
+  }
+}
+
+static void
+test_quicksort_max(void)
+{
+  const uint32_t max = 1024;
+  uint32_t arr[max];
+  for (uint32_t i = 0; i < max; ++i) {
+    arr[i] = i;
+  }
+  shuffle(arr, max);
+
+  sp_util_sort(arr, max, sizeof(arr[0]), (sp_cb_cmp)sp_util_uint32_max_cmp);
+  for (uint32_t i = 0; i < max; ++i) {
+    assert(arr[i] == max - 1 - i);
+  }
+}
+
+static void
 test_bin_insert(sp_cb_cmp cmp)
 {
   const size_t max = 1024;
@@ -97,11 +129,15 @@ test_bin_insert(sp_cb_cmp cmp)
 void
 sp_test_sort(void)
 {
+  printf("BEGIN %s\n", __func__);
   /* while(1){ */
   test_quicksort((sp_cb_cmp)sp_util_uint32p_cmp);
   test_quicksort((sp_cb_cmp)sp_util_uint32p_cmp_inv);
   test_bin_insert((sp_cb_cmp)sp_util_uint32p_cmp);
   test_bin_insert((sp_cb_cmp)sp_util_uint32p_cmp_inv);
+  test_quicksort_min();
+  test_quicksort_max();
   /* printf("==\n"); */
   /* } */
+  printf("END %s\n", __func__);
 }

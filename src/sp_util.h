@@ -76,18 +76,30 @@ void
 sp_util_swap_raw(void *, void *, size_t);
 
 //==============================
-uint64_t sp_util_htonll(uint64_t);
+uint64_t
+sp_util_htonll(uint64_t);
 
 uint64_t
 sp_util_ntohll(uint64_t n);
 
 //==============================
 #define SP_UTIL_NUMERIC_CMP(a, b) ((int)((a) - (b)))
-int sp_util_size_t_cmp(size_t, size_t);
+int
+sp_util_size_t_cmp(size_t, size_t);
+int
+sp_util_size_t_min_cmp(const size_t *, const size_t *);
+int
+sp_util_size_t_max_cmp(const size_t *, const size_t *);
 
-int sp_util_uint16_cmp(uint16_t, uint16_t);
+int
+sp_util_uint16_cmp(uint16_t, uint16_t);
 
-int sp_util_uint32_cmp(uint32_t, uint32_t);
+int
+sp_util_uint32_cmp(uint32_t, uint32_t);
+int
+sp_util_uint32_min_cmp(const uint32_t *, const uint32_t *);
+int
+sp_util_uint32_max_cmp(const uint32_t *, const uint32_t *);
 
 int
 sp_util_uint16p_cmp(const uint16_t *, const uint16_t *);

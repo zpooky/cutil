@@ -219,6 +219,26 @@ sp_vec_copy_remove(struct sp_vec_copy *self, size_t idx)
   }
 }
 
+void
+sp_vec_copy_remove_multiple(struct sp_vec_copy *self,
+                            const size_t *ids,
+                            size_t n_ids)
+{
+  size_t tmp[16];
+  if (n_ids == 0) {
+    return;
+  }
+
+  assert(n_ids < SP_ARRAY_LEN(tmp));
+  memcpy(tmp, ids, n_ids * sizeof(ids[0]));
+
+  sp_util_sort(tmp, n_ids, sizeof(ids[0]), (sp_cb_cmp)sp_util_size_t_max_cmp);
+
+  for (size_t i = 0; i < n_ids; ++i) {
+    sp_vec_copy_remove(self, ids[i]);
+  }
+}
+
 //==============================
 bool
 sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s)

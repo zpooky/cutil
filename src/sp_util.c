@@ -260,6 +260,22 @@ sp_util_size_t_cmp(size_t f, size_t s)
 }
 
 int
+sp_util_size_t_min_cmp(const size_t *f, const size_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_size_t_cmp(*f, *s);
+}
+
+int
+sp_util_size_t_max_cmp(const size_t *f, const size_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_size_t_cmp(*s, *f);
+}
+
+int
 sp_util_uint16_cmp(uint16_t f, uint16_t s)
 {
   if (f > s) {
@@ -283,6 +299,20 @@ sp_util_uint32_cmp(uint32_t f, uint32_t s)
   }
 
   return 0;
+}
+int
+sp_util_uint32_min_cmp(const uint32_t *f, const uint32_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_uint32_cmp(*f, *s);
+}
+int
+sp_util_uint32_max_cmp(const uint32_t *f, const uint32_t *s)
+{
+  assert(f);
+  assert(s);
+  return sp_util_uint32_cmp(*s, *f);
 }
 
 int

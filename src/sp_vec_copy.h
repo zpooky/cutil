@@ -68,6 +68,10 @@ sp_vec_copy_append_vec(struct sp_vec_copy *self, struct sp_vec_copy *);
 void
 sp_vec_copy_remove(struct sp_vec_copy *self, size_t);
 
+void sp_vec_copy_remove_multiple(struct sp_vec_copy *self,
+                            const size_t *ids,
+                            size_t n_ids);
+
 //==============================
 bool
 sp_vec_copy_swap(struct sp_vec_copy *self, size_t f, size_t s);
