@@ -206,7 +206,7 @@ void
 sp_vec_copy_remove(struct sp_vec_copy *self, size_t idx)
 {
   assertx(self);
-  assertx(idx < self->length);
+  assertxs(idx < self->length, "idx:%zu, length:%zu", idx, self->length);
 
   if (idx < self->length) {
     const size_t last = self->length - 1;
@@ -232,10 +232,10 @@ sp_vec_copy_remove_multiple(struct sp_vec_copy *self,
   assert(n_ids < SP_ARRAY_LEN(tmp));
   memcpy(tmp, ids, n_ids * sizeof(ids[0]));
 
-  sp_util_sort(tmp, n_ids, sizeof(ids[0]), (sp_cb_cmp)sp_util_size_t_max_cmp);
+  sp_util_sort(tmp, n_ids, sizeof(tmp[0]), (sp_cb_cmp)sp_util_size_t_max_cmp);
 
   for (size_t i = 0; i < n_ids; ++i) {
-    sp_vec_copy_remove(self, ids[i]);
+    sp_vec_copy_remove(self, tmp[i]);
   }
 }
 
@@ -276,7 +276,12 @@ sp_vec_copy_index_of(const struct sp_vec_copy *self, sp_T *n)
   assertx(n_idx % self->element_align == 0);
   assertx((n_idx - r_idx) % self->element_sz == 0);
 
-  return (n_idx - r_idx) / self->element_sz;
+  const size_t result = (n_idx - r_idx) / self->element_sz;
+
+  assertxs(result < sp_vec_copy_length(self), "result:%zu, length:%zu", result,
+           sp_vec_copy_length(self));
+
+  return result;
 }
 
 //==============================
