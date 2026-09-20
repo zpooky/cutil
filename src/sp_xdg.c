@@ -11,6 +11,7 @@
 int
 sp_xdg_runtime_dir(sp_uri2 *path)
 {
+  /* /usr/run/uid */
   const char *data = getenv("XDG_RUNTIME_DIR");
   if (data == NULL || strcmp(data, "") == 0) {
     char buffer[64] = {0};
