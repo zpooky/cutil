@@ -27,6 +27,10 @@ int
 sp_hashset_free(struct sp_hashset **);
 
 //==============================
+void
+sp_hashset_swap_self(struct sp_hashset *f, struct sp_hashset *s);
+
+//==============================
 bool
 sp_hashset_ensure_capacity(struct sp_hashset *self, size_t capacity);
 
@@ -42,6 +46,7 @@ sp_hashset_clear(struct sp_hashset *self);
 //==============================
 bool
 __sp_hashset_validate(struct sp_hashset *self);
+
 //==============================
 sp_T *
 sp_hashset_insert_move(struct sp_hashset *self, sp_T *in);
@@ -75,4 +80,19 @@ sp_hashset_for_each(const struct sp_hashset *self,
                     void *closure);
 
 //==============================
+sp_T *
+sp_hashset_begin(struct sp_hashset *);
+
+sp_T *
+sp_hashset_end(struct sp_hashset *);
+
+sp_T *
+sp_hashset_next(struct sp_hashset *, sp_T *);
+
+#define sp_hashset_for_each2(self, it)                                         \
+  for (it = (typeof(it))sp_hashset_begin(self); it != sp_hashset_end(self);    \
+       it = (typeof(it))sp_hashset_next(self, it))
+
+//==============================
+
 #endif

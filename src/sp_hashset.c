@@ -104,7 +104,7 @@ sp_hashset_init_int(struct sp_hashset *self,
   return true;
 }
 
-static void
+void
 sp_hashset_swap_self(struct sp_hashset *f, struct sp_hashset *s)
 {
   sp_util_swap_size_t(&f->sz, &s->sz);
@@ -171,9 +171,9 @@ static bool
 sp_hashset_is_full(struct sp_hashset *self)
 {
   /* size_t c = sp_min(self->capacity / PSL_MAX, 1); */
-  size_t length = sp_hashset_full_length(self->length, self);
-  if (length >= self->capacity) {
-    printf("length:%zu >= self->capacity:%zu (self->length:%zu)\n", length,
+  size_t fl = sp_hashset_full_length(self->length, self);
+  if (fl >= self->capacity) {
+    printf("length:%zu >= self->capacity:%zu (self->length:%zu)\n", fl,
            self->capacity, self->length);
     return true;
   }
@@ -517,4 +517,51 @@ sp_hashset_for_each(const struct sp_hashset *self,
 
   return res;
 }
+//==============================
+static size_t
+sp_hashset_index_of(const struct sp_hashset *self, sp_T *n)
+{
+  uintptr_t n_idx     = (uintptr_t)n;
+  uintptr_t r_idx     = (uintptr_t)self->bucket;
+  uintptr_t r_idx_end = r_idx + (self->sz * self->capacity);
+  assertx(n_idx >= r_idx);
+  assertx(n_idx < r_idx_end);
+  assertx(n_idx % self->align == 0);
+  assertx((n_idx - r_idx) % self->sz == 0);
+
+  const size_t result = (n_idx - r_idx) / self->sz;
+
+  return result;
+}
+sp_T *
+sp_hashset_begin(struct sp_hashset *self)
+{
+  size_t i, a;
+  for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      return sp_hashset_get((struct sp_hashset *)self, i);
+    }
+  }
+
+  return sp_hashset_end(self);
+}
+
+sp_T *
+sp_hashset_end(struct sp_hashset *self)
+{
+  return self->bucket + (self->capacity * self->sz);
+}
+
+sp_T *
+sp_hashset_next(struct sp_hashset *self, sp_T *it)
+{
+  size_t i = sp_hashset_index_of(self, it) + 1;
+  for (; i < self->capacity; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      return sp_hashset_get(self, i);
+    }
+  }
+  return sp_hashset_end(self);
+}
+
 //==============================
