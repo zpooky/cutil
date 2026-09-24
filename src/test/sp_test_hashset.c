@@ -26,7 +26,6 @@ sp_vec_copy_shuffle(struct sp_vec_copy *vec)
 
 struct hashset_test {
   uint32_t hash;
-  int value;
 };
 
 static uint32_t
@@ -44,28 +43,31 @@ sp_test_eq(const struct hashset_test *f,
            const struct hashset_test *s,
            size_t sz)
 {
-  return f->value == s->value;
+  return f->hash == s->hash;
 }
 
 static void
 shuffle_int(uint32_t *arr, size_t len)
 {
+  fprintf(stderr, "%s:(%zu)\n", __func__, len);
   size_t i;
   for (i = 0; i < len; ++i) {
     size_t idx = (size_t)rand() % len;
     sp_util_swap_uint32_t(arr + i, arr + idx);
   }
+  fprintf(stderr, "%s: END(%zu)\n", __func__, len);
 }
 
 static int
 sp_do_test_simple(void)
 {
   struct sp_hashset *set;
-  const int MAX = 1024 * 1;
+  const int MAX = 1024 * 1 * 1;
   /* const int MAX = 16 * 1; */
   int i;
   int a;
-  uint32_t data[MAX];
+  uint32_t *data = calloc(MAX, sizeof(*data));
+  fprintf(stderr, "%s:\n", __func__);
 
   set = sp_hashset_new(alignof(struct hashset_test),
                        sizeof(struct hashset_test), (sp_cb_hash)sp_test_hash,
@@ -81,7 +83,7 @@ sp_do_test_simple(void)
     struct hashset_test tmp  = {0};
 
     for (a = 0; a < i; ++a) {
-      tmp.hash = tmp.value = data[a];
+      tmp.hash = data[a];
       if (!(out = sp_hashset_lookup(set, &tmp))) {
         printf("i:%d, a:%d\n", i, data[a]);
         /* sp_hashset_dump(set);//TODO bug: duplicate in hashset */
@@ -89,26 +91,23 @@ sp_do_test_simple(void)
       }
 
       assert(out);
-      assert(out->value == data[a]);
       assert(out->hash == tmp.hash);
-      assert(out->value == tmp.value);
     }
 
     assert(sp_hashset_length(set) == i);
 
-    tmp.hash = tmp.value = data[i];
-    out                  = sp_hashset_insert_move(set, &tmp);
+    tmp.hash = data[i];
+    out      = sp_hashset_insert_move(set, &tmp);
     assert(out);
-    assert(out->value == data[i]);
+    assert(out->hash == data[i]);
     /* sp_hashset_dump(set); */
 
     for (a = i + 1; a < MAX; ++a) {
-      tmp.hash = tmp.value = data[a];
+      tmp.hash = data[a];
       if ((out = sp_hashset_lookup(set, &tmp))) {
         out = sp_hashset_lookup(set, &tmp);
         printf("data[a]:%u\n", data[1]);
         printf("out:%u\n", out->hash);
-        printf("out:%u\n", out->value);
       }
       assert(!out);
     }
@@ -118,10 +117,10 @@ sp_do_test_simple(void)
 
   for (i = 0; i < MAX; ++i) {
     struct hashset_test *out = NULL;
-    struct hashset_test tmp  = {.value = data[i], .hash = data[i]};
+    struct hashset_test tmp  = {.hash = data[i]};
     out                      = sp_hashset_lookup(set, &tmp);
     assert(out);
-    assert(out->value == data[i]);
+    assert(out->hash == data[i]);
   }
 
   shuffle_int(data, (size_t)MAX);
@@ -132,29 +131,29 @@ sp_do_test_simple(void)
 
     /* assert(sp_hashset_length(set) == MAX - i); */
     for (a = 0; a < i; ++a) {
-      tmp.hash = tmp.value = data[a];
-      out                  = sp_hashset_lookup(set, &tmp);
+      tmp.hash = data[a];
+      out      = sp_hashset_lookup(set, &tmp);
       assert(!out);
     }
 
     /* printf(".remove: %d\n", i); */
-    tmp.hash = tmp.value = data[i];
-    out                  = sp_hashset_lookup(set, &tmp);
+    tmp.hash = data[i];
+    out      = sp_hashset_lookup(set, &tmp);
     assert(out);
-    assert(out->value == data[i]);
+    assert(out->hash == data[i]);
     b = sp_hashset_remove(set, out);
     assert(b);
 
     for (a = i + 1; a < MAX; ++a) {
-      tmp.hash = tmp.value = data[a];
-      out                  = sp_hashset_lookup(set, &tmp);
+      tmp.hash = data[a];
+      out      = sp_hashset_lookup(set, &tmp);
       assert(out);
-      assert(out->value == data[a]);
+      assert(out->hash == data[a]);
     }
   } //for
   for (i = 0; i < MAX; ++i) {
     struct hashset_test *out = NULL;
-    struct hashset_test tmp  = {.value = data[i], .hash = data[i]};
+    struct hashset_test tmp  = {.hash = data[i]};
     out                      = sp_hashset_lookup(set, &tmp);
     assert(!out);
   }
@@ -194,6 +193,7 @@ sp_do_test_str_val(void)
   const int max = 11 * 1024;
   int *it;
 
+  fprintf(stderr, "%s:\n", __func__);
   pool = sp_vec_copy_init0_cap(max, alignof(int), sizeof(int));
   set  = sp_hashset_new(alignof(struct hashset_test_str_val), //
                         sizeof(struct hashset_test_str_val), //
@@ -254,6 +254,64 @@ sp_do_test_str_val(void)
   fprintf(stderr, "%s:4\n", __func__);
   sp_hashset_free(&set);
   sp_vec_copy_free(&pool);
+}
+
+static int
+sp_do_test_simple2(void)
+{
+  struct sp_hashset *set;
+  const int MAX = 512 * 1024 * 1024;
+  /* const int MAX = 64 * 1024; */
+  /* const int MAX = 1024 * 1024; */
+  /* TODO the memory overhead is increadable: to store 0.5GiB requires 5GiB */
+
+  fprintf(stderr, "%s:\n", __func__);
+  set = sp_hashset_new(alignof(struct hashset_test),
+                       sizeof(struct hashset_test), (sp_cb_hash)sp_test_hash,
+                       (sp_cb_move)sp_test_move, (sp_cb_eq)sp_test_eq);
+  sp_hashset_ensure_capacity(set, MAX);
+  fprintf(stderr, "%s:it0\n", __func__);
+
+  for (uint32_t i = 0; i < MAX; ++i) {
+    struct hashset_test tmp = {.hash = i};
+    struct hashset_test *out;
+    /* fprintf(stdout, "%d\n",i); */
+    /* fflush(stdout); */
+    tmp.hash = i;
+    out      = sp_hashset_lookup(set, &tmp);
+    assert(!out);
+
+    out = sp_hashset_insert_move(set, &tmp);
+    assert(out);
+    assert(out->hash == i);
+
+    out = sp_hashset_lookup(set, &tmp);
+    assert(out);
+    assert(out->hash == i);
+  }
+  assert(sp_hashset_length(set) == MAX);
+  assert(__sp_hashset_validate(set));
+
+  for (uint32_t i = 0; i < MAX; ++i) {
+    struct hashset_test tmp = {.hash = i};
+    struct hashset_test *r;
+    bool out;
+    assert(sp_hashset_length(set) == MAX - i);
+
+    r = sp_hashset_lookup(set, &tmp);
+    assert(r);
+    assert(r->hash == i);
+
+    out = sp_hashset_remove(set, &tmp);
+    assert(out);
+
+    r = sp_hashset_lookup(set, &tmp);
+    assert(!r);
+  }
+  assert(sp_hashset_length(set) == 0);
+
+  sp_hashset_free(&set);
+  return 0;
 }
 
 int

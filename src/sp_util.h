@@ -234,4 +234,7 @@ bool
 sp_util_close(int *fd);
 
 //==============================
+#define sp_util_is_power_of_two(value) ( (value) != 0 && ((value) & ((value) - 1)) == 0 )
+
+//==============================
 #endif

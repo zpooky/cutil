@@ -27,7 +27,7 @@ int
 sp_hashset_free(struct sp_hashset **);
 
 //==============================
-void
+bool
 sp_hashset_ensure_capacity(struct sp_hashset *self, size_t capacity);
 
 //==============================
@@ -40,10 +40,12 @@ void
 sp_hashset_clear(struct sp_hashset *self);
 
 //==============================
+bool
+__sp_hashset_validate(struct sp_hashset *self);
+//==============================
 sp_T *
 sp_hashset_insert_move(struct sp_hashset *self, sp_T *in);
 
-//==============================
 sp_T *
 sp_hashset_upsert_move(struct sp_hashset *self, sp_T *in);
 
