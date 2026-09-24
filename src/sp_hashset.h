@@ -27,10 +27,6 @@ int
 sp_hashset_free(struct sp_hashset **);
 
 //==============================
-void
-sp_hashset_swap_self(struct sp_hashset *f, struct sp_hashset *s);
-
-//==============================
 bool
 sp_hashset_ensure_capacity(struct sp_hashset *self, size_t capacity);
 

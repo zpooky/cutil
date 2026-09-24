@@ -104,9 +104,11 @@ sp_hashset_init_int(struct sp_hashset *self,
   return true;
 }
 
-void
+static void
 sp_hashset_swap_self(struct sp_hashset *f, struct sp_hashset *s)
 {
+  assert(f);
+  assert(s);
   sp_util_swap_size_t(&f->sz, &s->sz);
   sp_util_swap_size_t(&f->align, &s->align);
 
