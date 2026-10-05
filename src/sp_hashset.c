@@ -251,16 +251,13 @@ sp_hashset_set_clear_cb(struct sp_hashset *self,
 void
 sp_hashset_clear(struct sp_hashset *self)
 {
-  if (self->clear) {
-    size_t i;
-    for (i = 0; i < self->capacity && self->length > 0; ++i) {
-      if (self->psl[i] != PSL_EMPTY) {
+  for (size_t i = 0; i < self->capacity; ++i) {
+    if (self->psl[i] != PSL_EMPTY) {
+      if (self->clear) {
         self->clear(sp_hashset_get(self, i), self->sz, self->clear_closure);
-        self->psl[i] = PSL_EMPTY;
-        --self->length;
       }
-    } //for
-    assertx(self->length == 0);
+      self->psl[i] = PSL_EMPTY;
+    }
   }
   self->length = 0;
 }
@@ -430,6 +427,27 @@ sp_hashset_upsert_move(struct sp_hashset *self, sp_T *in)
   return sp_hashset_insert_move(self, in);
 }
 
+sp_T *
+sp_hashset_lazy_insert_move0(struct sp_hashset *self, sp_T *in, bool *inserted)
+{
+  size_t it, start;
+  //XXX uptimize?
+  if (sp_hashset_do_lookup(self, in, &it, &start)) {
+    *inserted = false;
+    return sp_hashset_get(self, it);
+  }
+
+  *inserted = true;
+  return sp_hashset_insert_move(self, in);
+}
+
+sp_T *
+sp_hashset_lazy_insert_move(struct sp_hashset *self, sp_T *in)
+{
+  bool inserted = false;
+  return sp_hashset_lazy_insert_move0(self, in, &inserted);
+}
+
 //==============================
 bool
 sp_hashset_remove(struct sp_hashset *self, sp_T *needle)
@@ -538,6 +556,7 @@ sp_hashset_index_of(const struct sp_hashset *self, sp_T *n)
 sp_T *
 sp_hashset_begin(struct sp_hashset *self)
 {
+  assert(self);
   size_t i, a;
   for (i = 0, a = 0; i < self->capacity && a < self->length; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
@@ -551,12 +570,15 @@ sp_hashset_begin(struct sp_hashset *self)
 sp_T *
 sp_hashset_end(struct sp_hashset *self)
 {
+  assert(self);
   return self->bucket + (self->capacity * self->sz);
 }
 
 sp_T *
 sp_hashset_next(struct sp_hashset *self, sp_T *it)
 {
+  assert(self);
+  assert(it);
   size_t i = sp_hashset_index_of(self, it) + 1;
   for (; i < self->capacity; ++i) {
     if (self->psl[i] != PSL_EMPTY) {

@@ -7,6 +7,8 @@
 #include <sp_callbacks.h>
 
 //==============================
+struct sp_hashset;
+//==============================
 #define sp_max(a, b) (((a) > (b)) ? (a) : (b))
 
 #define sp_min(a, b) (((a) < (b)) ? (a) : (b))
@@ -73,7 +75,7 @@ void
 sp_util_swap_char_arr(char *, char *, size_t);
 
 void
-sp_util_swap_raw(void *, void *, size_t);
+sp_memcopy_swap(void *, void *, size_t);
 
 //==============================
 uint64_t
@@ -111,6 +113,17 @@ int
 sp_util_void_cmp(const void *, const void *);
 
 //==============================
+uint32_t
+voidp_hash(const sp_T *);
+bool
+voidp_eq(const sp_T *f, const sp_T *s, size_t sz);
+
+uint32_t
+sp_kv_hash(const sp_T *);
+bool
+sp_kv_eq(const sp_T *f, const sp_T *s, size_t sz);
+
+//==============================
 typedef struct sp_pair {
   void *first;
   void *second;
@@ -124,6 +137,15 @@ sp_pair_free(struct sp_pair **);
 
 void
 sp_pair_set(sp_pair *dest, sp_pair *src);
+
+//==============================
+typedef struct sp_kv {
+  void *key;
+  void *value;
+} sp_kv;
+
+struct sp_hashset *
+sp_hashset_kv_new(size_t capacity);
 
 //==============================
 void
@@ -234,7 +256,8 @@ bool
 sp_util_close(int *fd);
 
 //==============================
-#define sp_util_is_power_of_two(value) ( (value) != 0 && ((value) & ((value) - 1)) == 0 )
+#define sp_util_is_power_of_two(value)                                         \
+  ((value) != 0 && ((value) & ((value) - 1)) == 0)
 
 //==============================
 #endif

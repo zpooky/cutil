@@ -7,7 +7,7 @@
 
 typedef void sp_T;
 
-typedef int (*sp_cb_cmp)(const sp_T *f, const sp_T *s);
+typedef int (*sp_cb_cmp)(const sp_T *f, const sp_T *s); //TODO add sz
 typedef bool (*sp_cb_eq)(const sp_T *f, const sp_T *s, size_t sz);
 
 typedef void (*sp_cb_copy)(sp_T *dest, const sp_T *src, size_t);

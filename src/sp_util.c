@@ -1,5 +1,7 @@
 #include "sp_util.h"
 
+#include <sp_hashset.h>
+
 #include <arpa/inet.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -10,6 +12,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <execinfo.h> // backtrace
+#include <limits.h>
 
 //==============================
 static const char hex_encode_lookup[] = {
@@ -209,7 +212,7 @@ sp_util_swap_char_arr(char *f, char *s, size_t len)
 }
 
 void
-sp_util_swap_raw(void *f, void *s, size_t len)
+sp_memcopy_swap(void *f, void *s, size_t len)
 {
   uint8_t tmp[len];
   memcpy(tmp, f, len);
@@ -343,6 +346,34 @@ sp_util_void_cmp(const void *f, const void *s)
 }
 
 //==============================
+uint32_t
+voidp_hash(const sp_T *a)
+{
+  return (uint32_t)(uintptr_t)a;
+}
+
+bool
+voidp_eq(const sp_T *f, const sp_T *s, size_t sz)
+{
+  return f == s;
+}
+
+uint32_t
+sp_kv_hash(const sp_T *a)
+{
+  const sp_kv *a0 = 0;
+  return (uint32_t)(uintptr_t)a0 & UINT_MAX;
+}
+
+bool
+sp_kv_eq(const sp_T *f, const sp_T *s, size_t sz)
+{
+  const sp_kv *f0 = f;
+  const sp_kv *s0 = s;
+  return f0->key == s0->key;
+}
+
+//==============================
 struct sp_pair *
 sp_pair_new(void *first, void *second)
 {
@@ -377,6 +408,18 @@ sp_pair_set(sp_pair *dest, sp_pair *src)
 
   dest->first  = src->first;
   dest->second = src->second;
+}
+
+struct sp_hashset *
+sp_hashset_kv_new(size_t capacity)
+{
+  struct sp_hashset *result;
+  result = sp_hashset_new(alignof(struct sp_kv), sizeof(sp_kv), sp_kv_hash,
+                          sp_cb_move_memcopy, sp_kv_eq);
+  if (result) {
+    sp_hashset_ensure_capacity(result, capacity);
+  }
+  return result;
 }
 
 //==============================
@@ -557,7 +600,7 @@ sp_util_sort0(void *arr,
 void
 sp_util_sort(void *arr, size_t arr_len, size_t entry_sz, sp_cb_cmp cmp)
 {
-  sp_util_sort0(arr, arr_len, entry_sz, cmp, sp_util_swap_raw);
+  sp_util_sort0(arr, arr_len, entry_sz, cmp, sp_memcopy_swap);
 }
 
 void
@@ -669,7 +712,7 @@ sp_util_bin_insert_uniq(void *arr,
                         sp_cb_cmp cmp)
 {
   return sp_util_bin_insert_uniq0(arr, arr_len, in, in_size, cmp,
-                                  sp_util_swap_raw);
+                                  sp_memcopy_swap);
 }
 
 //==============================

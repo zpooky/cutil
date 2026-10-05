@@ -12,13 +12,13 @@ struct sp_hashset;
 typedef void sp_T;
 
 //==============================
-typedef bool (*sp_hashset_clear_cb)(sp_T *, size_t sz, void *closure);
+typedef void (*sp_hashset_clear_cb)(sp_T *, size_t sz, void *closure);
 
 typedef int (*sp_hashset_for_each_cb)(const sp_T *, void *closure, size_t sz);
 
 struct sp_hashset *
-sp_hashset_new(size_t align,
-               size_t sz,
+sp_hashset_new(size_t elem_align,
+               size_t elem_size,
                sp_cb_hash hash,
                sp_cb_move move,
                sp_cb_eq cmp);
@@ -49,6 +49,11 @@ sp_hashset_insert_move(struct sp_hashset *self, sp_T *in);
 
 sp_T *
 sp_hashset_upsert_move(struct sp_hashset *self, sp_T *in);
+
+sp_T *
+sp_hashset_lazy_insert_move0(struct sp_hashset *self, sp_T *in, bool *inserted);
+sp_T *
+sp_hashset_lazy_insert_move(struct sp_hashset *self, sp_T *in);
 
 //==============================
 sp_T *
