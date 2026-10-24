@@ -251,14 +251,16 @@ sp_hashset_set_clear_cb(struct sp_hashset *self,
 void
 sp_hashset_clear(struct sp_hashset *self)
 {
-  for (size_t i = 0; i < self->capacity; ++i) {
+  for (size_t i = 0; i < self->capacity && self->length > 0; ++i) {
     if (self->psl[i] != PSL_EMPTY) {
       if (self->clear) {
         self->clear(sp_hashset_get(self, i), self->sz, self->clear_closure);
       }
       self->psl[i] = PSL_EMPTY;
+      --self->length;
     }
   }
+  assert(self->length == 0);
   self->length = 0;
 }
 
